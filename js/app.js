@@ -267,14 +267,49 @@
   }
 
   // ---------- Install and offline ----------
+  // In a browser, an Install button appears as soon as Chrome says the app can be installed.
+  // If Chrome never offers it (for example it wrongly thinks the app is already installed), a help button explains what to do.
+  let current = null;
   let installPrompt = null;
-  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; });
-  window.addEventListener('appinstalled', () => { installPrompt = null; });
-  const standalone = () => matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
+  const standalone = () => matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches || navigator.standalone === true;
+  const installBtn = $('#btn-install'), helpBtn = $('#btn-install-help');
+  const showInstall = () => {
+    const where = !current || current === 'hub';
+    installBtn.hidden = !(installPrompt && where && !standalone());
+    helpBtn.hidden = !(!installPrompt && where && !standalone() && helpBtn.dataset.ready);
+  };
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; showInstall(); });
+  window.addEventListener('appinstalled', () => { installPrompt = null; showInstall(); });
+  setTimeout(() => { helpBtn.dataset.ready = '1'; showInstall(); }, 4000);
+  installBtn.onclick = async e => {
+    e.stopPropagation();
+    if (!installPrompt) return;
+    const p = installPrompt; installPrompt = null; showInstall();
+    p.prompt();
+    try { await p.userChoice; } catch (err) { /* ignore */ }
+  };
+  helpBtn.onclick = e => {
+    e.stopPropagation();
+    const apple = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    openModal(`
+      <div class="card panel" role="dialog" aria-label="How to install">
+        <button class="close" aria-label="Close">${ICON.close}</button>
+        <h2>How to install</h2>
+        ${apple ? `<p>In Safari, tap the <b>Share</b> button, then <b>Add to Home Screen</b>.</p>` : `
+        <p>Open the <b>⋮</b> menu in Chrome and choose <b>Install app</b> or <b>Add to home screen</b>.</p>
+        <p>If Chrome says the app is <b>already installed</b> but it won't open:</p>
+        <ol class="steps">
+          <li>Long-press the old <b>To the Rescue</b> icon and choose <b>Uninstall</b>.</li>
+          <li>In Chrome open <b>⋮ → Settings → Site settings → All sites</b>, choose <b>${location.hostname}</b> and tap <b>Clear &amp; reset</b>.</li>
+          <li>Restart the tablet, open this page again, wait a few seconds, and tap <b>📲 Install app</b>.</li>
+        </ol>`}
+      </div>`);
+  };
   function installState() {
     const offline = 'serviceWorker' in navigator && navigator.serviceWorker.controller;
     if (standalone()) return 'Installed on this device. Works without the internet.';
     if (installPrompt) return 'Install the app to play it full screen, even without the internet.';
+    if (!standalone() && !installPrompt) return 'This browser is not offering to install right now. See "How to install" on the start screen.';
     return offline ? 'Ready to play without the internet. To install, use the browser menu: Add to Home screen.'
       : 'To install, use the browser menu: Add to Home screen.';
   }
@@ -283,7 +318,6 @@
   }
 
   // ---------- Screen router ----------
-  let current = null;
   const screens = {};
   function go(name, arg) {
     hush(); Hint.clear(); clearScope(); closeModal();
@@ -294,6 +328,7 @@
     setTimeout(() => {
       if (my !== sceneToken) return;
       current = name;
+      showInstall();
       bubble.hidden = true;
       screens[name](arg, () => my === sceneToken);
       fade.classList.remove('on');

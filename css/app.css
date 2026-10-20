@@ -475,3 +475,19 @@ button:focus-visible { outline: 5px solid var(--hivis); outline-offset: 3px; }
 .colouring .page { min-height: 0; position: relative; }
 .colouring .page svg { position: absolute; inset: 3vmin; width: calc(100% - 6vmin); height: calc(100% - 6vmin); }
 .jigsaw .board { max-width: calc((100vh - 26vmin) * 1.5); justify-self: center; }
+
+/* ---------- Install pill (browser only) ---------- */
+.install-pill {
+  position: absolute; z-index: 85; left: calc(2.5vmin + var(--safe-l)); bottom: calc(2.5vmin + var(--safe-b));
+  min-height: 9vmin; padding: 1.5vmin 4vmin; border-radius: 6vmin; border: 0.7vmin solid #fff;
+  background: var(--hivis); color: var(--ink); font: 700 4vmin/1 var(--font-ui); cursor: pointer;
+  box-shadow: 0 1vmin 2vmin rgba(0,0,0,.3); animation: pillIn .5s backwards, pillHop 2.4s 1s infinite;
+}
+.install-pill[hidden] { display: none; }
+.install-pill.help { background: #fff; font-size: 3.4vmin; animation: pillIn .5s backwards; }
+#modal:not([hidden]) ~ .install-pill { display: none; }
+#stage:has(#start) #modal { z-index: 90; } /* the install help can open over the start screen */
+@keyframes pillIn { from { opacity: 0; transform: translateY(6vmin); } }
+@keyframes pillHop { 0%, 80%, 100% { transform: none; } 88% { transform: translateY(-1.5vmin); } }
+.panel .steps { font-size: 3.2vmin; line-height: 1.45; text-align: left; margin: 1vmin 0; padding-left: 5vmin; }
+.panel .steps li { margin: 0.6vmin 0; }

@@ -11,7 +11,7 @@ A free, ad-free emergency vehicles app for children aged 4 to 6. Pip the rescue 
 1. On the tablet, open the link above in **Chrome**.
 2. Tap the red play button once. This lets the app finish saving itself for offline use, which takes a few seconds.
 3. Install it in either of these ways:
-   - tap **Install** if Chrome offers it, or
+   - tap the yellow **📲 Install app** button that pops up in the bottom-left corner a few seconds after the page opens, or
    - open the **⋮** menu and choose **Add to Home screen** or **Install app**.
 4. Open the app from its new icon on the home screen. It runs full screen and sideways, and needs no internet from then on.
 
@@ -30,7 +30,14 @@ This means the tablet still remembers an earlier install that didn't finish prop
    - This also clears saved progress in any other apps you use from richardbrb9-coder.github.io.
 3. Restart the tablet.
 4. Open the link above in Chrome. Wait for the page to load fully, then tap play once.
-5. Choose **⋮ → Install app** (or **Add to home screen → Install**). Wait for Chrome's "added to home screen" message before opening the app.
+5. Tap the **📲 Install app** button, or choose **⋮ → Install app** (or **Add to home screen → Install**). Wait for Chrome's "added to home screen" message before opening the app.
+
+If Chrome doesn't offer to install, a white **📲 How to install** button shows these steps on screen instead.
+
+### Other ways to install
+
+- **Another browser:** open the link in **Microsoft Edge** or **Samsung Internet** and use its **Add to Home screen** option. Each browser keeps its own install records, so this sidesteps Chrome's stuck one.
+- **An APK file:** go to [pwabuilder.com](https://www.pwabuilder.com), paste the "Play it now" link, choose **Package for stores → Android**, and download the zip. Upload the `.apk` file inside it to Google Drive, open it on the tablet, and allow **Install unknown apps** when Android asks. Keep the signing key file from the zip if you want to update the app later.
 
 ## What's inside
 
