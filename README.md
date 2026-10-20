@@ -21,6 +21,17 @@ The grown-ups area also has an **Install app** button when the tablet supports i
 
 On iPad, open the link in Safari, tap **Share**, then **Add to Home Screen**.
 
+### If Chrome says "already installed" or "Could not open app"
+
+This means the tablet still remembers an earlier install that didn't finish properly. To clear it:
+
+1. Remove any old **To the Rescue** icon: long-press it, then choose **Uninstall** (or **Remove**).
+2. In Chrome, open **⋮ → Settings → Site settings → All sites** and find **richardbrb9-coder.github.io**. Tap it, then tap **Clear & reset**.
+   - This also clears saved progress in any other apps you use from richardbrb9-coder.github.io.
+3. Restart the tablet.
+4. Open the link above in Chrome. Wait for the page to load fully, then tap play once.
+5. Choose **⋮ → Install app** (or **Add to home screen → Install**). Wait for Chrome's "added to home screen" message before opening the app.
+
 ## What's inside
 
 - **9 vehicles**, each with tappable parts and a 999 mission:
