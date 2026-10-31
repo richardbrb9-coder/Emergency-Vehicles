@@ -128,7 +128,7 @@ To run it locally, serve the folder over HTTP (for example with `python3 -m http
 - **Water Run** (ball run): a pegboard with a fire hose at the top and a fire at the bottom. Children drag pieces from the tray (ramp, long ramp, curve, funnel, spring, fan, see-saw and bucket), tap a piece to turn it around, and blow Pip's whistle. Water drops roll through the run, and Pip counts each drop that lands on the fire; three put it out. **Build** is free play with every piece. **Puzzles** 1 to 12 get harder: one piece, then two, then a see-saw or bucket. Bolted-on bricks appear in the last one. After two misses Pip makes a piece's spot glow. Each puzzle was checked solvable by running its physics.
 - **Word Train** (syllables): **Clap it**: Pip says a word and its beats, then the child taps the drum once per beat and the carriages light up. **Build it**: the carriages are muddled; tap one to hear it, drag them onto the train in order. **Swap it**: one carriage is silly ("hy-lance!"); drag the right one onto it. Each carriage shows its beat number as dots and its colour, with the beat written above for early readers. 12 rescue words with 2, 3 or 4 beats.
 - Both games earn a sticker (21 in all), and the Word Train stages and solved puzzles get a star.
-- New narrator clips for every new line, plus a clip for each of the 31 beats, cut from the same voice.
+- New narrator clips for every new line, plus a clip for each of the 30 beats, cut from the same voice.
 
 ### What's in Phase 1
 - Rescue Station hub with 9 numbered doors. Door 1 (fire engine) is built; the others say the crew is out on a rescue.
