@@ -520,3 +520,5 @@ button:focus-visible { outline: 5px solid var(--hivis); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
   .act-jump .pip-svg, .act-dance .pip-svg, .act-wave .pip-paw { animation: none !important; }
 }
+.btn-line { display: flex; gap: 2vmin; flex-wrap: wrap; }
+.panel p.small-note { font-size: 2.4vmin; color: #5b6275; margin: 1.4vmin 0 0; }

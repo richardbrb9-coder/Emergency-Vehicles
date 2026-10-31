@@ -1,5 +1,5 @@
 // Pip's World: the list of worlds, Pip's map (the story picker) and the place drawings.
-// A world that is not built yet shows on the map as "coming soon". To open one, give it a home screen
+// Every world is open from the start; one that is not built yet shows on the map as "coming soon". To open one, give it a home screen
 // and set built: true; its screens list the world in App.screenWorld so Pip wears the right outfit.
 (function () {
   const A = window.App, C = window.CONTENT;
@@ -90,8 +90,11 @@
         <circle cx="-4" cy="-2" r="2" fill="${OL}"/><circle cx="4" cy="-2" r="2" fill="${OL}"/><ellipse cy="4" rx="3" ry="2" fill="${OL}"/></g>`).join('')}
       <g transform="translate(0 -104)"><ellipse rx="9" ry="7" fill="#fff"/><circle cx="-10" cy="-10" r="4" fill="#fff"/><circle cx="0" cy="-14" r="4" fill="#fff"/><circle cx="10" cy="-10" r="4" fill="#fff"/></g>`
   };
-  const lock = `<g transform="translate(64 -130)"><circle r="22" fill="#ffd21f" ${S3}/>
-    <path d="M-8 -2 V-8 Q0 -18 8 -8 V-2" fill="none" stroke="${OL}" stroke-width="4"/><rect x="-11" y="-3" width="22" height="16" rx="3" fill="${OL}"/></g>`;
+  // Worlds are never locked: a world that isn't built yet just shows a "Soon!" sign and a traffic cone.
+  const soonSign = `<g transform="translate(58 -128)"><path d="M0 16 V44" stroke="${OL}" stroke-width="5"/>
+    <rect x="-38" y="-18" width="76" height="36" rx="8" fill="#ffd21f" ${S3}/>
+    <text y="8" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="22" fill="${OL}">Soon!</text></g>
+    <g transform="translate(-90 4)"><path d="M-14 0 L-6 -36 H6 L14 0 Z" fill="#ff8a1f" ${S3}/><path d="M-9 -16 H9" stroke="#fff" stroke-width="5"/></g>`;
 
   // A small picture of a place, for the sticker book's world chips.
   const placeIcon = id => `<svg viewBox="-90 -185 180 195" class="place-icon">${PLACES[id]}</svg>`;
@@ -109,7 +112,7 @@
       const [x, y] = SPOTS[i], wide = w.name.length * 12.5 + 36;
       return `<g class="place tappable${w.built ? '' : ' soon'}" data-id="${w.id}" transform="translate(${x} ${y})">
         <ellipse cy="6" rx="86" ry="16" fill="#000" opacity=".12"/>
-        <g class="place-art">${PLACES[w.id]}${w.built ? '' : lock}</g>
+        <g class="place-art">${PLACES[w.id]}${w.built ? '' : soonSign}</g>
         <rect x="${-wide / 2}" y="22" width="${wide}" height="40" rx="12" fill="#fff" ${S3}/>
         <text y="50" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="24" fill="${w.colour}">${w.name}</text>
         <rect x="-90" y="-185" width="180" height="250" fill="transparent"/>

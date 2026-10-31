@@ -268,7 +268,11 @@
         <p style="margin-top:2vmin">Stickers collected: ${progress.stickers.length + progress.games.length} of ${C.vehicles.length + (window.App && App.games ? App.games.length : 0)}. Red words learned: ${progress.words.length}.</p>
         <div class="toggle-row"><span>${installState()}</span>
           ${installPrompt ? '<button class="text-btn" id="install" style="margin:0">Install app</button>' : ''}</div>
-        <button class="text-btn danger" id="reset">Reset stickers, words and pictures</button>
+        <div class="btn-line">
+          <button class="text-btn danger" id="reset-stickers">Reset stickers and badges</button>
+          <button class="text-btn danger" id="reset">Reset everything</button>
+        </div>
+        <p class="small-note">Reset stickers and badges lets your child earn every sticker again. Their words and pictures are kept. Reset everything also clears the Word Book and My Pictures.</p>
       </div>`);
     modal.querySelectorAll('.switch').forEach(s => s.onclick = () => {
       const k = s.dataset.k; Settings[k] = !Settings[k]; s.setAttribute('aria-checked', Settings[k]); saveSettings(); Sfx.tap();
@@ -277,13 +281,19 @@
     if (inst) inst.onclick = async () => { const p = installPrompt; installPrompt = null; p.prompt(); await p.userChoice; inst.remove(); };
     const nameIn = modal.querySelector('#child-name');
     nameIn.oninput = () => { Settings.name = nameIn.value.trim(); saveSettings(); };
-    const reset = modal.querySelector('#reset');
-    reset.onclick = () => {
-      if (reset.dataset.sure) {
-        progress.stickers = []; progress.words = []; progress.games = []; progress.gallery = []; progress.plays = {}; saveProgress();
-        reset.textContent = 'Progress has been reset'; reset.disabled = true; reset.classList.remove('danger');
-      } else { reset.dataset.sure = '1'; reset.textContent = 'Tap again to reset'; }
+    // Each reset needs a second tap, so a stray press does nothing.
+    const confirmReset = (btn, done, clear) => {
+      btn.onclick = () => {
+        if (!btn.dataset.sure) { btn.dataset.sure = '1'; btn.textContent = 'Tap again to reset'; return; }
+        clear(); saveProgress();
+        btn.textContent = done; btn.disabled = true; btn.classList.remove('danger');
+      };
     };
+    const clearStickers = () => { progress.stickers = []; progress.games = []; progress.badges = []; progress.certShown = false; };
+    confirmReset(modal.querySelector('#reset-stickers'), 'Stickers and badges reset', clearStickers);
+    confirmReset(modal.querySelector('#reset'), 'Everything has been reset', () => {
+      clearStickers(); progress.words = []; progress.gallery = []; progress.plays = {};
+    });
   }
 
   // ---------- Install and offline ----------

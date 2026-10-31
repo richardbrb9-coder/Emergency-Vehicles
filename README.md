@@ -75,7 +75,7 @@ If Chrome doesn't offer to install, a white **📲 How to install** button shows
   - calm mode, with softer lights and sirens
   - set the child's name for the certificate
   - install the app
-  - reset progress
+  - reset stickers and badges so they can be earned again (keeps words and pictures), or reset everything
 
 Progress is saved on the device only. There are no ads, purchases, tracking or timers.
 
@@ -112,7 +112,7 @@ To run it locally, serve the folder over HTTP (for example with `python3 -m http
 ## Build history
 
 ### Pip's World, Phase 1: the shared core
-- The app opens on **Pip's map**, a story picker with 7 places joined by a winding path. The Rescue Station opens; the other six show a padlock, and Pip tries on that world's outfit and says it's coming soon.
+- The app opens on **Pip's map**, a story picker with 7 places joined by a winding path. The Rescue Station opens; the other six show a "Soon!" sign (worlds are never locked), and Pip tries on that world's outfit and says it's coming soon.
 - **Pip has outfits** for every world (rescue helmet and hi-vis, safari hat, monster horns, school cap and bag, supermarket apron, party hat, puppy-sitter apron), **moods** (surprised, cheering, thinking) and **actions** (jump, dance, wave). Tap Pip and he jumps.
 - An orange map button on the Rescue Station takes children back to the map.
 - The **sticker book has a page per world**. The Rescue Station page holds every sticker earned so far; the other pages show empty slots until their world opens.
