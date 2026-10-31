@@ -23,6 +23,9 @@
   ];
   const world = id => WORLDS.find(w => w.id === id);
 
+  // What Pip says when a place is tapped: map.go.<id> for an open world, map.soon.<id> for one not built yet.
+  WORLDS.forEach(w => { C.lines[`map.${w.built ? 'go' : 'soon'}.${w.id}`] = w.built ? w.go : w.soon; });
+
   Object.assign(C.lines, {
     'map.welcome': "Hello! I'm Pip. Welcome to Pip's World! Tap a place on the map to visit it.",
     'map.back':    'Where shall we go next?',
@@ -151,13 +154,13 @@
       A.Pip.outfit(w.id);
       if (w.built) {
         A.Pip.act('jump'); A.Pip.mood('cheer');
-        await A.sayText(w.go);
+        await A.say(`map.go.${w.id}`);
         if (alive()) A.go(w.home);
         return;
       }
       // Not built yet: Pip tries on the outfit for that world, then changes back.
       A.Pip.act('dance'); A.Pip.mood('surprised');
-      await Promise.all([A.sayText(w.soon), A.wait(2500)]);
+      await Promise.all([A.say(`map.soon.${w.id}`), A.wait(2500)]);
       if (!alive()) return;
       A.Pip.outfit('map');
       busy = false;
