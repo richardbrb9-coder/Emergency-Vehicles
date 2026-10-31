@@ -158,6 +158,14 @@
     },
     foghorn() { tone({ freq: 110, type: 'sawtooth', dur: 1.2, vol: 0.14, attack: 0.1 }); tone({ freq: 165, type: 'sawtooth', dur: 1.2, vol: 0.08, attack: 0.1 }); },
     beep(n = 1) { for (let i = 0; i < n; i++) tone({ freq: 880, type: 'square', start: i * 0.15, dur: 0.1, vol: 0.06 }); },
+    // Water run and Word Train
+    drip()   { tone({ freq: 900, to: 1500, dur: 0.07, vol: 0.08, type: 'sine' }); },
+    plink(p = 1) { tone({ freq: 700 * p, to: 500 * p, dur: 0.06, vol: 0.06, type: 'triangle' }); },
+    sproing(){ tone({ freq: 200, to: 900, dur: 0.25, vol: 0.12, type: 'triangle' }); tone({ freq: 210, to: 880, start: 0.03, dur: 0.22, vol: 0.05, type: 'sine' }); },
+    whistle(){ tone({ freq: 1950, to: 2050, dur: 0.18, vol: 0.09, type: 'square' }); tone({ freq: 1950, to: 2150, start: 0.2, dur: 0.4, vol: 0.09, type: 'square' }); },
+    drum()   { tone({ freq: 160, to: 60, dur: 0.25, vol: 0.4, type: 'sine' }); noise(0.08, { type: 'bandpass', f1: 1800, q: 0.8, vol: 0.12 }); },
+    toot()   { const calm = settings().calm; [[587, 0], [740, 0], [587, 0.32], [740, 0.32]].forEach(([f, s]) => tone({ freq: f, type: 'sawtooth', start: s, dur: 0.26, vol: calm ? 0.03 : 0.06, attack: 0.03 })); },
+    chuff(n = 4) { for (let i = 0; i < n; i++) noise(0.12, { type: 'highpass', f1: 2500, vol: 0.1, start: i * 0.22 }); },
     woof() {
       tone({ freq: 380, to: 180, dur: 0.16, vol: 0.18, type: 'sawtooth' });
       tone({ freq: 360, to: 170, start: 0.22, dur: 0.16, vol: 0.18, type: 'sawtooth' });

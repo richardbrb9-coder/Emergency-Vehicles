@@ -2,7 +2,7 @@
 
 A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. The first world is the Rescue Station (the original *To the Rescue!* app), and six more worlds are on the way: Zoo, Monster Maths, School, Supermarket, Toy Shop and New Puppies.
 
-At the Rescue Station, Pip shows children 9 rescue vehicles, each with a short mission to play. There are also 10 games, a sticker book, team badges and a Rescue Cadet certificate. Everything is read aloud, and the app works fully offline once it is installed.
+At the Rescue Station, Pip shows children 9 rescue vehicles, each with a short mission to play. There are also 12 games, a sticker book, team badges and a Rescue Cadet certificate. Everything is read aloud, and the app works fully offline once it is installed.
 
 ## ▶️ Play it now
 
@@ -53,7 +53,7 @@ If Chrome doesn't offer to install, a white **📲 How to install** button shows
   - Helitack Helicopter
   - Lifeboat
   - Hovercraft
-- **10 games:**
+- **12 games:**
   - Match the Gear
   - Action Stations
   - Call 999
@@ -64,8 +64,10 @@ If Chrome doesn't offer to install, a white **📲 How to install** button shows
   - Jigsaw
   - Colouring
   - Build a Vehicle
+  - Water Run: drag ramps, curves, funnels, springs, fans, see-saws and buckets onto a pegboard, then blow Pip's whistle to send water drops down to put out a fire. Free build, plus 12 puzzles that get harder (one piece, then two, then see-saws and buckets). After two misses, Pip shows where a piece could go.
+  - Word Train: hear a rescue word and clap its beats on a drum (Clap it), drag the beat carriages onto the train in order (Build it), or spot and fix a silly carriage (Swap it). 12 words with 2 to 4 beats, each beat with its own voice clip.
 - **Rewards:**
-  - 19 stickers
+  - 21 stickers
   - 6 team badges
   - a Word Book of red words
   - My Pictures for saved colouring pages
@@ -93,7 +95,10 @@ The app is plain HTML, CSS and JavaScript, with no build step. All artwork is dr
 | `js/app.js` | Router, Pip's outfits, moods and actions, fire engine, settings and shared toolkit |
 | `js/worlds.js` | The list of worlds, Pip's map (the story picker) and the place drawings |
 | `js/vehicles2.js`, `js/vehicles3.js` | The other eight vehicles |
-| `js/match.js`, `js/games.js`, `js/games4.js`, `js/games5.js` | The ten games |
+| `js/match.js`, `js/games.js`, `js/games4.js`, `js/games5.js` | The first ten games |
+| `js/ballrun.js` | The ball run engine (physics by Matter.js, in `js/lib/`) and Water Run, with its 12 puzzles |
+| `js/train.js` | The syllable train engine and Word Train, with its 12 words |
+| `tools/make-voice.mjs` | Makes the narrator clips and the Word Train beat clips with Google Text-to-Speech |
 | `js/rewards.js` | Sticker book tabs, a sticker page per world, badges, Word Book and certificate |
 | `fonts/` | Andika and Fredoka, bundled for offline use (SIL Open Font License) |
 | `docs/` | Style guide and image prompts |
@@ -102,10 +107,11 @@ To run it locally, serve the folder over HTTP (for example with `python3 -m http
 
 **When you change any file,** bump `VERSION` in `sw.js`. Installed tablets then pick up the new version the next time they open the app while online. Add any new file to the `FILES` list in `sw.js` too.
 
-**Recorded voice:** to use recordings instead of the device voice:
-1. Save one mp3 per line in `audio/voice/`, named by its line id (for example `hub.welcome.mp3`).
-2. List each file in `voiceFiles` in `js/content.js`.
-3. Add the files to `FILES` in `sw.js`.
+**Recorded voice:** every fixed line has a clip in `audio/voice/`, named by its line id (for example `hub.welcome.mp3`). After adding lines, run `GOOGLE_TTS_API_KEY=... node tools/make-voice.mjs` to make only the missing clips; it also updates `js/voice.js` (the clip list, cached offline by `sw.js`) and bumps `VERSION`. Lines with a `{name}`-style blank stay on the device voice.
+
+**Word Train beats:** each word in `js/train.js` has `beats` (shown on the carriages) and `say` (how the voice is asked to pronounce each beat). The tool has the voice say the word beat by beat with long pauses, then cuts it at the pauses into `syl.<word>.<n>.mp3` (needs ffmpeg). To redo one word after changing its `say` spelling: `node tools/make-voice.mjs --only syl.helmet --force`.
+
+**Ball run puzzles:** each puzzle in `js/ballrun.js` lists the hose column, the fire's column, any bolted-on pieces, the pieces in the tray, and a `hint` (one way to solve it, shown after two misses). `BallRun.Sim.run(puzzle, pieces)` runs the physics without a screen, so a puzzle can be checked as solvable before it ships.
 
 **Adding a world:** in `js/worlds.js`, set `built: true` and a `home` screen name for the world, then add its screens to `App.screens` and list each one in `App.screenWorld` (for example `App.screenWorld.zooGate = 'zoo'`) so Pip wears that world's outfit. Pip's outfits are in `PIP_OUTFITS` in `js/art.js`. Pip's moods and actions: `App.Pip.mood('cheer' | 'surprised' | 'thinking')` and `App.Pip.act('jump' | 'dance' | 'wave')`.
 
@@ -117,6 +123,12 @@ To run it locally, serve the folder over HTTP (for example with `python3 -m http
 - An orange map button on the Rescue Station takes children back to the map.
 - The **sticker book has a page per world**. The Rescue Station page holds every sticker earned so far; the other pages show empty slots until their world opens.
 - Saved stickers, badges, words and pictures carry over unchanged.
+
+### Pip's World, Phase 2: ball run and syllable train, in the Rescue Station
+- **Water Run** (ball run): a pegboard with a fire hose at the top and a fire at the bottom. Children drag pieces from the tray (ramp, long ramp, curve, funnel, spring, fan, see-saw and bucket), tap a piece to turn it around, and blow Pip's whistle. Water drops roll through the run, and Pip counts each drop that lands on the fire; three put it out. **Build** is free play with every piece. **Puzzles** 1 to 12 get harder: one piece, then two, then a see-saw or bucket. Bolted-on bricks appear in the last one. After two misses Pip makes a piece's spot glow. Each puzzle was checked solvable by running its physics.
+- **Word Train** (syllables): **Clap it**: Pip says a word and its beats, then the child taps the drum once per beat and the carriages light up. **Build it**: the carriages are muddled; tap one to hear it, drag them onto the train in order. **Swap it**: one carriage is silly ("hy-lance!"); drag the right one onto it. Each carriage shows its beat number as dots and its colour, with the beat written above for early readers. 12 rescue words with 2, 3 or 4 beats.
+- Both games earn a sticker (21 in all), and the Word Train stages and solved puzzles get a star.
+- New narrator clips for every new line, plus a clip for each of the 31 beats, cut from the same voice.
 
 ### What's in Phase 1
 - Rescue Station hub with 9 numbered doors. Door 1 (fire engine) is built; the others say the crew is out on a rescue.
