@@ -1,10 +1,12 @@
-# To the Rescue! 🚒🚑🚓
+# Pip's World 🐶🗺️
 
-A free, ad-free emergency vehicles app for children aged 4 to 6. Pip the rescue pup shows children 9 rescue vehicles, each with a short mission to play. There are also 10 games, a sticker book, team badges and a Rescue Cadet certificate. Everything is read aloud, and the app works fully offline once it is installed.
+A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. The first world is the Rescue Station (the original *To the Rescue!* app), and six more worlds are on the way: Zoo, Monster Maths, School, Supermarket, Toy Shop and New Puppies.
+
+At the Rescue Station, Pip shows children 9 rescue vehicles, each with a short mission to play. There are also 10 games, a sticker book, team badges and a Rescue Cadet certificate. Everything is read aloud, and the app works fully offline once it is installed.
 
 ## ▶️ Play it now
 
-**[Open To the Rescue! in your browser](https://richardbrb9-coder.github.io/Emergency-Vehicles/)**
+**[Open Pip's World in your browser](https://richardbrb9-coder.github.io/Emergency-Vehicles/)**
 
 ## 📲 Install it on an Android tablet
 
@@ -73,7 +75,7 @@ If Chrome doesn't offer to install, a white **📲 How to install** button shows
   - calm mode, with softer lights and sirens
   - set the child's name for the certificate
   - install the app
-  - reset progress
+  - reset stickers and badges so they can be earned again (keeps words and pictures), or reset everything
 
 Progress is saved on the device only. There are no ads, purchases, tracking or timers.
 
@@ -88,10 +90,11 @@ The app is plain HTML, CSS and JavaScript, with no build step. All artwork is dr
 | `js/content.js` | All words, vehicles and voice lines |
 | `js/art.js` | Hub, fire engine scene, Pip and stickers |
 | `js/audio.js` | Sound effects and the narrator voice |
-| `js/app.js` | Router, fire engine, stickers, settings and shared toolkit |
+| `js/app.js` | Router, Pip's outfits, moods and actions, fire engine, settings and shared toolkit |
+| `js/worlds.js` | The list of worlds, Pip's map (the story picker) and the place drawings |
 | `js/vehicles2.js`, `js/vehicles3.js` | The other eight vehicles |
 | `js/match.js`, `js/games.js`, `js/games4.js`, `js/games5.js` | The ten games |
-| `js/rewards.js` | Sticker book tabs, badges, Word Book and certificate |
+| `js/rewards.js` | Sticker book tabs, a sticker page per world, badges, Word Book and certificate |
 | `fonts/` | Andika and Fredoka, bundled for offline use (SIL Open Font License) |
 | `docs/` | Style guide and image prompts |
 
@@ -104,7 +107,16 @@ To run it locally, serve the folder over HTTP (for example with `python3 -m http
 2. List each file in `voiceFiles` in `js/content.js`.
 3. Add the files to `FILES` in `sw.js`.
 
+**Adding a world:** in `js/worlds.js`, set `built: true` and a `home` screen name for the world, then add its screens to `App.screens` and list each one in `App.screenWorld` (for example `App.screenWorld.zooGate = 'zoo'`) so Pip wears that world's outfit. Pip's outfits are in `PIP_OUTFITS` in `js/art.js`. Pip's moods and actions: `App.Pip.mood('cheer' | 'surprised' | 'thinking')` and `App.Pip.act('jump' | 'dance' | 'wave')`.
+
 ## Build history
+
+### Pip's World, Phase 1: the shared core
+- The app opens on **Pip's map**, a story picker with 7 places joined by a winding path. The Rescue Station opens; the other six show a "Soon!" sign (worlds are never locked), and Pip tries on that world's outfit and says it's coming soon.
+- **Pip has outfits** for every world (rescue helmet and hi-vis, safari hat, monster horns, school cap and bag, supermarket apron, party hat, puppy-sitter apron), **moods** (surprised, cheering, thinking) and **actions** (jump, dance, wave). Tap Pip and he jumps.
+- An orange map button on the Rescue Station takes children back to the map.
+- The **sticker book has a page per world**. The Rescue Station page holds every sticker earned so far; the other pages show empty slots until their world opens.
+- Saved stickers, badges, words and pictures carry over unchanged.
 
 ### What's in Phase 1
 - Rescue Station hub with 9 numbered doors. Door 1 (fire engine) is built; the others say the crew is out on a rescue.

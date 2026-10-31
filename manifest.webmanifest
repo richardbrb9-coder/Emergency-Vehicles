@@ -1,7 +1,7 @@
 {
-  "name": "To the Rescue! Emergency Vehicles",
-  "short_name": "To the Rescue",
-  "description": "Explore 9 rescue vehicles, play 10 games and collect stickers with Pip the rescue pup. For children aged 4 to 6. Works offline.",
+  "name": "Pip's World",
+  "short_name": "Pip's World",
+  "description": "Visit Pip's World: explore 9 rescue vehicles, play 10 games and collect stickers with Pip the pup. More worlds are on the way. For children aged 4 to 6. Works offline.",
   "id": "/Emergency-Vehicles/",
   "start_url": "./index.html",
   "scope": "./",

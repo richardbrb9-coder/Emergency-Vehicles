@@ -1,4 +1,4 @@
-// To the Rescue! — screens, Pip's narration, hints, rewards and settings.
+// Pip's World — screens, Pip's narration, hints, rewards and settings.
 (function () {
   const C = window.CONTENT;
   const $ = s => document.querySelector(s);
@@ -43,8 +43,26 @@
   // ---------- Pip talks ----------
   let lastSaid = null, talkId = 0;
   const pipBtn = $('#pip');
-  pipBtn.innerHTML = Art.pip();
-  $('#start-pip').innerHTML = Art.pip();
+  $('#start-pip').innerHTML = Art.pip('map');
+
+  // Pip's outfit follows the world on screen. Moods and actions are short-lived classes on the button.
+  const Pip = {
+    current: null, moodTimer: null, actTimer: null,
+    outfit(o) { if (o === this.current) return; this.current = o; pipBtn.innerHTML = Art.pip(o); },
+    mood(m, ms = 2500) {
+      clearTimeout(this.moodTimer);
+      pipBtn.classList.remove('mood-surprised', 'mood-cheer', 'mood-thinking');
+      if (m) { pipBtn.classList.add('mood-' + m); this.moodTimer = setTimeout(() => this.mood(null), ms); }
+    },
+    act(a) {
+      clearTimeout(this.actTimer);
+      pipBtn.classList.remove('act-jump', 'act-dance', 'act-wave');
+      void pipBtn.offsetWidth;
+      pipBtn.classList.add('act-' + a);
+      this.actTimer = setTimeout(() => pipBtn.classList.remove('act-' + a), 2000);
+    }
+  };
+  Pip.outfit('map');
 
   function line(id, vars = {}) {
     let t = C.lines[id] || id;
@@ -203,8 +221,9 @@
   }
 
   // ---------- Edge buttons ----------
-  function ui({ home = false, stickers = false, phone = false, grownups = false, games = false } = {}) {
+  function ui({ home = false, stickers = false, phone = false, grownups = false, games = false, map = false } = {}) {
     $('#btn-games').hidden = !games;
+    $('#btn-map').hidden = !map;
     $('#btn-home').hidden = !home;
     $('#btn-stickers').hidden = !stickers;
     $('#btn-phone').hidden = !phone;
@@ -215,11 +234,12 @@
     c.textContent = n; c.hidden = n === 0;
   }
   updateStickerCount();
-  $('#btn-home').onclick = () => { Sfx.tap(); go('hub'); };
+  $('#btn-home').onclick = () => { Sfx.tap(); go(current === 'stickers' ? bookFrom : 'hub'); };
+  $('#btn-map').onclick = () => { Sfx.tap(); go('map'); };
   $('#btn-stickers').onclick = () => { Sfx.tap(); go('stickers'); };
   $('#btn-games').onclick = () => { Sfx.tap(); go('games'); };
   $('#btn-repeat').onclick = () => { Sfx.tap(); if (lastSaid) sayText(lastSaid.text, lastSaid.id); };
-  pipBtn.onclick = () => { Sfx.woof(); if (current === 'hub') say('hub.pip'); else if (lastSaid) sayText(lastSaid.text, lastSaid.id); };
+  pipBtn.onclick = () => { Sfx.woof(); Pip.act('jump'); if (current === 'hub') say('hub.pip'); else if (current === 'map') say('map.pip'); else if (lastSaid) sayText(lastSaid.text, lastSaid.id); };
 
   // Grown-ups area: press and hold for 3 seconds so children don't wander in.
   (function grownupsGate() {
@@ -248,7 +268,11 @@
         <p style="margin-top:2vmin">Stickers collected: ${progress.stickers.length + progress.games.length} of ${C.vehicles.length + (window.App && App.games ? App.games.length : 0)}. Red words learned: ${progress.words.length}.</p>
         <div class="toggle-row"><span>${installState()}</span>
           ${installPrompt ? '<button class="text-btn" id="install" style="margin:0">Install app</button>' : ''}</div>
-        <button class="text-btn danger" id="reset">Reset stickers, words and pictures</button>
+        <div class="btn-line">
+          <button class="text-btn danger" id="reset-stickers">Reset stickers and badges</button>
+          <button class="text-btn danger" id="reset">Reset everything</button>
+        </div>
+        <p class="small-note">Reset stickers and badges lets your child earn every sticker again. Their words and pictures are kept. Reset everything also clears the Word Book and My Pictures.</p>
       </div>`);
     modal.querySelectorAll('.switch').forEach(s => s.onclick = () => {
       const k = s.dataset.k; Settings[k] = !Settings[k]; s.setAttribute('aria-checked', Settings[k]); saveSettings(); Sfx.tap();
@@ -257,24 +281,30 @@
     if (inst) inst.onclick = async () => { const p = installPrompt; installPrompt = null; p.prompt(); await p.userChoice; inst.remove(); };
     const nameIn = modal.querySelector('#child-name');
     nameIn.oninput = () => { Settings.name = nameIn.value.trim(); saveSettings(); };
-    const reset = modal.querySelector('#reset');
-    reset.onclick = () => {
-      if (reset.dataset.sure) {
-        progress.stickers = []; progress.words = []; progress.games = []; progress.gallery = []; progress.plays = {}; saveProgress();
-        reset.textContent = 'Progress has been reset'; reset.disabled = true; reset.classList.remove('danger');
-      } else { reset.dataset.sure = '1'; reset.textContent = 'Tap again to reset'; }
+    // Each reset needs a second tap, so a stray press does nothing.
+    const confirmReset = (btn, done, clear) => {
+      btn.onclick = () => {
+        if (!btn.dataset.sure) { btn.dataset.sure = '1'; btn.textContent = 'Tap again to reset'; return; }
+        clear(); saveProgress();
+        btn.textContent = done; btn.disabled = true; btn.classList.remove('danger');
+      };
     };
+    const clearStickers = () => { progress.stickers = []; progress.games = []; progress.badges = []; progress.certShown = false; };
+    confirmReset(modal.querySelector('#reset-stickers'), 'Stickers and badges reset', clearStickers);
+    confirmReset(modal.querySelector('#reset'), 'Everything has been reset', () => {
+      clearStickers(); progress.words = []; progress.gallery = []; progress.plays = {};
+    });
   }
 
   // ---------- Install and offline ----------
   // In a browser, an Install button appears as soon as Chrome says the app can be installed.
   // If Chrome never offers it (for example it wrongly thinks the app is already installed), a help button explains what to do.
-  let current = null;
+  let current = null, bookFrom = 'hub';
   let installPrompt = null;
   const standalone = () => matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches || navigator.standalone === true;
   const installBtn = $('#btn-install'), helpBtn = $('#btn-install-help');
   const showInstall = () => {
-    const where = !current || current === 'hub';
+    const where = !current || current === 'hub' || current === 'map';
     installBtn.hidden = !(installPrompt && where && !standalone());
     helpBtn.hidden = !(!installPrompt && where && !standalone() && helpBtn.dataset.ready);
   };
@@ -319,6 +349,7 @@
 
   // ---------- Screen router ----------
   const screens = {};
+  const screenWorld = {}; // screen name -> world id, for screens outside the Rescue Station
   function go(name, arg) {
     hush(); Hint.clear(); clearScope(); closeModal();
     sceneToken++;
@@ -327,7 +358,11 @@
     fade.classList.add('on');
     setTimeout(() => {
       if (my !== sceneToken) return;
+      if (name === 'stickers' && current !== 'stickers') bookFrom = current === 'map' ? 'map' : 'hub';
       current = name;
+      // Every screen belongs to a world; the map and sticker book keep whatever Pip is wearing.
+      if (name === 'map') Pip.outfit('map');
+      else if (name !== 'stickers') Pip.outfit(screenWorld[name] || 'rescue');
       showInstall();
       bubble.hidden = true;
       screens[name](arg, () => my === sceneToken);
@@ -345,7 +380,7 @@
   let welcomed = false;
   screens.hub = (arg, alive) => {
     sceneEl.innerHTML = Art.hub(C.vehicles);
-    ui({ stickers: true, grownups: true, games: true });
+    ui({ stickers: true, grownups: true, games: true, map: true });
     const svg = sceneEl.querySelector('svg');
     let busy = false;
 
@@ -630,7 +665,7 @@
 
   // Shared toolkit for vehicle screens defined in other files.
   window.App = {
-    screens, go, say, sayText, hush, Hint, later, every, wait, tween, ease, easeOut, svgPoint,
+    screens, screenWorld, Pip, go, say, sayText, hush, Hint, later, every, wait, tween, ease, easeOut, svgPoint,
     wordCard, reward, ui, confetti, progress, saveProgress, openModal, closeModal, ICON, Settings, vehicle, alivePhone: () => $('#btn-phone'), isModalOpen: () => !modal.hidden,
     isTalking: () => pipBtn.classList.contains('talking'), current: () => current
   };
@@ -650,7 +685,7 @@
     // Some browsers only allow speech after a first spoken line inside a tap.
     if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); }
     const s = $('#start'); s.style.opacity = 0; setTimeout(() => s.remove(), 400);
-    go('hub');
+    go('map');
   };
   window.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 })();

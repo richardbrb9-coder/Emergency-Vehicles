@@ -143,16 +143,59 @@
     </g>`;
   }
 
-  // ---------- Pip the rescue pup ----------
-  const pip = () => `
+  // ---------- Pip ----------
+  // One Pip for every world. The outfit changes per world; moods and actions are CSS classes on the parent
+  // (mood-surprised, mood-cheer, mood-thinking, act-jump, act-dance, act-wave), so any Pip on screen can use them.
+  const collar = `<path d="M70 124 Q100 140 130 124" fill="none" stroke="#e53935" stroke-width="9" stroke-linecap="round"/>
+    <circle cx="100" cy="138" r="7" fill="#ffd21f" ${S3}/>`;
+  const PIP_OUTFITS = {
+    map: { body: '', head: '' },
+    rescue: {
+      body: `<path d="M56 138 Q100 116 144 138 L148 174 Q100 196 52 174 Z" fill="#ffd21f" ${S}/>
+        <path d="M55 156 Q100 140 146 156" stroke="#d6dee8" stroke-width="7" fill="none"/>
+        <path d="M53 170 Q100 156 148 170" stroke="#d6dee8" stroke-width="7" fill="none"/>`,
+      head: `<path d="M76 34 Q100 18 124 34 L120 44 Q100 36 80 44 Z" fill="#e53935" ${S3}/>`, noCollar: true
+    },
+    zoo: {
+      body: '',
+      head: `<path d="M64 38 Q100 0 136 38 Z" fill="#d6b46a" ${S3}/><path d="M66 32 Q100 22 134 32" stroke="#8b5a2b" stroke-width="6" fill="none"/>
+        <ellipse cx="100" cy="38" rx="58" ry="9" fill="#c39a4a" ${S3}/>`
+    },
+    monsters: {
+      body: '',
+      head: `<path d="M68 40 Q58 14 74 2 Q76 24 86 36 Z" fill="#8e5bd6" ${S3}/><path d="M132 40 Q142 14 126 2 Q124 24 114 36 Z" fill="#8e5bd6" ${S3}/>
+        <circle cx="84" cy="44" r="5" fill="#b9f26b" ${S3}/><circle cx="116" cy="44" r="5" fill="#b9f26b" ${S3}/>`
+    },
+    school: {
+      body: `<path d="M138 132 Q160 132 160 156 V176 Q150 184 140 178 Z" fill="#e53935" ${S3}/>`,
+      head: `<path d="M66 40 Q100 4 134 40 Z" fill="#1e5bd6" ${S3}/><path d="M128 38 Q156 34 162 46 Q142 50 124 44 Z" fill="#1e5bd6" ${S3}/>
+        <circle cx="100" cy="17" r="5" fill="#ffd21f" ${S3}/>`
+    },
+    supermarket: {
+      body: `<path d="M70 130 H130 L136 184 Q100 196 64 184 Z" fill="#2e9e4f" ${S}/><rect x="88" y="154" width="24" height="16" rx="3" fill="#bfe8c9" ${S3}/>`,
+      head: ''
+    },
+    shop: {
+      body: '',
+      head: `<path d="M84 36 L100 -8 L116 36 Z" fill="#ff8fb1" ${S3}/><path d="M90 20 L110 20 M94 8 L106 8" stroke="#fff" stroke-width="5"/>
+        <circle cx="100" cy="-10" r="7" fill="#ffd21f" ${S3}/>`
+    },
+    puppies: {
+      body: `<path d="M70 130 H130 L136 184 Q100 196 64 184 Z" fill="#ffd21f" ${S}/><path d="M100 168 C92 160 86 152 94 148 C98 146 100 150 100 152 C100 150 102 146 106 148 C114 152 108 160 100 168 Z" fill="#e53935"/>`,
+      head: ''
+    }
+  };
+  const pip = (outfit = 'rescue') => {
+    const o = PIP_OUTFITS[outfit] || PIP_OUTFITS.rescue;
+    return `
   <svg viewBox="0 0 200 200" class="pip-svg" aria-hidden="true">
     <path class="pip-tail" d="M146 160 Q190 150 178 108" fill="none" stroke="${OL}" stroke-width="12" stroke-linecap="round"/>
     <path class="pip-tail" d="M146 160 Q190 150 178 108" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
     <ellipse cx="100" cy="152" rx="54" ry="42" fill="#fff" ${S}/>
-    <path d="M56 138 Q100 116 144 138 L148 174 Q100 196 52 174 Z" fill="#ffd21f" ${S}/>
-    <path d="M55 156 Q100 140 146 156" stroke="#d6dee8" stroke-width="7" fill="none"/>
-    <path d="M53 170 Q100 156 148 170" stroke="#d6dee8" stroke-width="7" fill="none"/>
+    ${o.body}
+    ${o.noCollar ? '' : collar}
     <ellipse cx="78" cy="190" rx="18" ry="9" fill="#fff" ${S3}/><ellipse cx="122" cy="190" rx="18" ry="9" fill="#fff" ${S3}/>
+    <g class="pip-paw"><ellipse cx="162" cy="118" rx="13" ry="18" fill="#fff" ${S3}/></g>
     <g class="pip-head">
       <circle cx="100" cy="80" r="50" fill="#fff" ${S}/>
       <path class="pip-ear-l" d="M60 52 Q28 62 38 118 Q58 114 68 78 Z" fill="${OL}"/>
@@ -167,9 +210,13 @@
       <ellipse cx="100" cy="92" rx="10" ry="7" fill="${OL}"/>
       <path class="pip-mouth" d="M88 104 Q100 116 112 104" fill="none" ${S3}/>
       <path class="pip-tongue" d="M95 109 Q100 122 105 109 Z" fill="#ff7a8a" ${S3}/>
-      <path d="M76 34 Q100 18 124 34 L120 44 Q100 36 80 44 Z" fill="#e53935" ${S3}/>
+      <ellipse class="pip-o" cx="100" cy="110" rx="6" ry="8" fill="${OL}"/>
+      <path class="pip-grin" d="M86 102 Q100 128 114 102 Z" fill="#ff7a8a" ${S3}/>
+      <path class="pip-flat" d="M90 108 Q100 104 110 108" fill="none" ${S3}/>
+      ${o.head}
     </g>
   </svg>`;
+  };
 
   // ---------- Rescue Station hub ----------
   function hub(vehicles) {
