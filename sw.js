@@ -1,6 +1,6 @@
 // Offline support: every file the app needs is saved on the device the first time it is opened.
 // Change VERSION whenever any app file changes, so devices pick up the new version.
-const VERSION = 'v1.2.0';
+const VERSION = 'v1.2.4';
 const CACHE = 'to-the-rescue-' + VERSION;
 const FILES = [
   './', 'index.html', 'manifest.webmanifest',

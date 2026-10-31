@@ -78,8 +78,19 @@ function voiced(file) {
   if (!ev.length || ev[ev.length - 1][0] === 'end') { if (total - at > 0.05) parts.push([at, total]); }
   return parts;
 }
+// A beat listed in a word's `alone` is said on its own and trimmed, because in the beat-by-beat reading
+// the voice spelled it out letter by letter. --only syl.<word>.<n> remakes just that beat this way.
+function alone(w, i, file) {
+  return synth({ text: w.say[i] }, 0.9).then(buf => {
+    const raw = path.join(tmp, 'alone.mp3'); fs.writeFileSync(raw, buf);
+    const trim = 'silenceremove=start_periods=1:start_threshold=-45dB';
+    ff(['-i', raw, '-af', `${trim},areverse,${trim},areverse,adelay=30,apad=pad_dur=0.08`, '-ac', '1', '-c:a', 'libmp3lame', '-b:a', '48k', file]);
+  });
+}
 for (const w of trainWords) {
   const ids = w.beats.map((_, i) => `syl.${w.id}.${i}`);
+  const one = ids.indexOf(only);
+  if (one >= 0) { await alone(w, one, path.join(outDir, ids[one] + '.mp3')); console.log('made beat alone', ids[one]); made++; continue; }
   if (!ids.some(id => id.startsWith(only) || only.startsWith('syl.' + w.id))) continue;
   if (ids.every(id => fs.existsSync(path.join(outDir, id + '.mp3'))) && !force) continue;
   const whole = path.join(tmp, w.id + '.mp3');
@@ -91,6 +102,7 @@ for (const w of trainWords) {
   }
   if (parts.length === w.beats.length) {
     parts.forEach(([a, b], i) => ff(['-i', whole, '-ss', Math.max(0, a - 0.03).toFixed(3), '-to', (b + 0.08).toFixed(3), '-ac', '1', '-c:a', 'libmp3lame', '-b:a', '48k', path.join(outDir, ids[i] + '.mp3')]));
+    for (const i of w.alone || []) await alone(w, i, path.join(outDir, ids[i] + '.mp3'));
     console.log('made beats', w.id, parts.map(([a, b]) => (b - a).toFixed(2) + 's').join(' '));
   } else {
     // The pauses didn't split cleanly: say each beat on its own instead.

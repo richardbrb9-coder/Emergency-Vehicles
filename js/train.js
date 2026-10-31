@@ -5,21 +5,22 @@ window.WordTrain = { packs: {} };
 
 // ---------- Rescue Station words ----------
 // beats: what the child sees on each carriage. say: how the voice tool is asked to pronounce each beat.
+// alone: beats the voice tool says on their own (it spelled them out letter by letter when reading the word beat by beat).
 window.WordTrain.packs.rescue = {
   id: 'rescue',
   words: [
     { id: 'ladder',     word: 'ladder',      beats: ['lad', 'der'],               say: ['lad', 'duh'],                pic: 'ladder' },
-    { id: 'helmet',     word: 'helmet',      beats: ['hel', 'met'],               say: ['hel', 'mit'],                pic: 'helmet' },
+    { id: 'helmet',     word: 'helmet',      beats: ['hel', 'met'],               say: ['hel', 'met'],                pic: 'helmet', alone: [1] },
     { id: 'siren',      word: 'siren',       beats: ['si', 'ren'],                say: ['sigh', 'run'],               pic: 'siren' },
     { id: 'hydrant',    word: 'hydrant',     beats: ['hy', 'drant'],              say: ['high', 'drunt'],             pic: 'hydrant' },
     { id: 'lifeboat',   word: 'lifeboat',    beats: ['life', 'boat'],             say: ['life', 'boat'],              pic: 'lifeboat' },
     { id: 'towtruck',   word: 'tow truck',   beats: ['tow', 'truck'],             say: ['toe', 'truck'],              pic: 'tow' },
     { id: 'fireengine', word: 'fire engine', beats: ['fire', 'en', 'gine'],       say: ['fire', 'en', 'jin'],         pic: 'fire' },
     { id: 'ambulance',  word: 'ambulance',   beats: ['am', 'bu', 'lance'],        say: ['am', 'byoo', 'lunce'],       pic: 'ambulance' },
-    { id: 'policecar',  word: 'police car',  beats: ['po', 'lice', 'car'],        say: ['puh', 'leese', 'car'],       pic: 'police' },
-    { id: 'hovercraft', word: 'hovercraft',  beats: ['hov', 'er', 'craft'],       say: ['hov', 'uh', 'craft'],        pic: 'hover' },
+    { id: 'policecar',  word: 'police car',  beats: ['po', 'lice', 'car'],        say: ['puh', 'lease', 'car'],       pic: 'police', alone: [1] },
+    { id: 'hovercraft', word: 'hovercraft',  beats: ['hov', 'er', 'craft'],       say: ['hov', 'uh', 'craft'],        pic: 'hover', alone: [0] },
     { id: 'nozzle',     word: 'nozzle',      beats: ['noz', 'zle'],               say: ['noz', 'zull'],               pic: 'nozzle' },
-    { id: 'helicopter', word: 'helicopter',  beats: ['hel', 'i', 'cop', 'ter'],   say: ['hel', 'ee', 'cop', 'tuh'],   pic: 'helitack' }
+    { id: 'helicopter', word: 'helicopter',  beats: ['hel', 'i', 'cop', 'ter'],   say: ['hel', 'uh', 'cop', 'tuh'],   pic: 'helitack', alone: [1] }
   ]
 };
 
