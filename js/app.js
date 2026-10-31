@@ -1,4 +1,4 @@
-// To the Rescue! — screens, Pip's narration, hints, rewards and settings.
+// Pip's World — screens, Pip's narration, hints, rewards and settings.
 (function () {
   const C = window.CONTENT;
   const $ = s => document.querySelector(s);
@@ -43,8 +43,26 @@
   // ---------- Pip talks ----------
   let lastSaid = null, talkId = 0;
   const pipBtn = $('#pip');
-  pipBtn.innerHTML = Art.pip();
-  $('#start-pip').innerHTML = Art.pip();
+  $('#start-pip').innerHTML = Art.pip('map');
+
+  // Pip's outfit follows the world on screen. Moods and actions are short-lived classes on the button.
+  const Pip = {
+    current: null, moodTimer: null, actTimer: null,
+    outfit(o) { if (o === this.current) return; this.current = o; pipBtn.innerHTML = Art.pip(o); },
+    mood(m, ms = 2500) {
+      clearTimeout(this.moodTimer);
+      pipBtn.classList.remove('mood-surprised', 'mood-cheer', 'mood-thinking');
+      if (m) { pipBtn.classList.add('mood-' + m); this.moodTimer = setTimeout(() => this.mood(null), ms); }
+    },
+    act(a) {
+      clearTimeout(this.actTimer);
+      pipBtn.classList.remove('act-jump', 'act-dance', 'act-wave');
+      void pipBtn.offsetWidth;
+      pipBtn.classList.add('act-' + a);
+      this.actTimer = setTimeout(() => pipBtn.classList.remove('act-' + a), 2000);
+    }
+  };
+  Pip.outfit('map');
 
   function line(id, vars = {}) {
     let t = C.lines[id] || id;
@@ -203,8 +221,9 @@
   }
 
   // ---------- Edge buttons ----------
-  function ui({ home = false, stickers = false, phone = false, grownups = false, games = false } = {}) {
+  function ui({ home = false, stickers = false, phone = false, grownups = false, games = false, map = false } = {}) {
     $('#btn-games').hidden = !games;
+    $('#btn-map').hidden = !map;
     $('#btn-home').hidden = !home;
     $('#btn-stickers').hidden = !stickers;
     $('#btn-phone').hidden = !phone;
@@ -215,11 +234,12 @@
     c.textContent = n; c.hidden = n === 0;
   }
   updateStickerCount();
-  $('#btn-home').onclick = () => { Sfx.tap(); go('hub'); };
+  $('#btn-home').onclick = () => { Sfx.tap(); go(current === 'stickers' ? bookFrom : 'hub'); };
+  $('#btn-map').onclick = () => { Sfx.tap(); go('map'); };
   $('#btn-stickers').onclick = () => { Sfx.tap(); go('stickers'); };
   $('#btn-games').onclick = () => { Sfx.tap(); go('games'); };
   $('#btn-repeat').onclick = () => { Sfx.tap(); if (lastSaid) sayText(lastSaid.text, lastSaid.id); };
-  pipBtn.onclick = () => { Sfx.woof(); if (current === 'hub') say('hub.pip'); else if (lastSaid) sayText(lastSaid.text, lastSaid.id); };
+  pipBtn.onclick = () => { Sfx.woof(); Pip.act('jump'); if (current === 'hub') say('hub.pip'); else if (current === 'map') say('map.pip'); else if (lastSaid) sayText(lastSaid.text, lastSaid.id); };
 
   // Grown-ups area: press and hold for 3 seconds so children don't wander in.
   (function grownupsGate() {
@@ -269,12 +289,12 @@
   // ---------- Install and offline ----------
   // In a browser, an Install button appears as soon as Chrome says the app can be installed.
   // If Chrome never offers it (for example it wrongly thinks the app is already installed), a help button explains what to do.
-  let current = null;
+  let current = null, bookFrom = 'hub';
   let installPrompt = null;
   const standalone = () => matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches || navigator.standalone === true;
   const installBtn = $('#btn-install'), helpBtn = $('#btn-install-help');
   const showInstall = () => {
-    const where = !current || current === 'hub';
+    const where = !current || current === 'hub' || current === 'map';
     installBtn.hidden = !(installPrompt && where && !standalone());
     helpBtn.hidden = !(!installPrompt && where && !standalone() && helpBtn.dataset.ready);
   };
@@ -319,6 +339,7 @@
 
   // ---------- Screen router ----------
   const screens = {};
+  const screenWorld = {}; // screen name -> world id, for screens outside the Rescue Station
   function go(name, arg) {
     hush(); Hint.clear(); clearScope(); closeModal();
     sceneToken++;
@@ -327,7 +348,11 @@
     fade.classList.add('on');
     setTimeout(() => {
       if (my !== sceneToken) return;
+      if (name === 'stickers' && current !== 'stickers') bookFrom = current === 'map' ? 'map' : 'hub';
       current = name;
+      // Every screen belongs to a world; the map and sticker book keep whatever Pip is wearing.
+      if (name === 'map') Pip.outfit('map');
+      else if (name !== 'stickers') Pip.outfit(screenWorld[name] || 'rescue');
       showInstall();
       bubble.hidden = true;
       screens[name](arg, () => my === sceneToken);
@@ -345,7 +370,7 @@
   let welcomed = false;
   screens.hub = (arg, alive) => {
     sceneEl.innerHTML = Art.hub(C.vehicles);
-    ui({ stickers: true, grownups: true, games: true });
+    ui({ stickers: true, grownups: true, games: true, map: true });
     const svg = sceneEl.querySelector('svg');
     let busy = false;
 
@@ -630,7 +655,7 @@
 
   // Shared toolkit for vehicle screens defined in other files.
   window.App = {
-    screens, go, say, sayText, hush, Hint, later, every, wait, tween, ease, easeOut, svgPoint,
+    screens, screenWorld, Pip, go, say, sayText, hush, Hint, later, every, wait, tween, ease, easeOut, svgPoint,
     wordCard, reward, ui, confetti, progress, saveProgress, openModal, closeModal, ICON, Settings, vehicle, alivePhone: () => $('#btn-phone'), isModalOpen: () => !modal.hidden,
     isTalking: () => pipBtn.classList.contains('talking'), current: () => current
   };
@@ -650,7 +675,7 @@
     // Some browsers only allow speech after a first spoken line inside a tap.
     if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); }
     const s = $('#start'); s.style.opacity = 0; setTimeout(() => s.remove(), 400);
-    go('hub');
+    go('map');
   };
   window.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 })();

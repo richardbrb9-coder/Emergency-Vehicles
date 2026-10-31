@@ -491,3 +491,32 @@ button:focus-visible { outline: 5px solid var(--hivis); outline-offset: 3px; }
 @keyframes pillHop { 0%, 80%, 100% { transform: none; } 88% { transform: translateY(-1.5vmin); } }
 .panel .steps { font-size: 3.2vmin; line-height: 1.45; text-align: left; margin: 1vmin 0; padding-left: 5vmin; }
 .panel .steps li { margin: 0.6vmin 0; }
+
+/* ---------- Pip's World: map button, Pip's moods and actions, map places, sticker pages per world ---------- */
+#btn-map { top: calc(2.5vmin + var(--safe-t)); left: calc(2.5vmin + var(--safe-l)); background: #f07a1a; }
+.pip-o, .pip-grin, .pip-flat, .pip-paw { display: none; }
+.mood-surprised .pip-o, .mood-cheer .pip-grin, .mood-thinking .pip-flat { display: inline; }
+.mood-surprised .pip-mouth, .mood-surprised .pip-tongue,
+.mood-cheer .pip-mouth, .mood-cheer .pip-tongue,
+.mood-thinking .pip-mouth, .mood-thinking .pip-tongue { display: none; }
+.pip-eyes { transition: transform .2s; }
+.mood-thinking .pip-eyes { transform: translate(-3px, -5px); }
+.act-jump .pip-svg { animation: pipJump .5s ease-out 2; }
+@keyframes pipJump { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-18%) scale(1.04, .97); } }
+.act-dance .pip-svg { animation: pipDance .4s ease-in-out 4 alternate; transform-origin: 50% 95%; }
+@keyframes pipDance { from { transform: rotate(-10deg) translateY(0); } to { transform: rotate(10deg) translateY(-6%); } }
+.act-wave .pip-paw { display: inline; transform-box: fill-box; transform-origin: 30% 100%; animation: pipWave .3s ease-in-out 6 alternate; }
+@keyframes pipWave { from { transform: rotate(-20deg); } to { transform: rotate(25deg); } }
+.place-art { transform-box: fill-box; transform-origin: 50% 100%; }
+
+.world-chips { display: flex; gap: 1.4vmin; flex-wrap: wrap; justify-content: center; max-width: min(96vw, 160vmin); }
+.world-chip { display: grid; justify-items: center; gap: .4vmin; padding: .8vmin 1.2vmin; border-radius: 2.6vmin;
+  background: rgba(255,255,255,.55); border: .5vmin solid transparent; font: 700 2vmin var(--font-ui); color: var(--ink); }
+.world-chip.on { background: #fff; border-color: var(--ink); box-shadow: 0 .6vmin 0 rgba(0,0,0,.18); }
+.world-chip.soon .place-icon { opacity: .55; }
+.place-icon { width: 9vmin; height: 9vmin; }
+.soon-page .empty-slot { display: grid; place-items: center; width: 12vmin; height: 12vmin; margin: 0 auto; border-radius: 50%;
+  border: .6vmin dashed #c3cad6; font: 700 5vmin var(--font-ui); color: #c3cad6; }
+@media (prefers-reduced-motion: reduce) {
+  .act-jump .pip-svg, .act-dance .pip-svg, .act-wave .pip-paw { animation: none !important; }
+}

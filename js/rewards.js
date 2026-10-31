@@ -86,13 +86,21 @@
     { id: 'pictures', icon: `<svg viewBox="0 0 64 64"><rect x="8" y="12" width="48" height="40" rx="6" fill="#fff"/><path d="M12 48 L26 30 L36 42 L44 34 L52 48 Z" fill="#2e9e4f"/><circle cx="44" cy="22" r="5" fill="#ffd21f"/></svg>` }
   ];
 
+  // Each world has its own sticker page. The Rescue Station page holds every sticker earned so far.
+  let bookWorld = 'rescue';
+  const worldChips = () => `<div class="world-chips">${Worlds.WORLDS.map(w => `
+    <button class="world-chip${w.id === bookWorld ? ' on' : ''}${w.built ? '' : ' soon'}" data-world="${w.id}" aria-label="${w.name} stickers">
+      ${Worlds.placeIcon(w.id)}<span>${w.name}</span></button>`).join('')}</div>`;
+
   A.screens.stickers = (tab = 'stickers', alive) => {
     A.ui({ home: true });
     if (typeof tab !== 'string') tab = 'stickers';
     const p = P(), C = CONTENT;
     let body = '';
-    if (tab === 'stickers') {
-      body = `<div class="book-page">${C.vehicles.map(v => `
+    if (tab === 'stickers' && bookWorld !== 'rescue') {
+      body = worldChips() + `<div class="book-page soon-page">${Array.from({ length: 10 }, () => `<span class="empty-slot">?</span>`).join('')}</div>`;
+    } else if (tab === 'stickers') {
+      body = worldChips() + `<div class="book-page">${C.vehicles.map(v => `
         <button data-kind="v" data-id="${v.id}" aria-label="${v.name}">${Art.sticker(v, p.stickers.includes(v.id))}<span>${p.stickers.includes(v.id) ? v.name : '?'}</span></button>`).join('')}
         ${A.games.map(g => `<button data-kind="g" data-id="${g.id}" aria-label="${g.title}">${A.gameSticker(g, p.games.includes(g.id))}<span>${p.games.includes(g.id) ? g.title : '?'}</span></button>`).join('')}</div>`;
     } else if (tab === 'badges') {
@@ -116,6 +124,10 @@
     scene().innerHTML = `<div class="book">
       <div class="tabs" role="tablist">${TABS.map(t => `<button role="tab" class="tab${t.id === tab ? ' on' : ''}" data-tab="${t.id}" aria-selected="${t.id === tab}" aria-label="${C.lines['book.' + t.id]}">${t.icon}<span>${C.lines['book.' + t.id]}</span></button>`).join('')}</div>
       ${body}</div>`;
+    scene().querySelectorAll('.world-chip').forEach(c => c.onclick = () => {
+      if (c.dataset.world === bookWorld) return;
+      Sfx.tap(); bookWorld = c.dataset.world; A.screens.stickers('stickers', alive);
+    });
     scene().querySelectorAll('.tab').forEach(t => t.onclick = () => { if (t.dataset.tab !== tab) { Sfx.tap(); A.screens.stickers(t.dataset.tab, alive); } });
     scene().querySelectorAll('.book-page button').forEach(b => b.onclick = () => {
       const id = b.dataset.id;
@@ -152,7 +164,10 @@
           break;
       }
     });
-    if (tab === 'stickers') {
+    if (tab === 'stickers' && bookWorld !== 'rescue') {
+      A.Pip.mood('thinking');
+      A.say('book.worldSoon', { name: Worlds.world(bookWorld).of });
+    } else if (tab === 'stickers') {
       const n = p.stickers.length + p.games.length;
       if (n) A.say('stickers.count', { n, stickers: n === 1 ? 'sticker' : 'stickers' }); else A.say('stickers.none');
     } else if (tab === 'badges') A.say('book.badgesIntro');

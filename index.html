@@ -6,8 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#e53935">
-<meta name="description" content="Explore rescue vehicles, play games and collect stickers with Pip the rescue pup. For ages 4 to 6. Works offline.">
-<title>To the Rescue!</title>
+<meta name="description" content="Visit Pip's World: explore rescue vehicles, play games and collect stickers with Pip the pup. For ages 4 to 6. Works offline.">
+<title>Pip's World</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-48.png" type="image/png">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
@@ -22,13 +22,16 @@
 
   <!-- Pip and the speech bubble -->
   <div id="pip-dock">
-    <button id="pip" class="pip-btn" aria-label="Pip the rescue pup"></button>
+    <button id="pip" class="pip-btn" aria-label="Pip the pup"></button>
     <div id="bubble" hidden></div>
   </div>
 
   <!-- Buttons around the edge -->
   <button id="btn-home" class="ui-btn" aria-label="Home" hidden>
     <svg viewBox="0 0 64 64"><path d="M10 32 L32 12 L54 32" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 30 V52 H28 V40 H36 V52 H46 V30" fill="#fff"/></svg>
+  </button>
+  <button id="btn-map" class="ui-btn" aria-label="Pip's map" hidden>
+    <svg viewBox="0 0 64 64"><path d="M8 16 L22 10 L42 16 L56 10 V48 L42 54 L22 48 L8 54 Z" fill="#fff" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M22 10 V48 M42 16 V54" stroke="#f07a1a" stroke-width="3"/><path d="M14 40 Q24 30 32 36 T50 24" fill="none" stroke="#e53935" stroke-width="3" stroke-dasharray="4 3"/></svg>
   </button>
   <button id="btn-repeat" class="ui-btn" aria-label="Say that again">
     <svg viewBox="0 0 64 64"><path d="M12 24 H22 L34 14 V50 L22 40 H12 Z" fill="#fff"/><path d="M42 22 Q50 32 42 42 M48 16 Q60 32 48 48" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg>
@@ -54,7 +57,7 @@
   <!-- First screen: a tap is needed before sound can play -->
   <div id="start">
     <div class="start-battenburg"></div>
-    <h1>To the Rescue!</h1>
+    <h1>Pip's World</h1>
     <div id="start-pip"></div>
     <button id="btn-play" aria-label="Play">
       <svg viewBox="0 0 64 64"><path d="M22 14 L52 32 L22 50 Z" fill="#fff" stroke="#fff" stroke-width="6" stroke-linejoin="round"/></svg>
@@ -75,6 +78,7 @@
 <script src="js/audio.js"></script>
 <script src="js/art.js"></script>
 <script src="js/app.js"></script>
+<script src="js/worlds.js"></script>
 <script src="js/vehicles2.js"></script>
 <script src="js/vehicles3.js"></script>
 <script src="js/match.js"></script>
