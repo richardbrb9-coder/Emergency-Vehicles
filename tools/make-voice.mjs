@@ -78,6 +78,8 @@ function voiced(file) {
   if (!ev.length || ev[ev.length - 1][0] === 'end') { if (total - at > 0.05) parts.push([at, total]); }
   return parts;
 }
+// The loudest point of a clip, in dB (a clear beat peaks well above -20 dB).
+const loudness = file => parseFloat((spawnSync('ffmpeg', ['-hide_banner', '-i', file, '-af', 'volumedetect', '-f', 'null', '-'], { encoding: 'utf8' }).stderr.match(/max_volume: (-?[\d.]+)/) || [])[1] ?? -99);
 // A beat listed in a word's `alone` is said on its own and trimmed, because in the beat-by-beat reading
 // the voice spelled it out letter by letter. --only syl.<word>.<n> remakes just that beat this way.
 // A beat with a `carrier` word (for example "it" for the short "ih" in helicopter) is cut from the start
@@ -93,7 +95,7 @@ async function fromCarrier(word, file) {
     const [a, b] = parts[0] || [];
     if (parts.length >= 2 && b - a >= 0.15 && b - a <= 0.45) {
       const len = b - a + 0.03;
-      ff(['-i', raw, '-ss', Math.max(0, a - 0.02).toFixed(3), '-t', len.toFixed(3), '-af', `afade=t=out:st=${(len - 0.06).toFixed(3)}:d=0.06,adelay=30,apad=pad_dur=0.08`, '-ac', '1', '-c:a', 'libmp3lame', '-b:a', '48k', file]);
+      ff(['-ss', Math.max(0, a - 0.02).toFixed(3), '-t', len.toFixed(3), '-i', raw, '-af', `afade=t=out:st=${(len - 0.06).toFixed(3)}:d=0.06,adelay=30,apad=pad_dur=0.08`, '-ac', '1', '-c:a', 'libmp3lame', '-b:a', '48k', file]);
       return;
     }
   }
@@ -101,11 +103,21 @@ async function fromCarrier(word, file) {
 }
 function alone(w, i, file) {
   if (w.carrier && w.carrier[i]) return fromCarrier(w.carrier[i], file);
-  return synth({ text: w.say[i] }, 0.9).then(buf => {
-    const raw = path.join(tmp, 'alone.mp3'); fs.writeFileSync(raw, buf);
-    const trim = 'silenceremove=start_periods=1:start_threshold=-45dB';
-    ff(['-i', raw, '-af', `${trim},areverse,${trim},areverse,adelay=30,apad=pad_dur=0.08`, '-ac', '1', '-c:a', 'libmp3lame', '-b:a', '48k', file]);
-  });
+  // Keep the longest stretch of sound (the beat itself), with a little room either side.
+  // The voice sometimes returns near silence for a lone sound like "eh", so try again until the beat is clearly heard.
+  return (async () => {
+    const raw = path.join(tmp, 'alone.mp3');
+    for (let tries = 0; tries < 8; tries++) {
+      fs.writeFileSync(raw, await synth({ text: w.say[i] }, 0.9));
+      const parts = voiced(raw);
+      if (!parts.length) continue;
+      const [a, b] = parts.reduce((x, y) => (y[1] - y[0] > x[1] - x[0] ? y : x));
+      if (b - a < 0.12) continue;
+      ff(['-ss', Math.max(0, a - 0.03).toFixed(3), '-t', (b - a + 0.1).toFixed(3), '-i', raw, '-af', 'adelay=30,apad=pad_dur=0.08', '-ac', '1', '-c:a', 'libmp3lame', '-b:a', '48k', file]);
+      if (loudness(file) > -20) return;
+    }
+    throw new Error('could not make a clear beat from "' + w.say[i] + '"');
+  })();
 }
 for (const w of trainWords) {
   const ids = w.beats.map((_, i) => `syl.${w.id}.${i}`);

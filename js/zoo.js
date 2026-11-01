@@ -272,10 +272,10 @@ window.ZOO_EATS = { monkey: 'banana', penguin: 'fish', giraffe: 'leaves', panda:
       { id: 'panda',       word: 'panda',       beats: ['pan', 'da'],               say: ['pan', 'duh'],               pic: 'panda' },
       { id: 'penguin',     word: 'penguin',     beats: ['pen', 'guin'],             say: ['pen', 'Gwyn'],              pic: 'penguin', alone: [1] },
       { id: 'parrot',      word: 'parrot',      beats: ['par', 'rot'],              say: ['pa', 'rut'],                pic: 'parrot' },
-      { id: 'elephant',    word: 'elephant',    beats: ['el', 'e', 'phant'],        say: ['el', 'ih', 'funt'],         pic: 'elephant', alone: [1], carrier: { 1: 'it' } },
+      { id: 'elephant',    word: 'elephant',    beats: ['el', 'e', 'phant'],        say: ['el', 'eh', 'funt'],         pic: 'elephant', alone: [1] },
       { id: 'crocodile',   word: 'crocodile',   beats: ['croc', 'o', 'dile'],       say: ['crock', 'uh', 'dial'],      pic: 'crocodile' },
       { id: 'kangaroo',    word: 'kangaroo',    beats: ['kan', 'ga', 'roo'],        say: ['kang', 'guh', 'roo'],       pic: 'kangaroo' },
-      { id: 'flamingo',    word: 'flamingo',    beats: ['fla', 'min', 'go'],        say: ['fluh', 'ming', 'go'],       pic: 'flamingo' },
+      { id: 'flamingo',    word: 'flamingo',    beats: ['fla', 'min', 'go'],        say: ['flah', 'ming', 'go'],       pic: 'flamingo', alone: [0], carrier: { 0: 'flap' } },
       { id: 'caterpillar', word: 'caterpillar', beats: ['cat', 'er', 'pil', 'lar'], say: ['cat', 'uh', 'pill', 'uh'],  pic: 'caterpillar' },
       { id: 'watermelon',  word: 'watermelon',  beats: ['wa', 'ter', 'mel', 'on'],  say: ['wor', 'tuh', 'mel', 'un'],  pic: 'watermelon', alone: [3] }
     ]
