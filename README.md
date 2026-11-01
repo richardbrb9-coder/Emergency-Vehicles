@@ -1,6 +1,6 @@
 # Pip's World 🐶🗺️
 
-A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Two worlds are open: the Rescue Station (the original *To the Rescue!* app) and the Zoo. Five more are on the way: Monster Maths, School, Supermarket, Toy Shop and New Puppies.
+A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Three worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo and Monster Maths. Four more are on the way: School, Supermarket, Toy Shop and New Puppies.
 
 At the Rescue Station, Pip shows children 9 rescue vehicles, each with a short mission to play. There are also 12 games, a sticker book, team badges and a Rescue Cadet certificate. Everything is read aloud, and the app works fully offline once it is installed.
 
@@ -74,8 +74,17 @@ If Chrome doesn't offer to install, a white **📲 How to install** button shows
   - Who Eats What?: drag each food to the animal that eats it (3, then 4, then 5 animals).
   - Animal Homes: drag each animal to its home: jungle, sea, ice or desert (2, then 3, then 4 homes).
   - 11 zoo stickers and a Zoo Keeper badge for collecting them all.
+- **Monster Maths** (tap Monster Town on Pip's map):
+  - Meet six monsters, each made of a shape and a number to count: Gobble (a circle with one eye), Zug (a square with two horns), Trixie (a triangle with three eyes), Boxy (a rectangle on four legs), Twinkle (a star with five points) and Hexie (a hexagon with six sides). Tap one to count with it and win its sticker.
+  - Hungry Monsters: a 7-page picture story, read aloud, about Pip visiting Monster Town, where monsters eat numbers.
+  - Gobble Run: the ball run with numbered balls. Roll them into a monster's mouth (past a sleeping one), watch the sum build up (2 + 1 + 3 = 6) and hear the monster burp the total. Free build plus 12 puzzles.
+  - Monster Train: the syllable train with 12 number and shape words (monster, number, seven, circle, zero, sixteen, triangle, eleven, hexagon, rectangle, calculator, twenty-seven).
+  - Feed the Monster: a monster shows a number and its dots; tap cookies into its mouth and count along (up to 5, then up to 10). Then two plates: feed both, and pick how many it ate altogether.
+  - Monster Shapes: build a monster one choice at a time: a body shape, how many eyes, horns, a mouth, how many legs and a colour. Each finished monster goes into My Pictures.
+  - Shape Snacks: drag each shape biscuit to the monster with the same shape (3, then 4, then 5 monsters).
+  - 12 Monster Maths stickers and a Number Champion badge for collecting them all.
 - **Rewards:**
-  - 21 Rescue Station stickers and 11 zoo stickers
+  - 21 Rescue Station stickers, 11 zoo stickers and 12 Monster Maths stickers
   - 6 team badges
   - a Word Book of red words
   - My Pictures for saved colouring pages
@@ -112,6 +121,8 @@ The app is plain HTML, CSS and JavaScript, with no build step. All artwork is dr
 | `js/story.js` | The picture story engine (pages read aloud, with tappable pictures) |
 | `js/zoo-art.js` | Zoo drawings: 18 animals, food, habitats, Zara the zookeeper and scenery |
 | `js/zoo.js` | The zoo world pack: its words, story, Snack Run puzzles, Zoo Train words, sorting rounds, home screen, stickers and badge |
+| `js/monster-art.js` | Monster Maths drawings: the six shape monsters (with moods), shapes, numerals and dots, cookies, the monster builder and Monster Town scenery |
+| `js/monsters.js` | The Monster Maths world pack: its words, story, Gobble Run puzzles (numbered balls), Monster Train words, Shape Snacks rounds, Feed the Monster and Monster Shapes, home screen, stickers and badge |
 | `fonts/` | Andika and Fredoka, bundled for offline use (SIL Open Font License) |
 | `docs/` | Style guide and image prompts |
 
@@ -128,6 +139,17 @@ To run it locally, serve the folder over HTTP (for example with `python3 -m http
 **Adding a world:** in `js/worlds.js`, set `built: true` and a `home` screen name for the world, then add its screens to `App.screens` and list each one in `App.screenWorld` (for example `App.screenWorld.zooGate = 'zoo'`) so Pip wears that world's outfit and the home button goes to that world's home. `js/zoo.js` is the example to copy: it adds games with the shared engines, `BallRun.mount`, `WordTrain.mount`, `Sorter.mount` and `Story.mount`, each given the world's own levels, pictures and lines, with `world` and `back` set so its stickers go on the world's page and "more games" returns to the world's home. A world's sticker page and badge go in `Rewards.pages` and `Rewards.extraBadges`. Pip's outfits are in `PIP_OUTFITS` in `js/art.js`. Pip's moods and actions: `App.Pip.mood('cheer' | 'surprised' | 'thinking')` and `App.Pip.act('jump' | 'dance' | 'wave')`.
 
 ## Build history
+
+### Pip's World, Phase 4: Monster Maths
+- Monster Maths opens from Pip's map. Monster Town's home screen has six shape monsters on the street (tap one to count its eyes, horns, legs, points or sides, and win its sticker) and six games along the bottom. Pip wears his monster horns.
+- **Hungry Monsters**, a picture story read aloud: Pip visits Monster Town, where monsters eat numbers, and helps Gobble add two and three.
+- **Gobble Run** (ball run): each ball carries a number (1, 2 or 3). The monster says each number as it eats it, a sum builds up above it (2 + 1 + 3 = 6), and it burps the total. From puzzle 3 a sleeping monster lies under the chute. The 12 puzzles are the Snack Run puzzles mirrored left to right, each checked solvable again by running its physics. The ball run engine now tells a world which ball was eaten, so balls can carry numbers.
+- **Monster Train** (syllables): 12 number and shape words, with 2, 3 or 4 beats.
+- **Feed the Monster**, a new counting game: count cookies into a monster's mouth (up to 5, then up to 10), then add two plates and pick the total from three numbers. The cookies counted so far line up under the monster, numbered, in each plate's colour.
+- **Monster Shapes**, a new building game: pick a body shape, eyes, horns, mouth, legs and colour, and the finished monster goes into My Pictures.
+- **Shape Snacks**, a sorting game: each monster eats biscuits of its own shape.
+- 12 Monster Maths stickers on their own sticker book page, and a Number Champion badge.
+- 206 new voice clips: 174 lines and 32 Monster Train beats.
 
 ### Pip's World, Phase 3: the Zoo
 - The Zoo opens from Pip's map. Its home screen has six animals behind a fence (tap one for a fact and its sticker) and five games along the bottom. Pip wears his safari hat.
