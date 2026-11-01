@@ -11,8 +11,8 @@
     set(k, v) { try { localStorage.setItem('etr.' + k, JSON.stringify(v)); } catch (e) { /* storage blocked */ } }
   };
   const Settings = window.Settings = Object.assign({ sound: true, voice: true, subtitles: true, calm: false, name: '' }, store.get('settings', {}));
-  // stickers: vehicle stickers; games: game stickers (every world); animals: zoo animal stickers; monsters: Monster Town stickers.
-  const progress = Object.assign({ stickers: [], words: [], games: [], gallery: [], plays: {}, animals: [], monsters: [] }, store.get('progress', {}));
+  // stickers: vehicle stickers; games: game stickers (every world); animals: zoo animal stickers; monsters: Monster Town stickers; school: classroom stickers.
+  const progress = Object.assign({ stickers: [], words: [], games: [], gallery: [], plays: {}, animals: [], monsters: [], school: [] }, store.get('progress', {}));
   const saveSettings = () => { store.set('settings', Settings); stage.classList.toggle('calm', Settings.calm); };
   const saveProgress = () => { store.set('progress', progress); updateStickerCount(); };
   stage.classList.toggle('calm', Settings.calm);
@@ -231,7 +231,7 @@
     $('#btn-grownups').hidden = !grownups;
   }
   function updateStickerCount() {
-    const n = progress.stickers.length + progress.games.length + progress.animals.length + progress.monsters.length, c = $('#sticker-count');
+    const n = progress.stickers.length + progress.games.length + progress.animals.length + progress.monsters.length + progress.school.length, c = $('#sticker-count');
     c.textContent = n; c.hidden = n === 0;
   }
   updateStickerCount();
@@ -268,7 +268,7 @@
         ${rows}
         <div class="toggle-row"><label for="child-name">Child's first name (for the Rescue Cadet certificate)</label>
           <input id="child-name" class="name-input" maxlength="20" autocomplete="off" value="${(Settings.name || '').replace(/"/g, '&quot;')}"></div>
-        <p style="margin-top:2vmin">Stickers collected: ${progress.stickers.length + progress.games.length + progress.animals.length + progress.monsters.length} of ${C.vehicles.length + (window.App && App.games ? App.games.length : 0) + (window.Zoo ? Zoo.ANIMALS.length : 0) + (window.Monsters ? Monsters.IDS.length : 0)}. Red words learned: ${progress.words.length}.</p>
+        <p style="margin-top:2vmin">Stickers collected: ${progress.stickers.length + progress.games.length + progress.animals.length + progress.monsters.length + progress.school.length} of ${C.vehicles.length + (window.App && App.games ? App.games.length : 0) + (window.Zoo ? Zoo.ANIMALS.length : 0) + (window.Monsters ? Monsters.IDS.length : 0) + (window.School ? School.SPOT_IDS.length : 0)}. Red words learned: ${progress.words.length}.</p>
         <div class="toggle-row"><span>${installState()}</span>
           ${installPrompt ? '<button class="text-btn" id="install" style="margin:0">Install app</button>' : ''}</div>
         <div class="btn-line">
@@ -292,7 +292,7 @@
         btn.textContent = done; btn.disabled = true; btn.classList.remove('danger');
       };
     };
-    const clearStickers = () => { progress.stickers = []; progress.games = []; progress.animals = []; progress.monsters = []; progress.badges = []; progress.certShown = false; };
+    const clearStickers = () => { progress.stickers = []; progress.games = []; progress.animals = []; progress.monsters = []; progress.school = []; progress.badges = []; progress.certShown = false; };
     confirmReset(modal.querySelector('#reset-stickers'), 'Stickers and badges reset', clearStickers);
     confirmReset(modal.querySelector('#reset'), 'Everything has been reset', () => {
       clearStickers(); progress.words = []; progress.gallery = []; progress.plays = {};

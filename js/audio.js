@@ -179,6 +179,7 @@
     oohooh() { [0, 0.22, 0.44].forEach((s, i) => tone({ freq: 500 + i * 120, to: 800 + i * 150, start: s, dur: 0.18, vol: 0.08, type: 'triangle' })); },
     burp() { const v = settings().calm ? 0.07 : 0.16; tone({ freq: 130, to: 70, dur: 0.55, vol: v, type: 'sawtooth', attack: 0.04 }); tone({ freq: 95, to: 60, start: 0.05, dur: 0.5, vol: v * .7, type: 'square', attack: 0.04 }); noise(0.45, { type: 'lowpass', f1: 380, f2: 140, vol: v * 1.4 }); },
     gobble() { tone({ freq: 260, to: 140, dur: 0.12, vol: 0.16, type: 'square' }); noise(0.08, { type: 'lowpass', f1: 900, vol: 0.25, start: 0.1 }); tone({ freq: 200, to: 110, start: 0.14, dur: 0.1, vol: 0.12 }); },
+    squeak() { [0, 0.16].forEach(s => tone({ freq: 1900, to: 2600, start: s, dur: 0.09, vol: 0.06, type: 'sine' })); },
     plop() { tone({ freq: 500, to: 160, dur: 0.15, vol: 0.18, type: 'sine' }); }
   };
 
