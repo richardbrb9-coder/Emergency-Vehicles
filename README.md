@@ -1,6 +1,6 @@
 # Pip's World 🐶🗺️
 
-A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Five worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo, Monster Maths, School and the Supermarket. Two more are on the way: Toy Shop and New Puppies.
+A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Six worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo, Monster Maths, School, the Supermarket and the Toy Shop. One more is on the way: New Puppies.
 
 At the Rescue Station, Pip shows children 9 rescue vehicles, each with a short mission to play. There are also 12 games, a sticker book, team badges and a Rescue Cadet certificate. Everything is read aloud, and the app works fully offline once it is installed.
 
@@ -99,8 +99,16 @@ If Chrome doesn't offer to install, a white **📲 How to install** button shows
   - Shopping List: find each thing on Mum's picture list on the shelves (3 things, then how many of each), then count the shopping through the till.
   - Pack the Bags: drag the shopping into the fruit bag, the veg bag, the cool bag or the bread bag (2, then 3, then 4 bags).
   - 11 supermarket stickers and a Super Shopper badge for collecting them all.
+- **Toy Shop** (tap the toy shop on Pip's map):
+  - Explore the toy shop on Pip's birthday: tap Pip's purse of birthday money, the teddies, the big robot, the bicycle, the balloons and Sam at the till to hear about coins, choosing, saving up and paying, and win a sticker for each.
+  - Birthday Money: an 8-page picture story, read aloud, about Pip spending his birthday money, from counting the coins to finding the robot costs too much, choosing a teddy and saving what is left in his piggy bank.
+  - Coin Run: the ball run with coins. Roll 1p, 2p, 5p, 10p, 20p or pound coins out of Pip's purse into his piggy bank (past a jack-in-the-box) and count the money as it goes in ("ten p, twenty p, thirty p"). Free build (with every coin) plus 12 puzzles.
+  - Toy Train: the syllable train with 12 toy words (teddy, robot, puzzle, rocket, balloon, money, bicycle, dinosaur, aeroplane, piggy bank, jack-in-the-box, ballerina).
+  - Pay with Coins: tap coins from Pip's purse onto the counter to pay the price on the toy's tag (1p coins, then 1p and 2p, then 1p, 2p, 5p and 10p). Pip says the total as it goes up, and helps when too much is paid.
+  - Just the Right Size: drag hats, scarves, jumpers and boots to the teddy they fit (a little and a big teddy, then three teddies).
+  - 11 toy shop stickers and a Coin Counter badge for collecting them all.
 - **Rewards:**
-  - 21 Rescue Station stickers, 11 zoo stickers, 12 Monster Maths stickers, 11 school stickers and 11 supermarket stickers
+  - 21 Rescue Station stickers, 11 zoo stickers, 12 Monster Maths stickers, 11 school stickers, 11 supermarket stickers and 11 toy shop stickers
   - 6 team badges
   - a Word Book of red words
   - My Pictures for saved colouring pages
@@ -143,6 +151,8 @@ The app is plain HTML, CSS and JavaScript, with no build step. All artwork is dr
 | `js/school.js` | The School world pack: its words, story, Crayon Run puzzles, School Train words, Pack My Bag rounds, Line Up!, classroom home screen, stickers and badge |
 | `js/supermarket-art.js` | Supermarket drawings: foods, the trolley, the till, Ruby, the fruit stand, bakery, fridge, scales, shopping bags, the shopping list and the shop shelves |
 | `js/supermarket.js` | The Supermarket world pack: its words, story, Trolley Run puzzles, Shop Train words, Pack the Bags rounds, Shopping List, shop home screen, stickers and badge |
+| `js/toyshop-art.js` | Toy Shop drawings: toys, UK coins, Pip's purse and piggy bank, the jack-in-the-box, Sam and the till, teddies and their clothes, price tags and birthday things |
+| `js/toyshop.js` | The Toy Shop world pack: its words, story, Coin Run puzzles, Toy Train words, Just the Right Size rounds, Pay with Coins, toy shop home screen, stickers and badge |
 | `fonts/` | Andika and Fredoka, bundled for offline use (SIL Open Font License) |
 | `docs/` | Style guide and image prompts |
 

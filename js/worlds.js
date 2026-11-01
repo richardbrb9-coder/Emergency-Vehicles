@@ -16,8 +16,8 @@
       go: "Let's go to school!" },
     { id: 'supermarket', name: 'Supermarket',    of: 'the supermarket', colour: '#2e9e4f', built: true, home: 'supermarket',
       go: "Let's go to the supermarket!" },
-    { id: 'shop',        name: 'Toy Shop',       of: 'the toy shop', colour: '#ff6f9c',
-      soon: 'The toy shop is still unpacking its toys. Coming soon!' },
+    { id: 'shop',        name: 'Toy Shop',       of: 'the toy shop', colour: '#ff6f9c', built: true, home: 'toyshop',
+      go: "Let's go to the toy shop!" },
     { id: 'puppies',     name: 'New Puppies',    of: 'the new puppies', colour: '#f07a1a',
       soon: 'Shh! Mum is resting. The new puppies are coming soon!' }
   ];

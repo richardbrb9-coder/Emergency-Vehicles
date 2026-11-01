@@ -839,3 +839,41 @@ button:focus-visible { outline: 5px solid var(--hivis); outline-offset: 3px; }
 .sl-paper { grid-column: 1; grid-row: 1; }
 .sl-shelves, .sl-belt { grid-column: 2; grid-row: 1; }
 .sl-trolley { grid-column: 3; grid-row: 1; }
+
+/* ---------- Toy Shop ---------- */
+.toy-home .scene-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.toy-spot .spot-art.bounce > * { animation: penBounce .7s; transform-box: fill-box; transform-origin: 50% 100%; }
+.toy-spot.hint, .toy-spot.target { filter: url(#glow); }
+.br-pick.toy-run, .ballrun.toy-run { background: linear-gradient(#fff4f8, #ffe3ef); }
+.tr-pick.toy-train { background: linear-gradient(#fff4f8, #dff3ff); }
+.toy-story { background: radial-gradient(circle at 50% 40%, #fffaf0, #ffb8cf); }
+.sorter.toy-size { background: linear-gradient(#fff4f8, #efe6ff); }
+.toy-size .so-bin { flex-basis: 30vmin; }
+.toy-size .so-item { border-radius: 3vmin; }
+.toy-size .so-art svg.gulp { animation: penBounce .6s; transform-origin: 50% 100%; }
+
+/* Pay with Coins */
+.paycoins { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 30vmin) minmax(0, 1fr) minmax(0, 24vmin); grid-template-rows: minmax(0, 1fr) auto;
+  gap: 2.4vmin 3vmin; align-items: center;
+  padding: calc(16vmin + var(--safe-t)) max(4vmin, var(--safe-r)) calc(3vmin + var(--safe-b)) max(4vmin, var(--safe-l));
+  background: linear-gradient(#fff4f8 0 62%, #e8b77a 62%); }
+.pc-toy { display: grid; justify-items: center; gap: 1.6vmin; }
+.pc-pic { width: 24vmin; height: 24vmin; background: #fff; border: .7vmin solid var(--ink); border-radius: 3vmin; padding: 1.4vmin; animation: pop .35s; }
+.pc-pic svg { width: 100%; height: 100%; display: block; }
+.pc-pic.bought { animation: penBounce .7s; }
+.pc-tag { background: #fff6cc; border: .6vmin solid var(--ink); border-radius: 1.6vmin; padding: 1vmin 1.6vmin; transform: rotate(-4deg); display: grid; justify-items: center; gap: .8vmin; }
+.pc-tag b { font: 700 7vmin/1 var(--font-ui); color: var(--ink); }
+.pc-dots { display: flex; flex-wrap: wrap; justify-content: center; gap: .6vmin; max-width: 22vmin; }
+.pc-dots i { width: 2.6vmin; height: 2.6vmin; border-radius: 50%; background: #d9883e; border: .4vmin solid var(--ink); }
+.pc-counter { align-self: center; min-height: 30vmin; position: relative; background: #ff8fb1; border: .7vmin solid var(--ink); border-top: 2.4vmin solid #c98b4e; border-radius: 1.6vmin;
+  display: grid; align-content: center; justify-items: center; gap: 2vmin; min-height: 0; padding: 2vmin; }
+.pc-paid { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1.4vmin; min-height: 15vmin; min-width: 70%; border: .6vmin dashed rgba(255,255,255,.8); border-radius: 2vmin; padding: 1.2vmin; }
+.pc-total { font: 700 8vmin/1 var(--font-ui); color: #fff; text-shadow: 0 .5vmin 0 rgba(42,47,69,.35); min-height: 8vmin; }
+.pc-total.over { color: #ffd21f; }
+.pc-sam svg { width: 100%; height: auto; display: block; }
+.pc-purse { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1.6vmin; min-height: 14vmin;
+  background: #ff6f9c; border: .7vmin solid var(--ink); border-radius: 4vmin 4vmin 7vmin 7vmin; padding: 1.6vmin 3vmin; }
+.pc-coin { width: calc(var(--r) * .36vmin); height: calc(var(--r) * .36vmin); padding: 0; border: 0; background: none; border-radius: 50%; touch-action: manipulation; }
+.pc-coin svg { width: 100%; height: 100%; display: block; overflow: visible; pointer-events: none; }
+.pc-coin:active { transform: scale(.92); }
+.pc-coin.hint, .pc-coin.target { animation: hintRing 1s steps(1) infinite; }
