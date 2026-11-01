@@ -1,6 +1,6 @@
 # Pip's World 🐶🗺️
 
-A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Three worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo and Monster Maths. Four more are on the way: School, Supermarket, Toy Shop and New Puppies.
+A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Four worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo, Monster Maths and School. Three more are on the way: Supermarket, Toy Shop and New Puppies.
 
 At the Rescue Station, Pip shows children 9 rescue vehicles, each with a short mission to play. There are also 12 games, a sticker book, team badges and a Rescue Cadet certificate. Everything is read aloud, and the app works fully offline once it is installed.
 
@@ -83,8 +83,16 @@ If Chrome doesn't offer to install, a white **📲 How to install** button shows
   - Monster Shapes: build a monster one choice at a time: a body shape, how many eyes, horns, a mouth, how many legs and a colour. Each finished monster goes into My Pictures.
   - Shape Snacks: drag each shape biscuit to the monster with the same shape (3, then 4, then 5 monsters).
   - 12 Monster Maths stickers and a Number Champion badge for collecting them all.
+- **School** (tap the school on Pip's map):
+  - Explore Pip's Reception classroom: tap Pip's peg, the book corner, Mrs Bell the teacher, the painting easel, the sand tray and Nibbles the class hamster to hear about school routines and win a sticker for each.
+  - First Day: a 7-page picture story, read aloud, about Pip's first day at school, from feeling wobbly at the gate to making friends and going down the slide.
+  - Crayon Run: the ball run with crayons. Tidy them into the pot of the same colour, past a pot of another colour. Free build (with a rainbow of crayons) plus 12 puzzles.
+  - School Train: the syllable train with 12 school words (pencil, teacher, scissors, playground, crayon, lunchbox, computer, alphabet, xylophone, uniform, watercolour, macaroni).
+  - Pack My Bag: drag the things we need for school into the school bag, and leave the rest at home (5, then 6, then 8 things).
+  - Line Up!: tap the children in order from shortest to tallest so they walk into a line, then pencils from shortest to longest, then tallest first (3, then 4, then 5 at a time).
+  - 11 school stickers and a Star Pupil badge for collecting them all.
 - **Rewards:**
-  - 21 Rescue Station stickers, 11 zoo stickers and 12 Monster Maths stickers
+  - 21 Rescue Station stickers, 11 zoo stickers, 12 Monster Maths stickers and 11 school stickers
   - 6 team badges
   - a Word Book of red words
   - My Pictures for saved colouring pages
@@ -123,6 +131,8 @@ The app is plain HTML, CSS and JavaScript, with no build step. All artwork is dr
 | `js/zoo.js` | The zoo world pack: its words, story, Snack Run puzzles, Zoo Train words, sorting rounds, home screen, stickers and badge |
 | `js/monster-art.js` | Monster Maths drawings: the six shape monsters (with moods), shapes, numerals and dots, cookies, the monster builder and Monster Town scenery |
 | `js/monsters.js` | The Monster Maths world pack: its words, story, Gobble Run puzzles (numbered balls), Monster Train words, Shape Snacks rounds, Feed the Monster and Monster Shapes, home screen, stickers and badge |
+| `js/school-art.js` | School drawings: classroom things, children in uniform, Mrs Bell, Nibbles the hamster, crayons, pencils, colour pots and the school bag items |
+| `js/school.js` | The School world pack: its words, story, Crayon Run puzzles, School Train words, Pack My Bag rounds, Line Up!, classroom home screen, stickers and badge |
 | `fonts/` | Andika and Fredoka, bundled for offline use (SIL Open Font License) |
 | `docs/` | Style guide and image prompts |
 
@@ -139,6 +149,16 @@ To run it locally, serve the folder over HTTP (for example with `python3 -m http
 **Adding a world:** in `js/worlds.js`, set `built: true` and a `home` screen name for the world, then add its screens to `App.screens` and list each one in `App.screenWorld` (for example `App.screenWorld.zooGate = 'zoo'`) so Pip wears that world's outfit and the home button goes to that world's home. `js/zoo.js` is the example to copy: it adds games with the shared engines, `BallRun.mount`, `WordTrain.mount`, `Sorter.mount` and `Story.mount`, each given the world's own levels, pictures and lines, with `world` and `back` set so its stickers go on the world's page and "more games" returns to the world's home. A world's sticker page and badge go in `Rewards.pages` and `Rewards.extraBadges`. Pip's outfits are in `PIP_OUTFITS` in `js/art.js`. Pip's moods and actions: `App.Pip.mood('cheer' | 'surprised' | 'thinking')` and `App.Pip.act('jump' | 'dance' | 'wave')`.
 
 ## Build history
+
+### Pip's World, Phase 5a: School
+- School opens from Pip's map. The classroom home screen has six things to visit (each gives a fact about the school day and a sticker) and five games along the bottom. Pip wears his school cap and bag.
+- **First Day**, a picture story read aloud: Pip's first day in Reception.
+- **Crayon Run** (ball run): crayons roll from the crayon box into the pot of their colour; from puzzle 3 a pot of another colour sits under the chute. The 12 puzzles are the Gobble Run layouts in a new order, each checked solvable again by running its physics.
+- **School Train** (syllables): 12 school words, with 2, 3 or 4 beats.
+- **Pack My Bag**, a sorting game: school things into the bag, home things stay at home.
+- **Line Up!**, a new size-ordering game: shortest to tallest, shortest to longest, and tallest to shortest.
+- 11 school stickers on their own sticker book page, and a Star Pupil badge.
+- 162 new voice clips: 118 lines, 12 words and 32 School Train beats.
 
 ### Pip's World, Phase 4: Monster Maths
 - Monster Maths opens from Pip's map. Monster Town's home screen has six shape monsters on the street (tap one to count its eyes, horns, legs, points or sides, and win its sticker) and six games along the bottom. Pip wears his monster horns.
