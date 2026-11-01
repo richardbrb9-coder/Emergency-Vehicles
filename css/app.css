@@ -614,3 +614,72 @@ button:focus-visible { outline: 5px solid var(--hivis); outline-offset: 3px; }
 .car.dragging svg { filter: drop-shadow(0 1.4vmin .6vmin rgba(0,0,0,.25)); }
 .car.hint svg, .car.target svg { animation: carGlow 1s steps(1) infinite; }
 @keyframes carGlow { 0% { filter: drop-shadow(0 0 1.2vmin #ffd21f) drop-shadow(0 0 .6vmin #ffd21f); } 50% { filter: none; } }
+
+/* ---------- Sorting games (Who Eats What?, Animal Homes) ---------- */
+.sorter { position: absolute; inset: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 3vmin;
+  padding: calc(20vmin + var(--safe-t)) max(4vmin, var(--safe-r)) calc(4vmin + var(--safe-b)) max(4vmin, var(--safe-l));
+  background: linear-gradient(#d6f0c2, #eef9e4); }
+.so-bins { display: flex; gap: 3vmin; justify-content: center; align-items: center; min-height: 0; }
+.so-bin { position: relative; flex: 0 1 28vmin; height: min(100%, 40vmin); display: grid; grid-template-rows: minmax(0, 1fr) auto; justify-items: center; align-items: center;
+  background: #fff; border: .8vmin solid var(--ink); border-radius: 4vmin; padding: 1.4vmin; box-shadow: 0 1.2vmin 0 rgba(0,0,0,.15);
+  animation: pop .4s backwards; transition: transform .15s, background .15s; overflow: hidden; }
+.so-art { width: 100%; height: 100%; min-height: 0; display: grid; place-items: center; }
+.so-art svg { width: 100%; height: 100%; max-height: 30vmin; }
+.so-got { display: flex; gap: .6vmin; min-height: 7vmin; justify-content: center; }
+.so-mini { width: 7vmin; height: 7vmin; animation: pop .3s; }
+.so-mini svg { width: 100%; height: 100%; }
+.so-label { font: 700 3vmin var(--font-ui); }
+.so-bin.over { transform: scale(1.05); background: #fff6cc; }
+.so-bin.yes { animation: binYes .5s; }
+.so-bin.no { animation: shake .4s; }
+@keyframes binYes { 40% { transform: scale(1.08); background: #e3f7e8; } }
+.so-bin.hint, .so-bin.target { filter: none; animation: hintRing 1s steps(1) infinite; }
+.so-tray { display: flex; gap: 2.4vmin; justify-content: center; flex-wrap: wrap; }
+.so-item { width: 15vmin; height: 15vmin; background: #fff; border: .7vmin solid var(--ink); border-radius: 50%; padding: 1.4vmin;
+  box-shadow: 0 1vmin 0 rgba(0,0,0,.15); touch-action: none; cursor: grab; animation: pop .4s backwards; }
+.so-item svg { width: 100%; height: 100%; pointer-events: none; }
+.so-item.dragging { position: relative; z-index: 30; box-shadow: 0 2.4vmin 3vmin rgba(0,0,0,.3); }
+.so-item.placed { visibility: hidden; }
+.so-item.hint, .so-item.target { filter: none; animation: hintRing 1s steps(1) infinite; }
+/* Animal Homes: the habitats are pictures that fill their box */
+.zoo-homes .so-bin { padding: 0; flex-basis: 50vmin; grid-template-rows: minmax(0, 1fr); }
+.zoo-homes .so-art { position: absolute; inset: 0; }
+.zoo-homes .so-art svg { max-height: none; }
+.zoo-homes .so-got { position: relative; align-self: end; margin-bottom: 1.4vmin; }
+.zoo-homes .so-mini { width: 11vmin; height: 11vmin; filter: drop-shadow(0 .6vmin 0 rgba(0,0,0,.2)); }
+.zoo-homes .so-item { width: 16vmin; height: 16vmin; padding: .8vmin; }
+
+/* ---------- Picture stories ---------- */
+.story { position: absolute; inset: 0; display: grid; place-items: center;
+  padding: calc(20vmin + var(--safe-t)) max(17vmin, var(--safe-r)) calc(7vmin + var(--safe-b)) max(17vmin, var(--safe-l));
+  background: radial-gradient(circle at 50% 40%, #fff6e0, #f2d48a); }
+.st-page { width: 100%; height: 100%; display: grid; place-items: center; }
+.st-page svg { width: 100%; height: 100%; filter: drop-shadow(0 1.4vmin 0 rgba(0,0,0,.15)); }
+.st-page.turn-r { animation: turnR .45s ease-out; }
+.st-page.turn-l { animation: turnL .45s ease-out; }
+@keyframes turnR { from { transform: translateX(8vmin) rotateY(-12deg); opacity: 0; } }
+@keyframes turnL { from { transform: translateX(-8vmin) rotateY(12deg); opacity: 0; } }
+.story .st-prev, .story .st-next { position: absolute; top: 55%; width: 13vmin; height: 13vmin; }
+.story .st-prev { left: max(2.5vmin, var(--safe-l)); }
+.story .st-next { right: max(2.5vmin, var(--safe-r)); }
+.story .st-next.hint, .story .st-next.target { animation: nudge 1s ease-in-out infinite; }
+.st-dots { position: absolute; bottom: calc(2vmin + var(--safe-b)); left: 50%; transform: translateX(-50%); display: flex; gap: 1.4vmin; }
+.st-dots span { width: 2.4vmin; height: 2.4vmin; border-radius: 50%; background: rgba(42,47,69,.25); }
+.st-dots span.on { background: var(--ink); }
+.st-tap { cursor: pointer; }
+.wiggle { transform-box: fill-box; transform-origin: 50% 100%; animation: wiggle .6s; }
+@keyframes wiggle { 25% { transform: rotate(-6deg) scale(1.05); } 75% { transform: rotate(6deg) scale(1.05); } }
+
+/* ---------- The zoo ---------- */
+.zoo-home .scene-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.zoo-pen .pen-animal { transform-box: fill-box; transform-origin: 50% 100%; }
+.zoo-pen .pen-animal.bounce > * { animation: penBounce .7s; transform-box: fill-box; transform-origin: 50% 100%; }
+@keyframes penBounce { 30% { transform: translateY(-14%) scale(1.06); } 60% { transform: translateY(0) scale(.97, 1.03); } }
+.zoo-pen.hint, .zoo-pen.target { filter: url(#glow); }
+.zoo-tiles { position: absolute; left: 50%; bottom: calc(2.5vmin + var(--safe-b)); transform: translateX(-50%);
+  display: flex; gap: 2.4vmin; width: max-content; }
+.zoo-tiles .game-tile { width: min(17vmin, 15vw); }
+.zoo-tiles .game-tile .label { font-size: 2.4vmin; }
+.br-pick.zoo-run, .ballrun.zoo-run { background: linear-gradient(#d6f0c2, #eef9e4); }
+.br-level.done { background: #e3f7e8; }
+.tr-pick.zoo-train { background: linear-gradient(#d6f0c2, #fff6e6); }

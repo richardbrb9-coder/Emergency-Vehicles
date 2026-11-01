@@ -11,7 +11,8 @@
     set(k, v) { try { localStorage.setItem('etr.' + k, JSON.stringify(v)); } catch (e) { /* storage blocked */ } }
   };
   const Settings = window.Settings = Object.assign({ sound: true, voice: true, subtitles: true, calm: false, name: '' }, store.get('settings', {}));
-  const progress = Object.assign({ stickers: [], words: [], games: [], gallery: [], plays: {} }, store.get('progress', {}));
+  // stickers: vehicle stickers; games: game stickers (every world); animals: zoo animal stickers.
+  const progress = Object.assign({ stickers: [], words: [], games: [], gallery: [], plays: {}, animals: [] }, store.get('progress', {}));
   const saveSettings = () => { store.set('settings', Settings); stage.classList.toggle('calm', Settings.calm); };
   const saveProgress = () => { store.set('progress', progress); updateStickerCount(); };
   stage.classList.toggle('calm', Settings.calm);
@@ -230,16 +231,18 @@
     $('#btn-grownups').hidden = !grownups;
   }
   function updateStickerCount() {
-    const n = progress.stickers.length + progress.games.length, c = $('#sticker-count');
+    const n = progress.stickers.length + progress.games.length + progress.animals.length, c = $('#sticker-count');
     c.textContent = n; c.hidden = n === 0;
   }
   updateStickerCount();
-  $('#btn-home').onclick = () => { Sfx.tap(); go(current === 'stickers' ? bookFrom : 'hub'); };
+  // Home goes to the home screen of the world on screen (the Rescue Station's is the hub).
+  const homeOf = name => (window.Worlds && screenWorld[name] && Worlds.world(screenWorld[name]).home) || 'hub';
+  $('#btn-home').onclick = () => { Sfx.tap(); go(current === 'stickers' ? bookFrom : homeOf(current)); };
   $('#btn-map').onclick = () => { Sfx.tap(); go('map'); };
   $('#btn-stickers').onclick = () => { Sfx.tap(); go('stickers'); };
   $('#btn-games').onclick = () => { Sfx.tap(); go('games'); };
   $('#btn-repeat').onclick = () => { Sfx.tap(); if (lastSaid) sayText(lastSaid.text, lastSaid.id); };
-  pipBtn.onclick = () => { Sfx.woof(); Pip.act('jump'); if (current === 'hub') say('hub.pip'); else if (current === 'map') say('map.pip'); else if (lastSaid) sayText(lastSaid.text, lastSaid.id); };
+  pipBtn.onclick = () => { Sfx.woof(); Pip.act('jump'); if (current === 'hub') say('hub.pip'); else if (current === 'map') say('map.pip'); else if (C.lines[current + '.pip']) say(current + '.pip'); else if (lastSaid) sayText(lastSaid.text, lastSaid.id); };
 
   // Grown-ups area: press and hold for 3 seconds so children don't wander in.
   (function grownupsGate() {
@@ -265,7 +268,7 @@
         ${rows}
         <div class="toggle-row"><label for="child-name">Child's first name (for the Rescue Cadet certificate)</label>
           <input id="child-name" class="name-input" maxlength="20" autocomplete="off" value="${(Settings.name || '').replace(/"/g, '&quot;')}"></div>
-        <p style="margin-top:2vmin">Stickers collected: ${progress.stickers.length + progress.games.length} of ${C.vehicles.length + (window.App && App.games ? App.games.length : 0)}. Red words learned: ${progress.words.length}.</p>
+        <p style="margin-top:2vmin">Stickers collected: ${progress.stickers.length + progress.games.length + progress.animals.length} of ${C.vehicles.length + (window.App && App.games ? App.games.length : 0) + (window.Zoo ? Zoo.ANIMALS.length : 0)}. Red words learned: ${progress.words.length}.</p>
         <div class="toggle-row"><span>${installState()}</span>
           ${installPrompt ? '<button class="text-btn" id="install" style="margin:0">Install app</button>' : ''}</div>
         <div class="btn-line">
@@ -289,7 +292,7 @@
         btn.textContent = done; btn.disabled = true; btn.classList.remove('danger');
       };
     };
-    const clearStickers = () => { progress.stickers = []; progress.games = []; progress.badges = []; progress.certShown = false; };
+    const clearStickers = () => { progress.stickers = []; progress.games = []; progress.animals = []; progress.badges = []; progress.certShown = false; };
     confirmReset(modal.querySelector('#reset-stickers'), 'Stickers and badges reset', clearStickers);
     confirmReset(modal.querySelector('#reset'), 'Everything has been reset', () => {
       clearStickers(); progress.words = []; progress.gallery = []; progress.plays = {};
@@ -358,7 +361,7 @@
     fade.classList.add('on');
     setTimeout(() => {
       if (my !== sceneToken) return;
-      if (name === 'stickers' && current !== 'stickers') bookFrom = current === 'map' ? 'map' : 'hub';
+      if (name === 'stickers' && current !== 'stickers') bookFrom = current === 'map' ? 'map' : homeOf(current);
       current = name;
       // Every screen belongs to a world; the map and sticker book keep whatever Pip is wearing.
       if (name === 'map') Pip.outfit('map');
@@ -667,7 +670,7 @@
   window.App = {
     screens, screenWorld, Pip, go, say, sayText, hush, Hint, later, every, wait, tween, ease, easeOut, svgPoint,
     wordCard, reward, ui, confetti, progress, saveProgress, openModal, closeModal, ICON, Settings, vehicle, alivePhone: () => $('#btn-phone'), isModalOpen: () => !modal.hidden,
-    isTalking: () => pipBtn.classList.contains('talking'), current: () => current
+    isTalking: () => pipBtn.classList.contains('talking'), current: () => current, bookFrom: () => bookFrom
   };
 
   // ---------- Start ----------

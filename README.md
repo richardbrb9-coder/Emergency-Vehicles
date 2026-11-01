@@ -1,6 +1,6 @@
 # Pip's World 🐶🗺️
 
-A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. The first world is the Rescue Station (the original *To the Rescue!* app), and six more worlds are on the way: Zoo, Monster Maths, School, Supermarket, Toy Shop and New Puppies.
+A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Two worlds are open: the Rescue Station (the original *To the Rescue!* app) and the Zoo. Five more are on the way: Monster Maths, School, Supermarket, Toy Shop and New Puppies.
 
 At the Rescue Station, Pip shows children 9 rescue vehicles, each with a short mission to play. There are also 12 games, a sticker book, team badges and a Rescue Cadet certificate. Everything is read aloud, and the app works fully offline once it is installed.
 
@@ -66,8 +66,16 @@ If Chrome doesn't offer to install, a white **📲 How to install** button shows
   - Build a Vehicle
   - Water Run: drag ramps, curves, funnels, springs, fans, see-saws and buckets onto a pegboard, then blow Pip's whistle to send water drops down to put out a fire. Free build, plus 12 puzzles that get harder (one piece, then two, then see-saws and buckets). After two misses, Pip shows where a piece could go.
   - Word Train: hear a rescue word and clap its beats on a drum (Clap it), drag the beat carriages onto the train in order (Build it), or spot and fix a silly carriage (Swap it). 12 words with 2 to 4 beats, each beat with its own voice clip.
+- **The Zoo** (tap the zoo on Pip's map):
+  - Meet six animals (elephant, giraffe, lion, penguin, monkey and panda): tap one to hear a fact about it and win its sticker.
+  - Feeding Time: a 7-page picture story, read aloud, about Pip helping Zara the zookeeper. Tap the animals in the pictures.
+  - Snack Run: the ball run with food. Roll bananas, fish, leaves, bamboo, watermelons or meat down to the hungry animal, and steer it past a second animal waiting under the chute. Free build plus 12 puzzles.
+  - Zoo Train: the syllable train with 12 zoo words (zebra, monkey, tiger, panda, penguin, parrot, elephant, crocodile, kangaroo, flamingo, caterpillar, watermelon).
+  - Who Eats What?: drag each food to the animal that eats it (3, then 4, then 5 animals).
+  - Animal Homes: drag each animal to its home: jungle, sea, ice or desert (2, then 3, then 4 homes).
+  - 11 zoo stickers and a Zoo Keeper badge for collecting them all.
 - **Rewards:**
-  - 21 stickers
+  - 21 Rescue Station stickers and 11 zoo stickers
   - 6 team badges
   - a Word Book of red words
   - My Pictures for saved colouring pages
@@ -100,6 +108,10 @@ The app is plain HTML, CSS and JavaScript, with no build step. All artwork is dr
 | `js/train.js` | The syllable train engine and Word Train, with its 12 words |
 | `tools/make-voice.mjs` | Makes the narrator clips and the Word Train beat clips with Google Text-to-Speech |
 | `js/rewards.js` | Sticker book tabs, a sticker page per world, badges, Word Book and certificate |
+| `js/sorter.js` | The sorting engine (drag each item to the right place), used by Who Eats What? and Animal Homes |
+| `js/story.js` | The picture story engine (pages read aloud, with tappable pictures) |
+| `js/zoo-art.js` | Zoo drawings: 18 animals, food, habitats, Zara the zookeeper and scenery |
+| `js/zoo.js` | The zoo world pack: its words, story, Snack Run puzzles, Zoo Train words, sorting rounds, home screen, stickers and badge |
 | `fonts/` | Andika and Fredoka, bundled for offline use (SIL Open Font License) |
 | `docs/` | Style guide and image prompts |
 
@@ -113,9 +125,19 @@ To run it locally, serve the folder over HTTP (for example with `python3 -m http
 
 **Ball run puzzles:** each puzzle in `js/ballrun.js` lists the hose column, the fire's column, any bolted-on pieces, the pieces in the tray, and a `hint` (one way to solve it, shown after two misses). `BallRun.Sim.run(puzzle, pieces)` runs the physics without a screen, so a puzzle can be checked as solvable before it ships.
 
-**Adding a world:** in `js/worlds.js`, set `built: true` and a `home` screen name for the world, then add its screens to `App.screens` and list each one in `App.screenWorld` (for example `App.screenWorld.zooGate = 'zoo'`) so Pip wears that world's outfit. Pip's outfits are in `PIP_OUTFITS` in `js/art.js`. Pip's moods and actions: `App.Pip.mood('cheer' | 'surprised' | 'thinking')` and `App.Pip.act('jump' | 'dance' | 'wave')`.
+**Adding a world:** in `js/worlds.js`, set `built: true` and a `home` screen name for the world, then add its screens to `App.screens` and list each one in `App.screenWorld` (for example `App.screenWorld.zooGate = 'zoo'`) so Pip wears that world's outfit and the home button goes to that world's home. `js/zoo.js` is the example to copy: it adds games with the shared engines, `BallRun.mount`, `WordTrain.mount`, `Sorter.mount` and `Story.mount`, each given the world's own levels, pictures and lines, with `world` and `back` set so its stickers go on the world's page and "more games" returns to the world's home. A world's sticker page and badge go in `Rewards.pages` and `Rewards.extraBadges`. Pip's outfits are in `PIP_OUTFITS` in `js/art.js`. Pip's moods and actions: `App.Pip.mood('cheer' | 'surprised' | 'thinking')` and `App.Pip.act('jump' | 'dance' | 'wave')`.
 
 ## Build history
+
+### Pip's World, Phase 3: the Zoo
+- The Zoo opens from Pip's map. Its home screen has six animals behind a fence (tap one for a fact and its sticker) and five games along the bottom. Pip wears his safari hat.
+- **Feeding Time**, a picture story read aloud: Pip helps Zara the zookeeper feed the monkeys, penguins, giraffe, elephant and panda.
+- **Snack Run** (ball run): food rolls from the keeper's chute to the hungry animal. From puzzle 3, a second animal waits right under the chute, so the food must be steered past it ("Oops! That food is for the giraffe."). Three hearts fill up as the animal eats. All 12 puzzles were checked solvable by running their physics, with the empty board failing and no single piece solving a two-piece puzzle.
+- **Zoo Train** (syllables): 12 animal words, with 2, 3 or 4 beats.
+- **Who Eats What?** and **Animal Homes**, two sorting games that get a little harder each time.
+- 11 zoo stickers on the zoo's own sticker book page, and a Zoo Keeper badge.
+- The game engines now take a world pack, so the zoo needed no new ball run or train code. New shared engines for sorting and picture stories are ready for the next worlds.
+- 163 new voice clips: 131 lines and 32 Zoo Train beats.
 
 ### Pip's World, Phase 1: the shared core
 - The app opens on **Pip's map**, a story picker with 7 places joined by a winding path. The Rescue Station opens; the other six show a "Soon!" sign (worlds are never locked), and Pip tries on that world's outfit and says it's coming soon.
