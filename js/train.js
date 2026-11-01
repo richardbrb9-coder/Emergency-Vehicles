@@ -6,6 +6,7 @@ window.WordTrain = { packs: {} };
 // ---------- Rescue Station words ----------
 // beats: what the child sees on each carriage. say: how the voice tool is asked to pronounce each beat.
 // alone: beats the voice tool says on their own (it spelled them out letter by letter when reading the word beat by beat).
+// carrier: for a beat the voice can't say alone, a word whose opening sound is cut out instead ("ih" from "it").
 window.WordTrain.packs.rescue = {
   id: 'rescue',
   words: [
@@ -20,7 +21,7 @@ window.WordTrain.packs.rescue = {
     { id: 'policecar',  word: 'police car',  beats: ['po', 'lice', 'car'],        say: ['puh', 'lease', 'car'],       pic: 'police', alone: [1] },
     { id: 'hovercraft', word: 'hovercraft',  beats: ['hov', 'er', 'craft'],       say: ['hov', 'uh', 'craft'],        pic: 'hover', alone: [0] },
     { id: 'nozzle',     word: 'nozzle',      beats: ['noz', 'zle'],               say: ['noz', 'zull'],               pic: 'nozzle' },
-    { id: 'helicopter', word: 'helicopter',  beats: ['hel', 'i', 'cop', 'ter'],   say: ['hel', 'uh', 'cop', 'tuh'],   pic: 'helitack', alone: [1] }
+    { id: 'helicopter', word: 'helicopter',  beats: ['hel', 'i', 'cop', 'ter'],   say: ['hel', 'ih', 'cop', 'tuh'],   pic: 'helitack', alone: [1], carrier: { 1: 'it' } }
   ]
 };
 

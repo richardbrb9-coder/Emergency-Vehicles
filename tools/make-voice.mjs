@@ -80,7 +80,27 @@ function voiced(file) {
 }
 // A beat listed in a word's `alone` is said on its own and trimmed, because in the beat-by-beat reading
 // the voice spelled it out letter by letter. --only syl.<word>.<n> remakes just that beat this way.
+// A beat with a `carrier` word (for example "it" for the short "ih" in helicopter) is cut from the start
+// of that word, keeping only the sound before its last consonant, because the voice spells "ih" out.
+async function fromCarrier(word, file) {
+  const raw = path.join(tmp, 'carrier.mp3');
+  for (let tries = 0; tries < 10; tries++) {
+    fs.writeFileSync(raw, await synth({ text: word }, 0.9));
+    const log = spawnSync('ffmpeg', ['-hide_banner', '-i', raw, '-af', 'silencedetect=noise=-35dB:d=0.04', '-f', 'null', '-'], { encoding: 'utf8' }).stderr;
+    const ev = [...log.matchAll(/silence_(start|end): ([\d.]+)/g)].map(m => [m[1], parseFloat(m[2])]);
+    const parts = []; let at = 0;
+    ev.forEach(([kind, t]) => { if (kind === 'start') { if (t - at > 0.03) parts.push([at, t]); } else at = t; });
+    const [a, b] = parts[0] || [];
+    if (parts.length >= 2 && b - a >= 0.15 && b - a <= 0.45) {
+      const len = b - a + 0.03;
+      ff(['-i', raw, '-ss', Math.max(0, a - 0.02).toFixed(3), '-t', len.toFixed(3), '-af', `afade=t=out:st=${(len - 0.06).toFixed(3)}:d=0.06,adelay=30,apad=pad_dur=0.08`, '-ac', '1', '-c:a', 'libmp3lame', '-b:a', '48k', file]);
+      return;
+    }
+  }
+  throw new Error('could not cut a beat from "' + word + '"');
+}
 function alone(w, i, file) {
+  if (w.carrier && w.carrier[i]) return fromCarrier(w.carrier[i], file);
   return synth({ text: w.say[i] }, 0.9).then(buf => {
     const raw = path.join(tmp, 'alone.mp3'); fs.writeFileSync(raw, buf);
     const trim = 'silenceremove=start_periods=1:start_threshold=-45dB';
