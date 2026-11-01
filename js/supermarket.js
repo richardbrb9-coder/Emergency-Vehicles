@@ -284,17 +284,17 @@
   WordTrain.packs.supermarket = {
     id: 'supermarket',
     words: [
-      { id: 'carrot',      word: 'carrot',      beats: ['car', 'rot'],              say: ['ka', 'rut'],                pic: 'carrot', alone: [0], carrier: { 0: 'cat' } },
+      { id: 'carrot',      word: 'carrot',      beats: ['car', 'rot'],              say: ['ka', 'rot'],                pic: 'carrot', alone: [0, 1], carrier: { 0: 'cat' } },
       { id: 'yoghurt',     word: 'yoghurt',     beats: ['yog', 'hurt'],             say: ['yog', 'urt'],               pic: 'yoghurt', alone: [1] },
-      { id: 'apple',       word: 'apple',       beats: ['ap', 'ple'],               say: ['ap', 'pull'],               pic: 'apple' },
-      { id: 'butter',      word: 'butter',      beats: ['but', 'ter'],              say: ['but', 'tuh'],               pic: 'butter' },
+      { id: 'apple',       word: 'apple',       beats: ['ap', 'ple'],               say: ['app', 'pull'],              pic: 'apple', alone: [0] },
+      { id: 'butter',      word: 'butter',      beats: ['but', 'ter'],              say: ['but', 'tuh'],               pic: 'butter', alone: [0] },
       { id: 'trolley',     word: 'trolley',     beats: ['trol', 'ley'],             say: ['trol', 'lee'],              pic: 'trolley' },
       { id: 'biscuit',     word: 'biscuit',     beats: ['bis', 'cuit'],             say: ['biss', 'kit'],              pic: 'biscuit' },
       { id: 'banana',      word: 'banana',      beats: ['ba', 'na', 'na'],          say: ['buh', 'nah', 'nuh'],        pic: 'banana' },
       { id: 'tomato',      word: 'tomato',      beats: ['to', 'ma', 'to'],          say: ['tuh', 'mah', 'toe'],        pic: 'tomato' },
       { id: 'potato',      word: 'potato',      beats: ['po', 'ta', 'to'],          say: ['puh', 'tay', 'toe'],        pic: 'potato' },
       { id: 'broccoli',    word: 'broccoli',    beats: ['broc', 'co', 'li'],        say: ['brock', 'uh', 'lee'],       pic: 'broccoli' },
-      { id: 'supermarket', word: 'supermarket', beats: ['su', 'per', 'mar', 'ket'], say: ['soo', 'puh', 'mar', 'kit'], pic: 'supermarket' },
+      { id: 'supermarket', word: 'supermarket', beats: ['su', 'per', 'mar', 'ket'], say: ['soo', 'purr', 'mar', 'kit'], pic: 'supermarket', alone: [1] },
       { id: 'avocado',     word: 'avocado',     beats: ['av', 'o', 'ca', 'do'],     say: ['av', 'uh', 'kah', 'doe'],   pic: 'avocado', alone: [0, 1, 2, 3] }
     ]
   };
