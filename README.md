@@ -1,6 +1,6 @@
 # Pip's World 🐶🗺️
 
-A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Four worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo, Monster Maths and School. Three more are on the way: Supermarket, Toy Shop and New Puppies.
+A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Five worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo, Monster Maths, School and the Supermarket. Two more are on the way: Toy Shop and New Puppies.
 
 At the Rescue Station, Pip shows children 9 rescue vehicles, each with a short mission to play. There are also 12 games, a sticker book, team badges and a Rescue Cadet certificate. Everything is read aloud, and the app works fully offline once it is installed.
 
@@ -91,8 +91,16 @@ If Chrome doesn't offer to install, a white **📲 How to install** button shows
   - Pack My Bag: drag the things we need for school into the school bag, and leave the rest at home (5, then 6, then 8 things).
   - Line Up!: tap the children in order from shortest to tallest so they walk into a line, then pencils from shortest to longest, then tallest first (3, then 4, then 5 at a time).
   - 11 school stickers and a Star Pupil badge for collecting them all.
+- **Supermarket** (tap the supermarket on Pip's map):
+  - Explore the shop: tap the trolley, the fruit and veg stand, the bakery, the fridge, the scales and Ruby at the till to hear about the weekly shop (staying close to your grown-up, five a day, keeping food cold) and win a sticker for each.
+  - The Big Shop: an 8-page picture story, read aloud, about Pip and Mum doing the weekly food shop, from writing the list to saying "not today" to a giant lollipop and putting the shopping away.
+  - Trolley Run: the ball run with oranges, apples, tomatoes, lemons, onions and tins of beans. Roll them into Mum's trolley, past a cardboard box. Free build (with all six foods) plus 12 puzzles.
+  - Shop Train: the syllable train with 12 food and shop words (carrot, yoghurt, apple, butter, trolley, biscuit, banana, tomato, potato, broccoli, avocado, supermarket).
+  - Shopping List: find each thing on Mum's picture list on the shelves (3 things, then how many of each), then count the shopping through the till.
+  - Pack the Bags: drag the shopping into the fruit bag, the veg bag, the cool bag or the bread bag (2, then 3, then 4 bags).
+  - 11 supermarket stickers and a Super Shopper badge for collecting them all.
 - **Rewards:**
-  - 21 Rescue Station stickers, 11 zoo stickers, 12 Monster Maths stickers and 11 school stickers
+  - 21 Rescue Station stickers, 11 zoo stickers, 12 Monster Maths stickers, 11 school stickers and 11 supermarket stickers
   - 6 team badges
   - a Word Book of red words
   - My Pictures for saved colouring pages
@@ -133,6 +141,8 @@ The app is plain HTML, CSS and JavaScript, with no build step. All artwork is dr
 | `js/monsters.js` | The Monster Maths world pack: its words, story, Gobble Run puzzles (numbered balls), Monster Train words, Shape Snacks rounds, Feed the Monster and Monster Shapes, home screen, stickers and badge |
 | `js/school-art.js` | School drawings: classroom things, children in uniform, Mrs Bell, Nibbles the hamster, crayons, pencils, colour pots and the school bag items |
 | `js/school.js` | The School world pack: its words, story, Crayon Run puzzles, School Train words, Pack My Bag rounds, Line Up!, classroom home screen, stickers and badge |
+| `js/supermarket-art.js` | Supermarket drawings: foods, the trolley, the till, Ruby, the fruit stand, bakery, fridge, scales, shopping bags, the shopping list and the shop shelves |
+| `js/supermarket.js` | The Supermarket world pack: its words, story, Trolley Run puzzles, Shop Train words, Pack the Bags rounds, Shopping List, shop home screen, stickers and badge |
 | `fonts/` | Andika and Fredoka, bundled for offline use (SIL Open Font License) |
 | `docs/` | Style guide and image prompts |
 
@@ -149,6 +159,16 @@ To run it locally, serve the folder over HTTP (for example with `python3 -m http
 **Adding a world:** in `js/worlds.js`, set `built: true` and a `home` screen name for the world, then add its screens to `App.screens` and list each one in `App.screenWorld` (for example `App.screenWorld.zooGate = 'zoo'`) so Pip wears that world's outfit and the home button goes to that world's home. `js/zoo.js` is the example to copy: it adds games with the shared engines, `BallRun.mount`, `WordTrain.mount`, `Sorter.mount` and `Story.mount`, each given the world's own levels, pictures and lines, with `world` and `back` set so its stickers go on the world's page and "more games" returns to the world's home. A world's sticker page and badge go in `Rewards.pages` and `Rewards.extraBadges`. Pip's outfits are in `PIP_OUTFITS` in `js/art.js`. Pip's moods and actions: `App.Pip.mood('cheer' | 'surprised' | 'thinking')` and `App.Pip.act('jump' | 'dance' | 'wave')`.
 
 ## Build history
+
+### Pip's World, Phase 5b: Supermarket
+- The Supermarket opens from Pip's map. The shop home screen has six places to visit (each gives a fact about the weekly shop and a sticker) and five games along the bottom. Pip wears his green shop apron.
+- **The Big Shop**, a picture story read aloud: Pip and Mum's weekly food shop.
+- **Trolley Run** (ball run): food rolls off the shelf into Mum's trolley; from puzzle 3 a cardboard box sits under the chute. The 12 puzzles are the Crayon Run layouts in a new order, each checked solvable again by running its physics.
+- **Shop Train** (syllables): 12 food and shop words, with 2, 3 or 4 beats.
+- **Shopping List**, a new game: find the things on a picture list (and how many of each), then count them through the till.
+- **Pack the Bags**, a sorting game: fruit, vegetables, cold things and bread into their bags.
+- 11 supermarket stickers on their own sticker book page, and a Super Shopper badge.
+- 202 new voice clips: lines, words and Shop Train beats.
 
 ### Pip's World, Phase 5a: School
 - School opens from Pip's map. The classroom home screen has six things to visit (each gives a fact about the school day and a sticker) and five games along the bottom. Pip wears his school cap and bag.

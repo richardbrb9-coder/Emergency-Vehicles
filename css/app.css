@@ -790,3 +790,52 @@ button:focus-visible { outline: 5px solid var(--hivis); outline-offset: 3px; }
   background: rgba(255,255,255,.55); border: .5vmin dashed rgba(42,47,69,.35); z-index: -1; }
 .lineup.pencils .lu-spot::after { width: 7vmin; }
 .lu-spot { z-index: 0; }
+
+/* ---------- Supermarket ---------- */
+.shop-home .scene-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.shop-spot .spot-art.bounce > * { animation: penBounce .7s; transform-box: fill-box; transform-origin: 50% 100%; }
+.shop-spot.hint, .shop-spot.target { filter: url(#glow); }
+.br-pick.shop-run, .ballrun.shop-run { background: linear-gradient(#fff8e6, #eef1f6); }
+.tr-pick.shop-train { background: linear-gradient(#fff8e6, #dff3ff); }
+.shop-story { background: radial-gradient(circle at 50% 40%, #fffaf0, #9fd8a8); }
+.sorter.shop-bags { background: linear-gradient(#fff8e6, #e3f7e8); }
+.shop-bags .so-bin { flex-basis: 30vmin; }
+.shop-bags .so-item { border-radius: 3vmin; }
+.shop-bags .so-art svg.gulp { animation: penBounce .6s; transform-origin: 50% 100%; }
+
+/* Shopping List */
+.shoplist { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 26vmin) minmax(0, 1fr) minmax(0, 30vmin); gap: 3vmin; align-items: center;
+  padding: calc(17vmin + var(--safe-t)) max(4vmin, var(--safe-r)) calc(4vmin + var(--safe-b)) max(4vmin, var(--safe-l));
+  background: linear-gradient(#fff8e6 0 74%, #eef1f6 74%); }
+.sl-paper { background: #fff; border: .7vmin solid var(--ink); border-top: 2vmin solid #e53935; border-radius: 1.4vmin; padding: 1.6vmin; display: grid; gap: 1.2vmin;
+  transform: rotate(-2deg); box-shadow: 0 1vmin 0 rgba(42,47,69,.15); align-self: center; }
+.sl-row { display: grid; grid-template-columns: 9vmin 1fr; align-items: center; gap: 1vmin; position: relative; }
+.sl-pic svg { width: 9vmin; height: 9vmin; display: block; }
+.sl-dots { display: flex; gap: .8vmin; flex-wrap: wrap; }
+.sl-dots i { width: 3.2vmin; height: 3.2vmin; border-radius: 50%; border: .5vmin solid var(--ink); background: #fff; }
+.sl-dots i.on { background: #2e9e4f; }
+.sl-num { display: none; position: absolute; left: 6.6vmin; top: -.6vmin; font: 700 3vmin/1 var(--font-ui); color: #fff; background: #1e5bd6; border-radius: 1.2vmin; padding: .3vmin .9vmin; }
+.shoplist.counting .sl-num { display: block; }
+.sl-row.done .sl-pic { opacity: .45; }
+.sl-row.done::after { content: '✓'; position: absolute; left: 1.6vmin; top: -.6vmin; font: 700 8vmin/1 var(--font-ui); color: #2e9e4f; text-shadow: 0 0 .6vmin #fff; }
+.sl-shelves { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2.4vmin 2vmin; align-content: center; padding: 2vmin;
+  background: repeating-linear-gradient(#d3d9e3 0 calc(50% - 1.2vmin), #9aa3b5 calc(50% - 1.2vmin) 50%); border: .7vmin solid var(--ink); border-radius: 2vmin; min-height: 0; }
+.sl-item { aspect-ratio: 1; background: rgba(255,255,255,.75); border: .5vmin solid var(--ink); border-radius: 2.4vmin; padding: .8vmin; animation: pop .35s backwards; }
+.sl-item svg { width: 100%; height: 100%; pointer-events: none; }
+.sl-item:active { transform: scale(.94); }
+.sl-item.no { animation: shake .4s; }
+.sl-item.hint, .sl-item.target { animation: hintRing 1s steps(1) infinite; }
+.sl-trolley svg { width: 100%; height: auto; display: block; }
+.sl-fly { position: fixed; z-index: 50; pointer-events: none; }
+.sl-fly svg { width: 100%; height: 100%; }
+.sl-belt { display: grid; grid-template-rows: auto auto; justify-items: center; gap: 2vmin; }
+.sl-belt[hidden], .sl-shelves[hidden] { display: none; }
+.sl-till svg { width: 38vmin; height: auto; display: block; }
+.sl-row-belt { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.4vmin; }
+.sl-beep { position: relative; width: 10vmin; height: 10vmin; animation: pop .3s; }
+.sl-beep svg { width: 100%; height: 100%; }
+.sl-beep b { position: absolute; right: -1vmin; top: -1vmin; width: 4.4vmin; height: 4.4vmin; border-radius: 50%; background: #ffd21f; border: .4vmin solid var(--ink);
+  display: grid; place-items: center; font: 700 2.6vmin/1 var(--font-ui); color: var(--ink); }
+.sl-paper { grid-column: 1; grid-row: 1; }
+.sl-shelves, .sl-belt { grid-column: 2; grid-row: 1; }
+.sl-trolley { grid-column: 3; grid-row: 1; }
