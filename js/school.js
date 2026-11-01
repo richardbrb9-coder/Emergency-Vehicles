@@ -274,8 +274,8 @@
       { id: 'alphabet',    word: 'alphabet',    beats: ['al', 'pha', 'bet'],        say: ['al', 'fuh', 'bet'],         pic: 'alphabet' },
       { id: 'xylophone',   word: 'xylophone',   beats: ['xy', 'lo', 'phone'],       say: ['zai', 'luh', 'fone'],       pic: 'xylophone', alone: [0] },
       { id: 'uniform',     word: 'uniform',     beats: ['u', 'ni', 'form'],         say: ['you', 'nih', 'form'],       pic: 'uniform', alone: [1], carrier: { 1: 'nit' } },
-      { id: 'watercolour', word: 'watercolour', beats: ['wa', 'ter', 'col', 'our'], say: ['wor', 'tuh', 'kul', 'uh'],  pic: 'watercolour' },
-      { id: 'macaroni',    word: 'macaroni',    beats: ['mac', 'a', 'ro', 'ni'],    say: ['mak', 'uh', 'roh', 'nee'],  pic: 'macaroni' }
+      { id: 'watercolour', word: 'watercolour', beats: ['wa', 'ter', 'col', 'our'], say: ['wor', 'tuh', 'cull', 'uh'], pic: 'watercolour', alone: [2] },
+      { id: 'macaroni',    word: 'macaroni',    beats: ['mac', 'a', 'ro', 'ni'],    say: ['mak', 'uh', 'row', 'nee'],  pic: 'macaroni', alone: [2] }
     ]
   };
   const trainPic = w => w.pic === 'teacher' ? SA.svg(SA.teacher(true), '-80 -250 160 256') : SA.itemSvg(w.pic);
