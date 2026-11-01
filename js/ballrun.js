@@ -142,7 +142,7 @@
       const other = ball === a ? b : a;
       if (other.label === 'goal' && !ball.gone) {
         ball.gone = true; this.hits++;
-        this.events.push({ type: 'hit', x: ball.position.x, y: ball.position.y, n: this.hits });
+        this.events.push({ type: 'hit', x: ball.position.x, y: ball.position.y, n: this.hits, idx: ball.idx });
         if (this.hits === NEED) { this.won = true; this.events.push({ type: 'win' }); }
       } else if (other.label === 'decoy' && !ball.gone) {
         ball.gone = true; this.missed = (this.missed || 0) + 1;
@@ -165,7 +165,7 @@
       this.t++;
       if (this.running && this.released < this.toRelease && this.t % GAP === 1) {
         const ball = M.Bodies.circle((this.level.hose + 0.5) * CELL, 70, R, { restitution: 0.25, friction: 0.005, frictionStatic: 0.02, frictionAir: 0.004, density: 0.002, label: 'ball' });
-        ball.born = this.t;
+        ball.born = this.t; ball.idx = this.released; // idx: which ball this is (0 = first), for numbered balls
         this.balls.push(ball); M.Composite.add(this.world, ball); this.released++;
         this.events.push({ type: 'release' });
       }
@@ -598,7 +598,7 @@ window.BallRun.packs.rescue = {
         }
         if (ev.type === 'hit') {
           hits = ev.n; theme.hit(ev, fx, level);
-          if (ev.n <= NEED) A.say(L('n' + ev.n));
+          if (ev.n <= NEED) A.say(theme.hitLine ? theme.hitLine(ev, level) : L('n' + ev.n));
         }
         if (ev.type === 'win') win();
       }
@@ -607,7 +607,7 @@ window.BallRun.packs.rescue = {
         await A.wait(900);
         if (!alive()) return;
         A.Pip.mood('cheer'); A.Pip.act('dance');
-        if (free) { A.confetti(); Sfx.chime(); A.say(L('freeOut')); return; }
+        if (free) { A.confetti(); Sfx.chime(); A.say(theme.freeLine ? theme.freeLine(level) : L('freeOut')); return; }
         const first = !solved().includes(index);
         if (first) { solved().push(index); A.saveProgress(); }
         await A.say(theme.winLine ? theme.winLine(level) : L('out'));
