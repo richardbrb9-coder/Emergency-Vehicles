@@ -1,6 +1,6 @@
 // Offline support: every file the app needs is saved on the device the first time it is opened.
 // Change VERSION whenever any app file changes, so devices pick up the new version.
-const VERSION = 'v1.3.13';
+const VERSION = 'v1.3.17';
 const CACHE = 'to-the-rescue-' + VERSION;
 const FILES = [
   './', 'index.html', 'manifest.webmanifest',
@@ -10,7 +10,7 @@ const FILES = [
   'js/content.js', 'js/voice.js', 'js/audio.js', 'js/art.js', 'js/app.js', 'js/worlds.js', 'js/vehicles2.js', 'js/vehicles3.js',
   'js/match.js', 'js/games.js', 'js/games4.js', 'js/games5.js', 'js/lib/matter.min.js', 'js/ballrun.js', 'js/train.js', 'js/rewards.js',
   'js/sorter.js', 'js/story.js', 'js/zoo-art.js', 'js/zoo.js', 'js/monster-art.js', 'js/monsters.js',
-  'js/school-art.js', 'js/school.js'
+  'js/school-art.js', 'js/school.js', 'js/supermarket-art.js', 'js/supermarket.js'
 ];
 // The recorded voice clips (listed in js/voice.js) are saved too.
 importScripts('js/voice.js');
