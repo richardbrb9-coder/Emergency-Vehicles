@@ -29,7 +29,6 @@ window.WordTrain.packs.rescue = {
   const A = window.App;
   if (!A) return;
   const { OL, S, S3 } = Art;
-  const pack = WordTrain.packs.rescue;
   const scene = () => document.getElementById('scene');
   const shuffle = a => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
   const COLOURS = ['#e53935', '#1e5bd6', '#2e9e4f', '#8e5bd6'];
@@ -54,7 +53,6 @@ window.WordTrain.packs.rescue = {
     'train.yes':         'Yes!',
     'train.done':        'All aboard! Toot toot! Brilliant beat spotting!'
   });
-  pack.words.forEach(w => { CONTENT.lines['train.word.' + w.id] = w.word[0].toUpperCase() + w.word.slice(1) + '!'; });
 
   // ---------- Pictures ----------
   const DRAWN = {
@@ -68,7 +66,7 @@ window.WordTrain.packs.rescue = {
     hydrant: () => Art.wordPicture.hydrant(),
     nozzle: () => Art.wordPicture.nozzle()
   };
-  const picture = w => DRAWN[w.pic] ? (typeof DRAWN[w.pic] === 'function' ? DRAWN[w.pic]() : DRAWN[w.pic]) : Kit.vehiclePic(w.pic, 'preserveAspectRatio="xMidYMid meet"');
+  const rescuePicture = w => DRAWN[w.pic] ? (typeof DRAWN[w.pic] === 'function' ? DRAWN[w.pic]() : DRAWN[w.pic]) : Kit.vehiclePic(w.pic, 'preserveAspectRatio="xMidYMid meet"');
 
   const ENGINE = `<svg viewBox="0 0 260 200" class="tr-engine">
     <rect x="150" y="30" width="96" height="120" rx="12" fill="#e53935" ${S}/><rect x="166" y="50" width="62" height="44" rx="8" fill="#bfe6ff" ${S3}/>
@@ -95,7 +93,6 @@ window.WordTrain.packs.rescue = {
 
   const inner = svg => svg.replace(/<\/?svg[^>]*>/g, '');
   const TILE = `<svg viewBox="0 0 330 200"><g transform="translate(0 24) scale(.8)">${inner(ENGINE)}</g><g transform="translate(200 84) scale(.62)">${inner(carSvg(0))}</g></svg>`;
-  A.addGame('train', '#e53935', TILE);
   const STAGE_ART = {
     clap: DRUM,
     build: `<svg viewBox="0 0 200 150">${[0, 1, 2].map(i => `<g transform="translate(${10 + i * 62} ${i % 2 ? 30 : 0}) scale(.3) rotate(${(i - 1) * 10} 100 75)">${inner(carSvg(i))}</g>`).join('')}</svg>`,
@@ -103,214 +100,224 @@ window.WordTrain.packs.rescue = {
       <text x="145" y="44" font-family="Fredoka, sans-serif" font-weight="700" font-size="40" fill="#ffd21f" stroke="${OL}" stroke-width="3" text-anchor="middle">?!</text></svg>`
   };
 
-  // ---------- Saying beats ----------
-  const sayBeat = (w, i) => A.sayText(w.beats[i], `syl.${w.id}.${i}`);
-  const sayWord = w => A.say('train.word.' + w.id);
-  async function sayBeats(w, cars, alive, beats = w.beats.map((_, i) => [w, i])) {
-    for (let k = 0; k < beats.length; k++) {
-      if (!alive()) return;
-      if (cars && cars[k]) light(cars[k]);
-      await sayBeat(...beats[k]);
-      await A.wait(120);
+  // WordTrain.mount(cfg) adds one world's word train: cfg.screen (game id and progress key), cfg.pack (its words),
+  // cfg.picture(word) (the picture for a word), cfg.lines.pick and cfg.lines.done (the world's own intro and well done lines).
+  WordTrain.mount = cfg => {
+    const { screen, pack } = cfg;
+    pack.words.forEach(w => { CONTENT.lines['train.word.' + w.id] = w.word[0].toUpperCase() + w.word.slice(1) + '!'; });
+    A.addGame(screen, cfg.colour, cfg.tile || TILE, { world: cfg.world, back: cfg.back });
+    // ---------- Saying beats ----------
+    const sayBeat = (w, i) => A.sayText(w.beats[i], `syl.${w.id}.${i}`);
+    const sayWord = w => A.say('train.word.' + w.id);
+    async function sayBeats(w, cars, alive, beats = w.beats.map((_, i) => [w, i])) {
+      for (let k = 0; k < beats.length; k++) {
+        if (!alive()) return;
+        if (cars && cars[k]) light(cars[k]);
+        await sayBeat(...beats[k]);
+        await A.wait(120);
+      }
     }
-  }
-  const light = car => { car.classList.remove('lit'); void car.offsetWidth; car.classList.add('lit'); };
+    const light = car => { car.classList.remove('lit'); void car.offsetWidth; car.classList.add('lit'); };
 
-  // ---------- Stage picker ----------
-  function picker() {
-    A.ui({ home: true });
-    scene().innerHTML = `<div class="tr-pick">${['clap', 'build', 'swap'].map((s, i) => `
-      <button class="tr-stage" data-s="${s}" style="animation-delay:${i * .08}s" aria-label="${CONTENT.lines['train.stage.' + s]}">
-        <span class="art">${STAGE_ART[s]}</span><span class="label">${CONTENT.lines['train.stage.' + s]}</span>
-        ${(A.progress.train || []).includes(s) ? '<b aria-hidden="true">★</b>' : ''}</button>`).join('')}</div>`;
-    scene().querySelectorAll('.tr-stage').forEach(b => b.onclick = () => { Sfx.toot(); A.go('train', b.dataset.s); });
-    A.say('train.pick');
-  }
-
-  // Four words per round: easy words first, longer words later.
-  function roundWords(stage) {
-    const by = n => shuffle(pack.words.filter(w => w.beats.length === n));
-    const [two, three, four] = [by(2), by(3), by(4)];
-    if (stage === 'clap') return shuffle([two[0], two[1], three[0], four[0]]);
-    return [two[0], three[0], two[1], A.level('train') > 0 ? four[0] : three[1]];
-  }
-
-  // ---------- Playing ----------
-  A.screens.train = (stage, alive) => {
-    if (!stage) return picker();
-    A.ui({ home: true });
-    const words = roundWords(stage);
-    let n = 0;
-    scene().innerHTML = `
-      <div class="train ${stage}">
-        <div class="tr-card"><div class="tr-pic"></div><div class="tr-word"></div></div>
-        <div class="tr-right"></div>
-        <div class="tr-track"></div>
-        <div class="tr-train"><div class="tr-loco">${ENGINE}</div><div class="tr-cars"></div></div>
-      </div>`;
-    const root = scene().querySelector('.train'), trainEl = root.querySelector('.tr-train'), carsEl = root.querySelector('.tr-cars');
-    const right = root.querySelector('.tr-right'), picEl = root.querySelector('.tr-pic'), wordEl = root.querySelector('.tr-word');
-
-    const makeCar = (i, text, cls = '') => {
-      const c = document.createElement('div');
-      c.className = 'car ' + cls;
-      c.innerHTML = carSvg(i, cls.includes('slot')) + `<span class="syl">${text}</span>`;
-      return c;
-    };
-    async function arrive(w) {
-      picEl.innerHTML = picture(w); wordEl.textContent = '';
-      root.classList.remove('leaving');
-      trainEl.style.transition = 'none'; trainEl.style.transform = 'translateX(110vw)';
-      void trainEl.offsetWidth;
-      trainEl.style.transition = ''; trainEl.style.transform = '';
-      Sfx.chuff(5);
-      await A.wait(1500);
-    }
-    async function depart(w) {
-      wordEl.textContent = w.beats.join('-');
-      Sfx.toot(); A.Pip.mood('cheer');
-      await A.say('train.beats' + w.beats.length);
-      if (!alive()) return;
-      await sayWord(w);
-      if (!alive()) return;
-      Sfx.chuff(6);
-      trainEl.style.transform = 'translateX(-130vw)';
-      await A.wait(1700);
-      if (!alive()) return;
-      n++;
-      if (n < words.length) play(words[n]);
-      else finish();
-    }
-    async function finish() {
-      root.dataset.wait = 'end';
-      picEl.innerHTML = ''; wordEl.textContent = '';
-      const done = (A.progress.train = A.progress.train || []);
-      if (!done.includes(stage)) { done.push(stage); A.saveProgress(); }
-      await A.say('train.done');
-      if (alive()) A.gameDone('train');
+    // ---------- Stage picker ----------
+    function picker() {
+      A.ui({ home: true });
+      scene().innerHTML = `<div class="tr-pick ${cfg.cls || ''}">${['clap', 'build', 'swap'].map((s, i) => `
+        <button class="tr-stage" data-s="${s}" style="animation-delay:${i * .08}s" aria-label="${CONTENT.lines['train.stage.' + s]}">
+          <span class="art">${STAGE_ART[s]}</span><span class="label">${CONTENT.lines['train.stage.' + s]}</span>
+          ${(A.progress[screen] || []).includes(s) ? '<b aria-hidden="true">★</b>' : ''}</button>`).join('')}</div>`;
+      scene().querySelectorAll('.tr-stage').forEach(b => b.onclick = () => { Sfx.toot(); A.go(screen, b.dataset.s); });
+      A.say(cfg.lines.pick);
     }
 
-    // ----- Stage 1: clap the beats on the drum -----
-    async function clap(w) {
-      carsEl.innerHTML = '';
-      const cars = w.beats.map((b, i) => carsEl.appendChild(makeCar(i, b, 'quiet')));
-      right.innerHTML = `<button class="tr-drum" aria-label="Drum">${DRUM}</button>`;
-      const drum = right.querySelector('.tr-drum');
-      let k = -1;
-      drum.onclick = () => {
-        Sfx.drum(); drum.classList.remove('hit'); void drum.offsetWidth; drum.classList.add('hit');
-        if (k < 0 || k >= w.beats.length) return;
-        light(cars[k]); cars[k].classList.remove('quiet');
-        sayBeat(w, k); k++;
-        if (k === w.beats.length) { A.Hint.clear(); root.dataset.wait = ''; A.later(() => depart(w), 900); }
+    // Four words per round: easy words first, longer words later.
+    function roundWords(stage) {
+      const by = n => shuffle(pack.words.filter(w => w.beats.length === n));
+      const [two, three, four] = [by(2), by(3), by(4)];
+      if (stage === 'clap') return shuffle([two[0], two[1], three[0], four[0]]);
+      return [two[0], three[0], two[1], A.level(screen) > 0 ? four[0] : three[1]];
+    }
+
+    // ---------- Playing ----------
+    A.screens[screen] = (stage, alive) => {
+      if (!stage) return picker();
+      A.ui({ home: true });
+      const words = roundWords(stage);
+      let n = 0;
+      scene().innerHTML = `
+        <div class="train ${stage} ${cfg.cls || ''}">
+          <div class="tr-card"><div class="tr-pic"></div><div class="tr-word"></div></div>
+          <div class="tr-right"></div>
+          <div class="tr-track"></div>
+          <div class="tr-train"><div class="tr-loco">${ENGINE}</div><div class="tr-cars"></div></div>
+        </div>`;
+      const root = scene().querySelector('.train'), trainEl = root.querySelector('.tr-train'), carsEl = root.querySelector('.tr-cars');
+      const right = root.querySelector('.tr-right'), picEl = root.querySelector('.tr-pic'), wordEl = root.querySelector('.tr-word');
+
+      const makeCar = (i, text, cls = '') => {
+        const c = document.createElement('div');
+        c.className = 'car ' + cls;
+        c.innerHTML = carSvg(i, cls.includes('slot')) + `<span class="syl">${text}</span>`;
+        return c;
       };
-      await arrive(w);
-      if (!alive()) return;
-      await sayWord(w);
-      if (n === 0) await A.say('train.clap.intro');
-      if (!alive()) return;
-      await sayBeats(w, cars, alive);
-      if (!alive()) return;
-      cars.forEach(c => c.classList.remove('lit'));
-      A.say('train.clap.go');
-      A.Hint.set([drum], 'train.clap.go');
-      k = 0; root.dataset.wait = 'drum';
-    }
+      async function arrive(w) {
+        picEl.innerHTML = cfg.picture(w); wordEl.textContent = '';
+        root.classList.remove('leaving');
+        trainEl.style.transition = 'none'; trainEl.style.transform = 'translateX(110vw)';
+        void trainEl.offsetWidth;
+        trainEl.style.transition = ''; trainEl.style.transform = '';
+        Sfx.chuff(5);
+        await A.wait(1500);
+      }
+      async function depart(w) {
+        wordEl.textContent = w.beats.join('-');
+        Sfx.toot(); A.Pip.mood('cheer');
+        await A.say('train.beats' + w.beats.length);
+        if (!alive()) return;
+        await sayWord(w);
+        if (!alive()) return;
+        Sfx.chuff(6);
+        trainEl.style.transform = 'translateX(-130vw)';
+        await A.wait(1700);
+        if (!alive()) return;
+        n++;
+        if (n < words.length) play(words[n]);
+        else finish();
+      }
+      async function finish() {
+        root.dataset.wait = 'end';
+        picEl.innerHTML = ''; wordEl.textContent = '';
+        const done = (A.progress[screen] = A.progress[screen] || []);
+        if (!done.includes(stage)) { done.push(stage); A.saveProgress(); }
+        await A.say(cfg.lines.done);
+        if (alive()) A.gameDone(screen);
+      }
 
-    // ----- Stage 2: drag the muddled carriages onto the train in order -----
-    async function build(w) {
-      carsEl.innerHTML = '';
-      const slots = w.beats.map((b, i) => carsEl.appendChild(makeCar(i, '', 'slot')));
-      let order = shuffle(w.beats.map((_, i) => i));
-      while (order.every((v, i) => v === i)) order = shuffle(order);
-      right.innerHTML = '<div class="tr-siding"></div>';
-      const siding = right.querySelector('.tr-siding');
-      await arrive(w);
-      if (!alive()) return;
-      const loose = order.map(i => { const c = makeCar(i, w.beats[i], 'loose'); c.dataset.i = i; siding.appendChild(c); return c; });
-      Sfx.pop();
-      await sayWord(w);
-      if (!alive()) return;
-      A.say(n === 0 ? 'train.build.intro' : 'train.build.go');
-      let next = 0;
-      root.dataset.wait = 'drag';
-      const hintNext = () => A.Hint.set([loose.find(c => +c.dataset.i === next)], 'train.build.go');
-      hintNext();
-      loose.forEach(c => draggable(c, () => sayBeat(w, +c.dataset.i), (x, y) => {
-        const r = trainEl.getBoundingClientRect();
-        if (y < r.top - 40 || x > r.right + 60) return false;
-        if (+c.dataset.i !== next) { A.say('train.build.no'); return false; }
-        const slot = slots[next];
-        slot.replaceWith(c); c.classList.remove('loose'); c.style.transform = ''; c.onpointerdown = null;
-        light(c); Sfx.pop(); sayBeat(w, next);
-        next++;
-        if (next === w.beats.length) { A.Hint.clear(); root.dataset.wait = ''; A.later(async () => { await A.wait(500); if (!alive()) return; await sayBeats(w, [...carsEl.children], alive); if (alive()) depart(w); }, 600); }
-        else hintNext();
-        return true;
-      }));
-    }
+      // ----- Stage 1: clap the beats on the drum -----
+      async function clap(w) {
+        carsEl.innerHTML = '';
+        const cars = w.beats.map((b, i) => carsEl.appendChild(makeCar(i, b, 'quiet')));
+        right.innerHTML = `<button class="tr-drum" aria-label="Drum">${DRUM}</button>`;
+        const drum = right.querySelector('.tr-drum');
+        let k = -1;
+        drum.onclick = () => {
+          Sfx.drum(); drum.classList.remove('hit'); void drum.offsetWidth; drum.classList.add('hit');
+          if (k < 0 || k >= w.beats.length) return;
+          light(cars[k]); cars[k].classList.remove('quiet');
+          sayBeat(w, k); k++;
+          if (k === w.beats.length) { A.Hint.clear(); root.dataset.wait = ''; A.later(() => depart(w), 900); }
+        };
+        await arrive(w);
+        if (!alive()) return;
+        await sayWord(w);
+        if (n === 0) await A.say('train.clap.intro');
+        if (!alive()) return;
+        await sayBeats(w, cars, alive);
+        if (!alive()) return;
+        cars.forEach(c => c.classList.remove('lit'));
+        A.say('train.clap.go');
+        A.Hint.set([drum], 'train.clap.go');
+        k = 0; root.dataset.wait = 'drum';
+      }
 
-    // ----- Stage 3: one carriage is silly; swap in the right one -----
-    async function swap(w) {
-      carsEl.innerHTML = '';
-      const k = Math.floor(Math.random() * w.beats.length);
-      const others = shuffle(pack.words.filter(o => o !== w).flatMap(o => o.beats.map((b, i) => [o, i]))).filter(([o, i]) => o.beats[i] !== w.beats[k]);
-      const seen = new Set([w.beats[k]]);
-      const [silly, ...wrong] = others.filter(([o, i]) => !seen.has(o.beats[i]) && seen.add(o.beats[i]));
-      const cars = w.beats.map((b, i) => carsEl.appendChild(i === k ? makeCar(i, silly[0].beats[silly[1]], 'silly') : makeCar(i, b)));
-      right.innerHTML = '<div class="tr-siding"></div>';
-      const siding = right.querySelector('.tr-siding');
-      await arrive(w);
-      if (!alive()) return;
-      await sayWord(w);
-      if (!alive()) return;
-      await A.say('train.swap.intro');
-      if (!alive()) return;
-      const mixed = w.beats.map((_, i) => i === k ? silly : [w, i]);
-      await sayBeats(w, cars, alive, mixed);
-      if (!alive()) return;
-      Sfx.boing(); A.Pip.mood('surprised');
-      const choices = shuffle([[w, k], wrong[0], wrong[1]]);
-      choices.forEach(([o, i]) => {
-        const c = makeCar(k, o.beats[i], 'loose'); c.dataset.right = o === w ? 1 : 0; siding.appendChild(c);
-        draggable(c, () => sayBeat(o, i), (x, y) => {
-          const r = cars[k].getBoundingClientRect();
-          if (x < r.left - 50 || x > r.right + 50 || y < r.top - 70 || y > r.bottom + 50) return false;
-          if (o !== w) { Sfx.boing(); A.say('train.swap.no'); return false; }
-          cars[k].replaceWith(c); cars[k] = c; c.classList.remove('loose'); c.style.transform = ''; c.onpointerdown = null;
-          siding.innerHTML = ''; A.Hint.clear(); root.dataset.wait = '';
-          light(c); Sfx.pop(); A.Pip.mood(null);
-          A.later(async () => { await A.say('train.yes'); if (!alive()) return; await sayBeats(w, cars, alive); if (alive()) depart(w); }, 300);
+      // ----- Stage 2: drag the muddled carriages onto the train in order -----
+      async function build(w) {
+        carsEl.innerHTML = '';
+        const slots = w.beats.map((b, i) => carsEl.appendChild(makeCar(i, '', 'slot')));
+        let order = shuffle(w.beats.map((_, i) => i));
+        while (order.every((v, i) => v === i)) order = shuffle(order);
+        right.innerHTML = '<div class="tr-siding"></div>';
+        const siding = right.querySelector('.tr-siding');
+        await arrive(w);
+        if (!alive()) return;
+        const loose = order.map(i => { const c = makeCar(i, w.beats[i], 'loose'); c.dataset.i = i; siding.appendChild(c); return c; });
+        Sfx.pop();
+        await sayWord(w);
+        if (!alive()) return;
+        A.say(n === 0 ? 'train.build.intro' : 'train.build.go');
+        let next = 0;
+        root.dataset.wait = 'drag';
+        const hintNext = () => A.Hint.set([loose.find(c => +c.dataset.i === next)], 'train.build.go');
+        hintNext();
+        loose.forEach(c => draggable(c, () => sayBeat(w, +c.dataset.i), (x, y) => {
+          const r = trainEl.getBoundingClientRect();
+          if (y < r.top - 40 || x > r.right + 60) return false;
+          if (+c.dataset.i !== next) { A.say('train.build.no'); return false; }
+          const slot = slots[next];
+          slot.replaceWith(c); c.classList.remove('loose'); c.style.transform = ''; c.onpointerdown = null;
+          light(c); Sfx.pop(); sayBeat(w, next);
+          next++;
+          if (next === w.beats.length) { A.Hint.clear(); root.dataset.wait = ''; A.later(async () => { await A.wait(500); if (!alive()) return; await sayBeats(w, [...carsEl.children], alive); if (alive()) depart(w); }, 600); }
+          else hintNext();
           return true;
+        }));
+      }
+
+      // ----- Stage 3: one carriage is silly; swap in the right one -----
+      async function swap(w) {
+        carsEl.innerHTML = '';
+        const k = Math.floor(Math.random() * w.beats.length);
+        const others = shuffle(pack.words.filter(o => o !== w).flatMap(o => o.beats.map((b, i) => [o, i]))).filter(([o, i]) => o.beats[i] !== w.beats[k]);
+        const seen = new Set([w.beats[k]]);
+        const [silly, ...wrong] = others.filter(([o, i]) => !seen.has(o.beats[i]) && seen.add(o.beats[i]));
+        const cars = w.beats.map((b, i) => carsEl.appendChild(i === k ? makeCar(i, silly[0].beats[silly[1]], 'silly') : makeCar(i, b)));
+        right.innerHTML = '<div class="tr-siding"></div>';
+        const siding = right.querySelector('.tr-siding');
+        await arrive(w);
+        if (!alive()) return;
+        await sayWord(w);
+        if (!alive()) return;
+        await A.say('train.swap.intro');
+        if (!alive()) return;
+        const mixed = w.beats.map((_, i) => i === k ? silly : [w, i]);
+        await sayBeats(w, cars, alive, mixed);
+        if (!alive()) return;
+        Sfx.boing(); A.Pip.mood('surprised');
+        const choices = shuffle([[w, k], wrong[0], wrong[1]]);
+        choices.forEach(([o, i]) => {
+          const c = makeCar(k, o.beats[i], 'loose'); c.dataset.right = o === w ? 1 : 0; siding.appendChild(c);
+          draggable(c, () => sayBeat(o, i), (x, y) => {
+            const r = cars[k].getBoundingClientRect();
+            if (x < r.left - 50 || x > r.right + 50 || y < r.top - 70 || y > r.bottom + 50) return false;
+            if (o !== w) { Sfx.boing(); A.say('train.swap.no'); return false; }
+            cars[k].replaceWith(c); cars[k] = c; c.classList.remove('loose'); c.style.transform = ''; c.onpointerdown = null;
+            siding.innerHTML = ''; A.Hint.clear(); root.dataset.wait = '';
+            light(c); Sfx.pop(); A.Pip.mood(null);
+            A.later(async () => { await A.say('train.yes'); if (!alive()) return; await sayBeats(w, cars, alive); if (alive()) depart(w); }, 300);
+            return true;
+          });
         });
-      });
-      A.say('train.swap.fix');
-      root.dataset.wait = 'swap';
-      A.Hint.set([...siding.children].filter(c => c.dataset.right === '1'), 'train.swap.fix');
-    }
+        A.say('train.swap.fix');
+        root.dataset.wait = 'swap';
+        A.Hint.set([...siding.children].filter(c => c.dataset.right === '1'), 'train.swap.fix');
+      }
 
-    // Drag a loose carriage; a tap without moving plays its beat. drop(x, y) returns true if it was used.
-    function draggable(c, tap, drop) {
-      c.onpointerdown = e => {
-        e.preventDefault();
-        const x0 = e.clientX, y0 = e.clientY; let moved = false;
-        c.setPointerCapture(e.pointerId); c.classList.add('dragging'); Sfx.tap();
-        c.onpointermove = ev => {
-          if (Math.hypot(ev.clientX - x0, ev.clientY - y0) > 10) moved = true;
-          c.style.transform = `translate(${ev.clientX - x0}px, ${ev.clientY - y0}px)`;
+      // Drag a loose carriage; a tap without moving plays its beat. drop(x, y) returns true if it was used.
+      function draggable(c, tap, drop) {
+        c.onpointerdown = e => {
+          e.preventDefault();
+          const x0 = e.clientX, y0 = e.clientY; let moved = false;
+          c.setPointerCapture(e.pointerId); c.classList.add('dragging'); Sfx.tap();
+          c.onpointermove = ev => {
+            if (Math.hypot(ev.clientX - x0, ev.clientY - y0) > 10) moved = true;
+            c.style.transform = `translate(${ev.clientX - x0}px, ${ev.clientY - y0}px)`;
+          };
+          c.onpointerup = c.onpointercancel = ev => {
+            c.onpointermove = c.onpointerup = c.onpointercancel = null;
+            c.classList.remove('dragging');
+            if (!moved) { c.style.transform = ''; tap(); return; }
+            if (drop(ev.clientX, ev.clientY)) return;
+            c.style.transition = 'transform .3s'; c.style.transform = '';
+            setTimeout(() => { c.style.transition = ''; }, 320);
+          };
         };
-        c.onpointerup = c.onpointercancel = ev => {
-          c.onpointermove = c.onpointerup = c.onpointercancel = null;
-          c.classList.remove('dragging');
-          if (!moved) { c.style.transform = ''; tap(); return; }
-          if (drop(ev.clientX, ev.clientY)) return;
-          c.style.transition = 'transform .3s'; c.style.transform = '';
-          setTimeout(() => { c.style.transition = ''; }, 320);
-        };
-      };
-    }
+      }
 
-    const play = w => ({ clap, build, swap })[stage](w);
-    play(words[0]);
+      const play = w => ({ clap, build, swap })[stage](w);
+      play(words[0]);
+    };
   };
+  WordTrain.ENGINE = ENGINE; WordTrain.carSvg = carSvg; WordTrain.inner = inner;
+
+  WordTrain.mount({ screen: 'train', pack: WordTrain.packs.rescue, colour: '#e53935', picture: rescuePicture, lines: { pick: 'train.pick', done: 'train.done' } });
 })();

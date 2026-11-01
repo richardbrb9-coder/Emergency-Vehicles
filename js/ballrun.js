@@ -49,21 +49,29 @@
       const g = level.goal;
       this.goal = M.Bodies.rectangle((g + 1) * CELL, H - 55, 2 * CELL - 30, 110, { isStatic: true, isSensor: true, label: 'goal' });
       M.Composite.add(this.world, this.goal);
+      // An optional decoy: a second 2-cell target that the balls must miss (in the zoo, an animal that eats something else).
+      if (level.decoy != null) M.Composite.add(this.world, M.Bodies.rectangle((level.decoy + 1) * CELL, H - 55, 2 * CELL - 30, 110, { isStatic: true, isSensor: true, label: 'decoy' }));
       M.Events.on(this.engine, 'collisionStart', e => e.pairs.forEach(pr => this.touch(pr.bodyA, pr.bodyB)));
       (level.fixed || []).forEach(p => this.add(Object.assign({ fixed: true }, p)));
     }
 
     // Which cells a piece covers; used to stop pieces overlapping.
     static cells(p) { const d = PIECES[p.t], out = []; for (let i = 0; i < d.w; i++) for (let j = 0; j < d.h; j++) out.push((p.c + i) + ',' + (p.r + j)); return out; }
+    // The hose (top row) and the goal and decoy (bottom row) can't be built over.
+    reserved() {
+      const l = this.level, s = new Set([l.hose + ',0', l.goal + ',' + (ROWS - 1), (l.goal + 1) + ',' + (ROWS - 1)]);
+      if (l.decoy != null) { s.add(l.decoy + ',' + (ROWS - 1)); s.add((l.decoy + 1) + ',' + (ROWS - 1)); }
+      return s;
+    }
     blocked() {
-      const s = new Set([this.level.hose + ',0', this.level.goal + ',' + (ROWS - 1), (this.level.goal + 1) + ',' + (ROWS - 1)]);
+      const s = this.reserved();
       this.pieces.forEach(p => Sim.cells(p).forEach(c => s.add(c)));
       return s;
     }
     fits(p, ignore = null) {
       const d = PIECES[p.t];
       if (p.c < 0 || p.r < 0 || p.c + d.w > COLS || p.r + d.h > ROWS) return false;
-      const taken = new Set([this.level.hose + ',0', this.level.goal + ',' + (ROWS - 1), (this.level.goal + 1) + ',' + (ROWS - 1)]);
+      const taken = this.reserved();
       this.pieces.forEach(q => { if (q !== ignore) Sim.cells(q).forEach(c => taken.add(c)); });
       return Sim.cells(p).every(c => !taken.has(c));
     }
@@ -136,6 +144,9 @@
         ball.gone = true; this.hits++;
         this.events.push({ type: 'hit', x: ball.position.x, y: ball.position.y, n: this.hits });
         if (this.hits === NEED) { this.won = true; this.events.push({ type: 'win' }); }
+      } else if (other.label === 'decoy' && !ball.gone) {
+        ball.gone = true; this.missed = (this.missed || 0) + 1;
+        this.events.push({ type: 'decoy', x: ball.position.x, y: ball.position.y });
       } else if (other.label === 'spring' && this.t - (ball.sprung || -99) > 10) {
         ball.sprung = this.t;
         const dir = other.piece.f ? -1 : 1;
@@ -205,7 +216,7 @@
       placed.forEach(p => s.add(Object.assign({}, p)));
       s.start();
       while (!s.finished && !s.won && s.t < maxSteps) s.step();
-      return { hits: s.hits, won: s.won, steps: s.t };
+      return { hits: s.hits, won: s.won, steps: s.t, decoy: s.missed || 0 };
     }
   }
 
@@ -239,13 +250,14 @@ window.BallRun.packs.rescue = {
   ].map(p => Object.assign({ balls: 6 }, p))
 };
 
-// ---------- The Water Run screen (Rescue Station) ----------
+// ---------- The ball run screen ----------
+// BallRun.mount(cfg) adds one world's ball run game: cfg.screen (also the game id and its progress key),
+// cfg.lines (prefix of its voice lines), cfg.pack (levels), cfg.theme (how the source, balls and goal look and sound).
 (function () {
   const A = window.App;
   if (!A) return;
   const BR = window.BallRun, { Sim, PIECES, CELL, COLS, ROWS, W, H, R, NEED } = BR;
   const { OL, S3 } = Art;
-  const pack = BR.packs.rescue;
   const scene = () => document.getElementById('scene');
 
   Object.assign(CONTENT.lines, {
@@ -279,7 +291,6 @@ window.BallRun.packs.rescue = {
     <path d="M40 -14 L-6 18" stroke="${OL}" stroke-width="13" stroke-linecap="round"/><path d="M40 -14 L-6 18" stroke="#1e5bd6" stroke-width="8" stroke-linecap="round"/>
     <path d="M-30 -50 Q-22 -38 -30 -34 Q-38 -38 -30 -50 Z" fill="#5cc3ff" ${S3}/><circle cx="16" cy="-18" r="8" fill="#5cc3ff" ${S3}/>
     <path d="M-16 50 Q-24 30 -12 18 Q-10 32 -2 30 Q2 16 10 12 Q22 30 14 50 Z" fill="#f07a1a" ${S3}/><path d="M-8 50 Q-10 38 -4 32 Q0 40 6 38 Q10 46 6 50 Z" fill="#ffd21f"/></svg>`;
-  A.addGame('ballrun', '#0097a7', ICON);
 
   const WHISTLE = `<svg viewBox="0 0 64 64"><path d="M8 26 H34 A14 14 0 1 1 22 46 H16 Q8 46 8 38 Z" fill="#fff"/><circle cx="36" cy="40" r="6" fill="#0097a7"/><rect x="26" y="18" width="10" height="10" rx="2" fill="#fff"/>
     <path d="M44 14 L50 8 M50 22 L58 20 M40 10 L40 4" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg>`;
@@ -369,6 +380,17 @@ window.BallRun.packs.rescue = {
     return cv;
   }
 
+  function drawBoard(ctx, now) {
+    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#fdf3dc'); g.addColorStop(1, '#f6e2b8');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(138,90,60,.22)';
+    for (let c = 1; c < COLS; c++) for (let r = 1; r < ROWS; r++) { ctx.beginPath(); ctx.arc(c * CELL, r * CELL, 5, 0, Math.PI * 2); ctx.fill(); }
+    ctx.fillStyle = '#7cc46a'; ctx.fillRect(0, H - 8, W, 8);
+  }
+
+  BR.draw = { line, poly, bolt };
+
+  // ---------- Rescue Station theme: water drops from the fire hose put out a fire ----------
   function drawFire(ctx, x, y, level, now) {
     // logs
     ctx.save(); ctx.translate(x, y);
@@ -401,254 +423,277 @@ window.BallRun.packs.rescue = {
     ctx.beginPath(); ctx.arc(x, y, R, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.beginPath(); ctx.arc(x - 4, y - 5, 4, 0, Math.PI * 2); ctx.fill();
   }
-  function drawBoard(ctx, now) {
-    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#fdf3dc'); g.addColorStop(1, '#f6e2b8');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = 'rgba(138,90,60,.22)';
-    for (let c = 1; c < COLS; c++) for (let r = 1; r < ROWS; r++) { ctx.beginPath(); ctx.arc(c * CELL, r * CELL, 5, 0, Math.PI * 2); ctx.fill(); }
-    ctx.fillStyle = '#7cc46a'; ctx.fillRect(0, H - 8, W, 8);
-  }
+  const water = {
+    source: (ctx, level, now, dripping) => drawHose(ctx, level.hose, now, dripping),
+    ball: (ctx, b) => drawBall(ctx, b),
+    goal: (ctx, st) => drawFire(ctx, (st.level.goal + 1) * CELL, H - 6, NEED - st.hits, st.now),
+    splash: '#5cc3ff',
+    hit(ev, fx) { Sfx.splash(); Sfx.hiss(); fx.burst(ev.x, ev.y, 10, '#bfe6ff', 1.4); fx.steam = 40; },
+    win(fx) { fx.steam = 120; },
+    over(ctx, st) {
+      const fx = st.fx;
+      if (fx.steam <= 0) return;
+      fx.steam--;
+      const x = (st.level.goal + 1) * CELL, now = st.now;
+      for (let i = 0; i < 4; i++) { const k = ((now / 12 + i * 25) % 100) / 100; ctx.globalAlpha = (1 - k) * Math.min(1, fx.steam / 30) * .7; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x + Math.sin(i * 2 + k * 5) * 30, H - 60 - k * 160, 20 + k * 30, 0, Math.PI * 2); ctx.fill(); }
+      ctx.globalAlpha = 1;
+    },
+    tapGoal() { Sfx.crackle(); }
+  };
 
-  // ---------- Mode picker ----------
-  const solved = () => (A.progress.ballrun = A.progress.ballrun || []);
-  function picker() {
-    A.ui({ home: true });
-    const done = solved(), next = pack.puzzles.findIndex((_, i) => !done.includes(i));
-    scene().innerHTML = `
-      <div class="br-pick">
-        <button class="br-free" aria-label="Build your own"><span class="art">${ICON}</span><span class="label">Build</span></button>
-        <div class="br-levels">${pack.puzzles.map((_, i) => `<button class="br-level${done.includes(i) ? ' done' : ''}${i === next ? ' next' : ''}" data-i="${i}" aria-label="Puzzle ${i + 1}">
-          <span>${i + 1}</span>${done.includes(i) ? '<b aria-hidden="true">★</b>' : ''}</button>`).join('')}</div>
-      </div>`;
-    scene().querySelector('.br-free').onclick = () => { Sfx.pop(); A.go('ballrun', 'free'); };
-    scene().querySelectorAll('.br-level').forEach(b => b.onclick = () => { Sfx.pop(); A.go('ballrun', +b.dataset.i + 1); });
-    A.say('ballrun.pick');
-  }
+  BR.mount = cfg => {
+    const { screen, pack, theme } = cfg, L = k => cfg.lines + '.' + k;
+    A.addGame(screen, cfg.colour, cfg.icon, { world: cfg.world, back: cfg.back });
+    const solved = () => (A.progress[screen] = A.progress[screen] || []);
 
-  // ---------- Playing ----------
-  A.screens.ballrun = (arg, alive) => {
-    if (!arg) return picker();
-    const free = arg === 'free', index = free ? -1 : arg - 1, level = free ? pack.free : pack.puzzles[index];
-    A.ui({ home: true });
-    scene().innerHTML = `
-      <div class="ballrun">
-        <div class="br-board"><canvas></canvas></div>
-        <div class="br-side">
-          <div class="br-tray"></div>
-          <div class="br-controls">
-            ${free ? `<button class="big-btn br-clear" style="background:#e86aa6" aria-label="Clear the board">${BIN}</button>`
-                   : `<button class="big-btn br-list" style="background:#8e5bd6" aria-label="All puzzles">${LIST}</button>`}
-            <button class="big-btn br-go" style="background:#0097a7" aria-label="Blow the whistle">${WHISTLE}</button>
+    // ---------- Mode picker ----------
+    function picker() {
+      A.ui({ home: true });
+      const done = solved(), next = pack.puzzles.findIndex((_, i) => !done.includes(i));
+      scene().innerHTML = `
+        <div class="br-pick ${cfg.cls || ''}">
+          <button class="br-free" style="background:${cfg.colour}" aria-label="Build your own"><span class="art">${cfg.icon}</span><span class="label">Build</span></button>
+          <div class="br-levels">${pack.puzzles.map((_, i) => `<button class="br-level${done.includes(i) ? ' done' : ''}${i === next ? ' next' : ''}" data-i="${i}" aria-label="Puzzle ${i + 1}">
+            <span>${i + 1}</span>${done.includes(i) ? '<b aria-hidden="true">★</b>' : ''}</button>`).join('')}</div>
+        </div>`;
+      scene().querySelector('.br-free').onclick = () => { Sfx.pop(); A.go(screen, 'free'); };
+      scene().querySelectorAll('.br-level').forEach(b => b.onclick = () => { Sfx.pop(); A.go(screen, +b.dataset.i + 1); });
+      A.say(L('pick'));
+    }
+
+    // ---------- Playing ----------
+    A.screens[screen] = (arg, alive) => {
+      if (!arg) return picker();
+      const free = arg === 'free', index = free ? -1 : arg - 1, level = free ? pack.free : pack.puzzles[index];
+      A.ui({ home: true });
+      scene().innerHTML = `
+        <div class="ballrun ${cfg.cls || ''}">
+          <div class="br-board"><canvas></canvas></div>
+          <div class="br-side">
+            <div class="br-tray"></div>
+            <div class="br-controls">
+              ${free ? `<button class="big-btn br-clear" style="background:#e86aa6" aria-label="Clear the board">${BIN}</button>`
+                     : `<button class="big-btn br-list" style="background:#8e5bd6" aria-label="All puzzles">${LIST}</button>`}
+              <button class="big-btn br-go" style="background:${cfg.colour}" aria-label="Blow the whistle">${WHISTLE}</button>
+            </div>
           </div>
-        </div>
-        <div class="br-drag" hidden></div>
-      </div>`;
-    const root = scene().querySelector('.ballrun'), boardEl = root.querySelector('.br-board'), cv = boardEl.querySelector('canvas'), ctx = cv.getContext('2d');
-    const trayEl = root.querySelector('.br-tray'), dragEl = root.querySelector('.br-drag'), goBtn = root.querySelector('.br-go');
-    const sim = new Sim(level);
-    let scale = 1, fire = NEED, steam = 0, fails = 0, hint = null, busy = false, won = false, said = {};
-    const parts = [];
-    const tray = free ? pack.freeTray.map(t => ({ t, endless: true })) : level.tray.map(t => ({ t, placed: null }));
+          <div class="br-drag" hidden></div>
+        </div>`;
+      const root = scene().querySelector('.ballrun'), boardEl = root.querySelector('.br-board'), cv = boardEl.querySelector('canvas'), ctx = cv.getContext('2d');
+      const trayEl = root.querySelector('.br-tray'), dragEl = root.querySelector('.br-drag'), goBtn = root.querySelector('.br-go');
+      const sim = new Sim(level);
+      let scale = 1, hits = 0, fails = 0, hint = null, won = false, said = {};
+      const parts = [];
+      const fx = { steam: 0, shake: 0, chew: 0, burst: (x, y, n, colour, up = 1) => { for (let i = 0; i < n; i++) parts.push({ x, y, vx: (Math.random() - .5) * 8, vy: -Math.random() * 7 * up, life: 30, colour }); } };
+      const tray = free ? pack.freeTray.map(t => ({ t, endless: true })) : level.tray.map(t => ({ t, placed: null }));
 
-    // Fit the 14 x 8 board into the space, keeping its shape.
-    function fit() {
-      const r = boardEl.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
-      scale = Math.min(r.width / W, r.height / H);
-      cv.style.width = W * scale + 'px'; cv.style.height = H * scale + 'px';
-      cv.width = Math.round(W * scale * dpr); cv.height = Math.round(H * scale * dpr);
-      ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
-    }
-    fit();
-    const onResize = () => { if (alive()) fit(); else window.removeEventListener('resize', onResize); };
-    window.addEventListener('resize', onResize);
-
-    function renderTray() {
-      trayEl.innerHTML = '';
-      tray.forEach((it, i) => {
-        const b = document.createElement('button');
-        b.className = 'br-item' + (it.placed ? ' used' : '');
-        b.setAttribute('aria-label', it.t);
-        b.appendChild(pieceIcon(it.t));
-        b.addEventListener('pointerdown', e => { if (!it.placed) startDrag(e, { t: it.t, f: false, tray: i }, null); });
-        trayEl.appendChild(b);
-      });
-    }
-    renderTray();
-
-    // ----- Dragging pieces -----
-    let drag = null;
-    const toBoard = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / scale, y: (e.clientY - r.top) / scale, inside: e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom }; };
-    function startDrag(e, piece, from) {
-      if (drag) return;
-      e.preventDefault();
-      Sfx.tap(); A.Hint.clear();
-      drag = { piece, from, x0: e.clientX, y0: e.clientY, moved: false, id: e.pointerId, shape: shapeOf(piece.t, piece.f) };
-      if (!said[piece.t] && !from) { said[piece.t] = true; A.say('ballrun.p.' + piece.t); }
-      dragEl.innerHTML = ''; dragEl.appendChild(pieceIcon(piece.t));
-      moveDrag(e);
-    }
-    function snap(e) {
-      const pt = toBoard(e), d = PIECES[drag.piece.t];
-      return { pt, c: Math.round(pt.x / CELL - d.w / 2), r: Math.round(pt.y / CELL - d.h / 2) };
-    }
-    function moveDrag(e) {
-      if (!drag || e.pointerId !== drag.id) return;
-      if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) > 10) drag.moved = true;
-      const s = snap(e);
-      drag.at = s.pt.inside ? { c: s.c, r: s.r } : null;
-      drag.ok = drag.at && sim.fits(Object.assign({}, drag.piece, drag.at));
-      const rr = root.getBoundingClientRect();
-      dragEl.hidden = !!drag.at || !drag.moved && !!drag.from;
-      dragEl.style.left = (e.clientX - rr.left) + 'px'; dragEl.style.top = (e.clientY - rr.top) + 'px';
-    }
-    function endDrag(e) {
-      if (!drag || e.pointerId !== drag.id) return;
-      const d = drag; drag = null; dragEl.hidden = true;
-      const p = d.piece;
-      if (d.from && !d.moved) { // a tap on a piece on the board turns it around
-        p.f = PIECES[p.t].flip ? !p.f : p.f;
-        if (!sim.fits(p)) p.f = !p.f;
-        sim.add(p); Sfx.whoosh();
-        return;
+      // Fit the 14 x 8 board into the space, keeping its shape.
+      function fit() {
+        const r = boardEl.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+        scale = Math.min(r.width / W, r.height / H);
+        cv.style.width = W * scale + 'px'; cv.style.height = H * scale + 'px';
+        cv.width = Math.round(W * scale * dpr); cv.height = Math.round(H * scale * dpr);
+        ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
       }
-      if (d.at && d.ok) {
-        Object.assign(p, d.at); delete p.bodies;
-        sim.add(p); Sfx.pop();
-        if (p.tray != null && !tray[p.tray].endless) tray[p.tray].placed = p;
-        if (!said.flip && PIECES[p.t].flip) { said.flip = true; A.later(() => { if (!A.isTalking()) A.say('ballrun.flip'); }, 2600); }
-      } else {
-        if (d.at && !d.ok) Sfx.boing();
-        if (p.tray != null && !tray[p.tray].endless) tray[p.tray].placed = null;
+      fit();
+      const onResize = () => { if (alive()) fit(); else window.removeEventListener('resize', onResize); };
+      window.addEventListener('resize', onResize);
+
+      function renderTray() {
+        trayEl.innerHTML = '';
+        tray.forEach((it, i) => {
+          const b = document.createElement('button');
+          b.className = 'br-item' + (it.placed ? ' used' : '');
+          b.setAttribute('aria-label', it.t);
+          b.appendChild(pieceIcon(it.t));
+          b.addEventListener('pointerdown', e => { if (!it.placed) startDrag(e, { t: it.t, f: false, tray: i }, null); });
+          trayEl.appendChild(b);
+        });
       }
       renderTray();
-    }
-    cv.addEventListener('pointerdown', e => {
-      const pt = toBoard(e), c = Math.floor(pt.x / CELL), r = Math.floor(pt.y / CELL), key = c + ',' + r;
-      const p = sim.pieces.find(q => Sim.cells(q).includes(key));
-      if (p && p.fixed) { Sfx.clank(1); A.say('ballrun.bolted'); return; }
-      if (p) { sim.remove(p); startDrag(e, p, 'board'); return; }
-      if (r >= ROWS - 1 && (c === level.goal || c === level.goal + 1)) { Sfx.crackle(); return; }
-      if (r === 0 && c === level.hose) go();
-    });
-    root.addEventListener('pointermove', moveDrag);
-    root.addEventListener('pointerup', endDrag);
-    root.addEventListener('pointercancel', e => { if (drag) { drag.at = null; endDrag(e); } });
 
-    // ----- Running the water -----
-    function go() {
-      if (won && !free) return;
-      Sfx.whistle(); A.Pip.act('jump'); A.Hint.clear();
-      sim.start(); fire = NEED; steam = 0; won = false; busy = true;
-      A.say('ballrun.go');
-    }
-    goBtn.onclick = go;
-    const clear = root.querySelector('.br-clear');
-    if (clear) clear.onclick = () => { Sfx.whoosh(); [...sim.pieces].forEach(p => sim.remove(p)); sim.start(); sim.running = false; fire = NEED; won = false; A.say('ballrun.cleared'); };
-    const list = root.querySelector('.br-list');
-    if (list) list.onclick = () => { Sfx.tap(); A.go('ballrun'); };
-
-    const burst = (x, y, n, colour, up = 1) => { for (let i = 0; i < n; i++) parts.push({ x, y, vx: (Math.random() - .5) * 8, vy: -Math.random() * 7 * up, life: 30, colour }); };
-    let lastTap = 0;
-    function handle(ev) {
-      if (ev.type === 'release') Sfx.drip();
-      if (ev.type === 'tap' && sim.t - lastTap > 4) { lastTap = sim.t; Sfx.plink(1 + Math.random() * .3); }
-      if (ev.type === 'spring') Sfx.sproing();
-      if (ev.type === 'tip') Sfx.whoosh();
-      if (ev.type === 'splash') { burst(ev.x, H - 8, 6, '#5cc3ff'); }
-      if (ev.type === 'hit') {
-        fire = Math.max(0, NEED - ev.n); Sfx.splash(); Sfx.hiss(); burst(ev.x, ev.y, 10, '#bfe6ff', 1.4); steam = 40;
-        if (ev.n <= NEED) A.say('ballrun.n' + ev.n);
+      // ----- Dragging pieces -----
+      let drag = null;
+      const toBoard = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / scale, y: (e.clientY - r.top) / scale, inside: e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom }; };
+      function startDrag(e, piece, from) {
+        if (drag) return;
+        e.preventDefault();
+        Sfx.tap(); A.Hint.clear();
+        drag = { piece, from, x0: e.clientX, y0: e.clientY, moved: false, id: e.pointerId, shape: shapeOf(piece.t, piece.f) };
+        if (!said[piece.t] && !from) { said[piece.t] = true; A.say(L('p.' + piece.t)); }
+        dragEl.innerHTML = ''; dragEl.appendChild(pieceIcon(piece.t));
+        moveDrag(e);
       }
-      if (ev.type === 'win') win();
-    }
-    async function win() {
-      won = true; A.Hint.clear(); hint = null; steam = 120;
-      await A.wait(900);
-      if (!alive()) return;
-      A.Pip.mood('cheer'); A.Pip.act('dance');
-      if (free) { A.confetti(); Sfx.chime(); A.say('ballrun.freeOut'); return; }
-      const first = !solved().includes(index);
-      if (first) { solved().push(index); A.saveProgress(); }
-      await A.say('ballrun.out');
-      if (!alive()) return;
-      const last = solved().length === pack.puzzles.length && first;
-      A.gameDone('ballrun', { buttons: false });
-      if (last) A.later(() => A.say('ballrun.allDone'), 4500);
-      const end = document.createElement('div');
-      end.className = 'game-end';
-      end.innerHTML = `<button class="big-btn" style="background:#8e5bd6" aria-label="All puzzles">${LIST}</button>
-        ${index + 1 < pack.puzzles.length ? `<button class="big-btn" style="background:#2e9e4f" aria-label="Next puzzle">${NEXT}</button>` : ''}`;
-      scene().appendChild(end);
-      const [l, n] = end.querySelectorAll('button');
-      l.onclick = () => { Sfx.tap(); A.go('ballrun'); };
-      if (n) n.onclick = () => { Sfx.tap(); A.go('ballrun', index + 2); };
-    }
-    function missed() {
-      busy = false; sim.running = false;
-      if (won) return;
-      fails++;
-      if (!free && fails >= 2) showHint(); else A.say('ballrun.again');
-    }
-    function showHint() {
-      const placed = sim.pieces.filter(p => !p.fixed);
-      const want = level.hint.find(h => !placed.some(p => p.t === h.t && p.c === h.c && p.r === h.r && !!p.f === !!h.f));
-      if (!want) { A.say('ballrun.again'); return; }
-      hint = { piece: Object.assign({}, want, { f: !!want.f }), shape: shapeOf(want.t, want.f) };
-      A.say('ballrun.hint');
-    }
-
-    // ----- Animation loop: fixed physics steps, drawn every frame -----
-    let acc = 0, last = performance.now();
-    function frame(now) {
-      if (!alive()) return;
-      acc += Math.min(100, now - last); last = now;
-      while (acc >= 1000 / 60) {
-        acc -= 1000 / 60;
-        if (sim.running) {
-          sim.step();
-          sim.events.splice(0).forEach(handle);
-          if (sim.finished) missed();
-        } else sim.pieces.forEach(p => { if (p.boing) p.boing--; });
+      function snap(e) {
+        const pt = toBoard(e), d = PIECES[drag.piece.t];
+        return { pt, c: Math.round(pt.x / CELL - d.w / 2), r: Math.round(pt.y / CELL - d.h / 2) };
       }
-      draw(now);
+      function moveDrag(e) {
+        if (!drag || e.pointerId !== drag.id) return;
+        if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) > 10) drag.moved = true;
+        const s = snap(e);
+        drag.at = s.pt.inside ? { c: s.c, r: s.r } : null;
+        drag.ok = drag.at && sim.fits(Object.assign({}, drag.piece, drag.at));
+        const rr = root.getBoundingClientRect();
+        dragEl.hidden = !!drag.at || !drag.moved && !!drag.from;
+        dragEl.style.left = (e.clientX - rr.left) + 'px'; dragEl.style.top = (e.clientY - rr.top) + 'px';
+      }
+      function endDrag(e) {
+        if (!drag || e.pointerId !== drag.id) return;
+        const d = drag; drag = null; dragEl.hidden = true;
+        const p = d.piece;
+        if (d.from && !d.moved) { // a tap on a piece on the board turns it around
+          p.f = PIECES[p.t].flip ? !p.f : p.f;
+          if (!sim.fits(p)) p.f = !p.f;
+          sim.add(p); Sfx.whoosh();
+          return;
+        }
+        if (d.at && d.ok) {
+          Object.assign(p, d.at); delete p.bodies;
+          sim.add(p); Sfx.pop();
+          if (p.tray != null && !tray[p.tray].endless) tray[p.tray].placed = p;
+          if (!said.flip && PIECES[p.t].flip) { said.flip = true; A.later(() => { if (!A.isTalking()) A.say(L('flip')); }, 2600); }
+        } else {
+          if (d.at && !d.ok) Sfx.boing();
+          if (p.tray != null && !tray[p.tray].endless) tray[p.tray].placed = null;
+        }
+        renderTray();
+      }
+      cv.addEventListener('pointerdown', e => {
+        const pt = toBoard(e), c = Math.floor(pt.x / CELL), r = Math.floor(pt.y / CELL), key = c + ',' + r;
+        const p = sim.pieces.find(q => Sim.cells(q).includes(key));
+        if (p && p.fixed) { Sfx.clank(1); A.say(L('bolted')); return; }
+        if (p) { sim.remove(p); startDrag(e, p, 'board'); return; }
+        if (r >= ROWS - 1 && (c === level.goal || c === level.goal + 1)) { theme.tapGoal(level); return; }
+        if (r >= ROWS - 1 && level.decoy != null && (c === level.decoy || c === level.decoy + 1)) { if (theme.tapDecoy) theme.tapDecoy(level); return; }
+        if (r === 0 && c === level.hose) go();
+      });
+      root.addEventListener('pointermove', moveDrag);
+      root.addEventListener('pointerup', endDrag);
+      root.addEventListener('pointercancel', e => { if (drag) { drag.at = null; endDrag(e); } });
+
+      // ----- Running the balls -----
+      function go() {
+        if (won && !free) return;
+        Sfx.whistle(); A.Pip.act('jump'); A.Hint.clear();
+        sim.start(); hits = 0; fx.steam = 0; won = false; refused = false;
+        A.say(L('go'));
+      }
+      goBtn.onclick = go;
+      const clear = root.querySelector('.br-clear');
+      if (clear) clear.onclick = () => { Sfx.whoosh(); [...sim.pieces].forEach(p => sim.remove(p)); sim.start(); sim.running = false; hits = 0; won = false; A.say(L('cleared')); };
+      const list = root.querySelector('.br-list');
+      if (list) list.onclick = () => { Sfx.tap(); A.go(screen); };
+
+      let lastTap = 0, refused = false;
+      function handle(ev) {
+        if (ev.type === 'release') (theme.release || Sfx.drip)();
+        if (ev.type === 'tap' && sim.t - lastTap > 4) { lastTap = sim.t; Sfx.plink(1 + Math.random() * .3); }
+        if (ev.type === 'spring') Sfx.sproing();
+        if (ev.type === 'tip') Sfx.whoosh();
+        if (ev.type === 'splash') fx.burst(ev.x, H - 8, 6, theme.splash);
+        if (ev.type === 'decoy') {
+          fx.shake = 40; Sfx.boing();
+          if (!refused && theme.refuse) { refused = true; A.say(theme.refuse(level)); }
+        }
+        if (ev.type === 'hit') {
+          hits = ev.n; theme.hit(ev, fx, level);
+          if (ev.n <= NEED) A.say(L('n' + ev.n));
+        }
+        if (ev.type === 'win') win();
+      }
+      async function win() {
+        won = true; A.Hint.clear(); hint = null; theme.win(fx);
+        await A.wait(900);
+        if (!alive()) return;
+        A.Pip.mood('cheer'); A.Pip.act('dance');
+        if (free) { A.confetti(); Sfx.chime(); A.say(L('freeOut')); return; }
+        const first = !solved().includes(index);
+        if (first) { solved().push(index); A.saveProgress(); }
+        await A.say(theme.winLine ? theme.winLine(level) : L('out'));
+        if (!alive()) return;
+        const last = solved().length === pack.puzzles.length && first;
+        A.gameDone(screen, { buttons: false });
+        if (last) A.later(() => A.say(L('allDone')), 4500);
+        const end = document.createElement('div');
+        end.className = 'game-end';
+        end.innerHTML = `<button class="big-btn" style="background:#8e5bd6" aria-label="All puzzles">${LIST}</button>
+          ${index + 1 < pack.puzzles.length ? `<button class="big-btn" style="background:#2e9e4f" aria-label="Next puzzle">${NEXT}</button>` : ''}`;
+        scene().appendChild(end);
+        const [l, n] = end.querySelectorAll('button');
+        l.onclick = () => { Sfx.tap(); A.go(screen); };
+        if (n) n.onclick = () => { Sfx.tap(); A.go(screen, index + 2); };
+      }
+      function missed() {
+        sim.running = false;
+        if (won) return;
+        fails++;
+        if (!free && fails >= 2) showHint(); else A.say(L('again'));
+      }
+      function showHint() {
+        const placed = sim.pieces.filter(p => !p.fixed);
+        const want = level.hint.find(h => !placed.some(p => p.t === h.t && p.c === h.c && p.r === h.r && !!p.f === !!h.f));
+        if (!want) { A.say(L('again')); return; }
+        hint = { piece: Object.assign({}, want, { f: !!want.f }), shape: shapeOf(want.t, want.f) };
+        A.say(L('hint'));
+      }
+
+      // ----- Animation loop: fixed physics steps, drawn every frame -----
+      let acc = 0, last = performance.now();
+      function frame(now) {
+        if (!alive()) return;
+        acc += Math.min(100, now - last); last = now;
+        while (acc >= 1000 / 60) {
+          acc -= 1000 / 60;
+          if (fx.shake > 0) fx.shake--;
+          if (fx.chew > 0) fx.chew--;
+          if (sim.running) {
+            sim.step();
+            sim.events.splice(0).forEach(handle);
+            if (sim.finished) missed();
+          } else sim.pieces.forEach(p => { if (p.boing) p.boing--; });
+        }
+        draw(now);
+        requestAnimationFrame(frame);
+      }
+      function draw(now) {
+        const st = { level, now, hits: won ? NEED : hits, fx, running: sim.running, won };
+        (theme.board || drawBoard)(ctx, now, level);
+        if (hint) {
+          ctx.save(); ctx.translate(hint.piece.c * CELL, hint.piece.r * CELL); ctx.globalAlpha = .35 + .3 * Math.sin(now / 200);
+          const d = PIECES[hint.piece.t];
+          ctx.fillStyle = '#ffd21f'; ctx.beginPath(); ctx.roundRect(0, 0, d.w * CELL, d.h * CELL, 16); ctx.fill();
+          drawPiece(ctx, hint.shape, now); ctx.restore();
+        }
+        sim.pieces.forEach(p => drawPiece(ctx, p, now));
+        if (level.decoy != null && theme.decoy) theme.decoy(ctx, st);
+        theme.goal(ctx, st);
+        sim.balls.forEach(b => theme.ball(ctx, b, level));
+        theme.source(ctx, level, now, sim.running && sim.released < sim.toRelease);
+        for (let i = parts.length - 1; i >= 0; i--) {
+          const q = parts[i]; q.x += q.vx; q.y += q.vy; q.vy += .5; q.life--;
+          if (q.life <= 0) { parts.splice(i, 1); continue; }
+          ctx.globalAlpha = q.life / 30; ctx.fillStyle = q.colour; ctx.beginPath(); ctx.arc(q.x, q.y, 6, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
+        }
+        if (theme.over) theme.over(ctx, st);
+        if (drag && drag.at) {
+          const d = PIECES[drag.piece.t];
+          ctx.save(); ctx.translate(drag.at.c * CELL, drag.at.r * CELL);
+          ctx.fillStyle = drag.ok ? 'rgba(46,158,79,.25)' : 'rgba(229,57,53,.25)';
+          ctx.beginPath(); ctx.roundRect(0, 0, d.w * CELL, d.h * CELL, 16); ctx.fill();
+          if (!!drag.shape.f !== !!drag.piece.f) drag.shape = shapeOf(drag.piece.t, drag.piece.f);
+          ctx.globalAlpha = .75; drawPiece(ctx, drag.shape, now); ctx.restore();
+        }
+      }
       requestAnimationFrame(frame);
-    }
-    function draw(now) {
-      drawBoard(ctx, now);
-      if (hint) {
-        ctx.save(); ctx.translate(hint.piece.c * CELL, hint.piece.r * CELL); ctx.globalAlpha = .35 + .3 * Math.sin(now / 200);
-        const d = PIECES[hint.piece.t];
-        ctx.fillStyle = '#ffd21f'; ctx.beginPath(); ctx.roundRect(0, 0, d.w * CELL, d.h * CELL, 16); ctx.fill();
-        drawPiece(ctx, hint.shape, now); ctx.restore();
-      }
-      sim.pieces.forEach(p => drawPiece(ctx, p, now));
-      drawFire(ctx, (level.goal + 1) * CELL, H - 6, fire, now);
-      sim.balls.forEach(b => drawBall(ctx, b));
-      drawHose(ctx, level.hose, now, sim.running && sim.released < sim.toRelease);
-      for (let i = parts.length - 1; i >= 0; i--) {
-        const q = parts[i]; q.x += q.vx; q.y += q.vy; q.vy += .5; q.life--;
-        if (q.life <= 0) { parts.splice(i, 1); continue; }
-        ctx.globalAlpha = q.life / 30; ctx.fillStyle = q.colour; ctx.beginPath(); ctx.arc(q.x, q.y, 6, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
-      }
-      if (steam > 0) {
-        steam--;
-        const x = (level.goal + 1) * CELL;
-        for (let i = 0; i < 4; i++) { const k = ((now / 12 + i * 25) % 100) / 100; ctx.globalAlpha = (1 - k) * Math.min(1, steam / 30) * .7; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x + Math.sin(i * 2 + k * 5) * 30, H - 60 - k * 160, 20 + k * 30, 0, Math.PI * 2); ctx.fill(); }
-        ctx.globalAlpha = 1;
-      }
-      if (drag && drag.at) {
-        const d = PIECES[drag.piece.t];
-        ctx.save(); ctx.translate(drag.at.c * CELL, drag.at.r * CELL);
-        ctx.fillStyle = drag.ok ? 'rgba(46,158,79,.25)' : 'rgba(229,57,53,.25)';
-        ctx.beginPath(); ctx.roundRect(0, 0, d.w * CELL, d.h * CELL, 16); ctx.fill();
-        if (!!drag.shape.f !== !!drag.piece.f) drag.shape = shapeOf(drag.piece.t, drag.piece.f);
-        ctx.globalAlpha = .75; drawPiece(ctx, drag.shape, now); ctx.restore();
-      }
-    }
-    requestAnimationFrame(frame);
 
-    A.say(free ? 'ballrun.free' : 'ballrun.puzzle');
-    if (!free) A.Hint.set([trayEl.querySelector('.br-item')], 'ballrun.puzzle');
-    A.ballrun = { sim, level, go, tray }; // for testing
+      if (free) A.say(L('free'));
+      else if (theme.intro) A.say(theme.intro(level, index));
+      else A.say(L('puzzle'));
+      if (!free) A.Hint.set([trayEl.querySelector('.br-item')], L('puzzle'));
+      A.ballrun = { sim, level, go, tray }; // for testing
+    };
   };
+
+  BR.mount({ screen: 'ballrun', lines: 'ballrun', colour: '#0097a7', icon: ICON, pack: BR.packs.rescue, theme: water });
 })();

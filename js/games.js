@@ -11,7 +11,7 @@
   };
 
   // Play again / back to the games menu, shown at the end of a game.
-  function endButtons(again) {
+  function endButtons(again, back = 'games') {
     const end = document.createElement('div');
     end.className = 'game-end';
     end.innerHTML = `
@@ -20,14 +20,16 @@
     scene().appendChild(end);
     const [a, g] = end.querySelectorAll('button');
     a.onclick = () => { Sfx.tap(); A.go(again); };
-    g.onclick = () => { Sfx.tap(); A.go('games'); };
+    g.onclick = () => { Sfx.tap(); A.go(back); };
   }
 
   // =====================================================================
   // Games registry: each game file adds itself, and the menu and sticker book read from here
   // =====================================================================
+  // Each game belongs to a world. world: which sticker page it is on; back: the screen its "more games" button goes to.
   A.games = [];
-  A.addGame = (id, colour, art) => A.games.push({ id, colour, art, title: CONTENT.lines['games.' + id] });
+  A.addGame = (id, colour, art, { world = 'rescue', back = 'games' } = {}) => A.games.push({ id, colour, art, world, back, title: CONTENT.lines['games.' + id] });
+  A.worldGames = world => A.games.filter(g => g.world === world);
   A.game = id => A.games.find(g => g.id === id);
   // How many times this game has been finished: games get a little harder each time.
   A.level = id => Math.min(2, A.progress.plays[id] || 0);
@@ -60,9 +62,9 @@
           </div>
         </div>`);
       document.querySelector('#modal .again').onclick = () => { Sfx.tap(); A.closeModal(); A.go(id); };
-      document.querySelector('#modal .more').onclick = () => { Sfx.tap(); A.closeModal(); A.go('games'); };
+      document.querySelector('#modal .more').onclick = () => { Sfx.tap(); A.closeModal(); A.go(g.back); };
       A.later(() => A.sayText(`You earned the ${g.title} sticker!`), 1600);
-    } else if (buttons) endButtons(id);
+    } else if (buttons) endButtons(id, g ? g.back : 'games');
   };
 
   // =====================================================================
@@ -83,7 +85,7 @@
     A.ui({ home: true, stickers: true });
     scene().innerHTML = `
       <div class="games-menu">
-        ${A.games.map((g, i) => `<button class="game-tile" data-g="${g.id}" style="--tile:${g.colour};animation-delay:${i * 0.05}s" aria-label="${g.title}">
+        ${A.worldGames('rescue').map((g, i) => `<button class="game-tile" data-g="${g.id}" style="--tile:${g.colour};animation-delay:${i * 0.05}s" aria-label="${g.title}">
           <span class="art">${g.art}</span><span class="label">${g.title}</span>${A.progress.games.includes(g.id) ? '<span class="got-star" aria-hidden="true">★</span>' : ''}</button>`).join('')}
       </div>`;
     scene().querySelectorAll('.game-tile').forEach(b => {

@@ -169,7 +169,15 @@
     woof() {
       tone({ freq: 380, to: 180, dur: 0.16, vol: 0.18, type: 'sawtooth' });
       tone({ freq: 360, to: 170, start: 0.22, dur: 0.16, vol: 0.18, type: 'sawtooth' });
-    }
+    },
+    // Zoo animals and munching (kept soft: these are friendly animals)
+    chomp(n = 3) { for (let i = 0; i < n; i++) { noise(0.07, { type: 'lowpass', f1: 900, vol: 0.25, start: i * 0.16 }); tone({ freq: 180, to: 120, start: i * 0.16, dur: 0.06, vol: 0.12 }); } },
+    roar() { const v = settings().calm ? 0.05 : 0.1; tone({ freq: 140, to: 90, dur: 0.9, vol: v, type: 'sawtooth', attack: 0.15 }); noise(0.9, { type: 'lowpass', f1: 500, f2: 200, vol: v * 1.6 }); },
+    trumpet() { const v = settings().calm ? 0.04 : 0.08; tone({ freq: 520, to: 780, dur: 0.25, vol: v, type: 'sawtooth', attack: 0.05 }); tone({ freq: 780, to: 700, start: 0.24, dur: 0.5, vol: v, type: 'sawtooth' }); },
+    squawk() { tone({ freq: 1200, to: 1700, dur: 0.12, vol: 0.08, type: 'square' }); tone({ freq: 1700, to: 1000, start: 0.14, dur: 0.16, vol: 0.08, type: 'square' }); },
+    honk() { tone({ freq: 420, to: 380, dur: 0.18, vol: 0.09, type: 'square' }); tone({ freq: 440, to: 400, start: 0.24, dur: 0.18, vol: 0.09, type: 'square' }); },
+    oohooh() { [0, 0.22, 0.44].forEach((s, i) => tone({ freq: 500 + i * 120, to: 800 + i * 150, start: s, dur: 0.18, vol: 0.08, type: 'triangle' })); },
+    plop() { tone({ freq: 500, to: 160, dur: 0.15, vol: 0.18, type: 'sine' }); }
   };
 
   // ---------- Narrator ----------

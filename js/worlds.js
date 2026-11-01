@@ -8,8 +8,8 @@
   const WORLDS = [
     { id: 'rescue',      name: 'Rescue Station', of: 'the Rescue Station', colour: '#e53935', built: true, home: 'hub',
       go: "Let's go to the Rescue Station!" },
-    { id: 'zoo',         name: 'Zoo',            of: 'the zoo', colour: '#2e9e4f',
-      soon: 'The zoo is getting ready for visitors. Coming soon!' },
+    { id: 'zoo',         name: 'Zoo',            of: 'the zoo', colour: '#2e9e4f', built: true, home: 'zoo',
+      go: "Let's go to the zoo!" },
     { id: 'monsters',    name: 'Monster Maths',  of: 'Monster Maths', colour: '#8e5bd6',
       soon: 'The monsters are still counting. Monster Maths is coming soon!' },
     { id: 'school',      name: 'School',         of: 'school', colour: '#1e5bd6',
@@ -139,6 +139,7 @@
   }
 
   let welcomed = false;
+  A.screenWorld.hub = 'rescue';
   A.screens.map = (arg, alive) => {
     const scene = document.getElementById('scene');
     scene.innerHTML = mapArt();

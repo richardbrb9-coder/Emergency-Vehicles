@@ -1,6 +1,6 @@
 // Offline support: every file the app needs is saved on the device the first time it is opened.
 // Change VERSION whenever any app file changes, so devices pick up the new version.
-const VERSION = 'v1.2.5';
+const VERSION = 'v1.3.5';
 const CACHE = 'to-the-rescue-' + VERSION;
 const FILES = [
   './', 'index.html', 'manifest.webmanifest',
@@ -8,7 +8,8 @@ const FILES = [
   'fonts/andika-400.woff2', 'fonts/andika-700.woff2', 'fonts/fredoka.woff2',
   'icons/icon-48.png', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/icon.svg',
   'js/content.js', 'js/voice.js', 'js/audio.js', 'js/art.js', 'js/app.js', 'js/worlds.js', 'js/vehicles2.js', 'js/vehicles3.js',
-  'js/match.js', 'js/games.js', 'js/games4.js', 'js/games5.js', 'js/lib/matter.min.js', 'js/ballrun.js', 'js/train.js', 'js/rewards.js'
+  'js/match.js', 'js/games.js', 'js/games4.js', 'js/games5.js', 'js/lib/matter.min.js', 'js/ballrun.js', 'js/train.js', 'js/rewards.js',
+  'js/sorter.js', 'js/story.js', 'js/zoo-art.js', 'js/zoo.js'
 ];
 // The recorded voice clips (listed in js/voice.js) are saved too.
 importScripts('js/voice.js');
