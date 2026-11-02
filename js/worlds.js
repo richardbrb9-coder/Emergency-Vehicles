@@ -18,8 +18,8 @@
       go: "Let's go to the supermarket!" },
     { id: 'shop',        name: 'Toy Shop',       of: 'the toy shop', colour: '#ff6f9c', built: true, home: 'toyshop',
       go: "Let's go to the toy shop!" },
-    { id: 'puppies',     name: 'New Puppies',    of: 'the new puppies', colour: '#f07a1a',
-      soon: 'Shh! Mum is resting. The new puppies are coming soon!' }
+    { id: 'puppies',     name: 'New Puppies',    of: 'the new puppies', colour: '#f07a1a', built: true, home: 'puppies',
+      go: "Let's go and see the new puppies!" }
   ];
   const world = id => WORLDS.find(w => w.id === id);
 

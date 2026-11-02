@@ -1,6 +1,6 @@
 # Pip's World 🐶🗺️
 
-A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Six worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo, Monster Maths, School, the Supermarket and the Toy Shop. One more is on the way: New Puppies.
+A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Seven worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo, Monster Maths, School, the Supermarket, the Toy Shop and New Puppies.
 
 At the Rescue Station, Pip shows children 9 rescue vehicles, each with a short mission to play. There are also 12 games, a sticker book, team badges and a Rescue Cadet certificate. Everything is read aloud, and the app works fully offline once it is installed.
 
@@ -107,8 +107,16 @@ If Chrome doesn't offer to install, a white **📲 How to install** button shows
   - Pay with Coins: tap coins from Pip's purse onto the counter to pay the price on the toy's tag (1p coins, then 1p and 2p, then 1p, 2p, 5p and 10p). Pip says the total as it goes up, and helps when too much is paid.
   - Just the Right Size: drag hats, scarves, jumpers and boots to the teddy they fit (a little and a big teddy, then three teddies).
   - 11 toy shop stickers and a Coin Counter badge for collecting them all.
+- **New Puppies** (tap the kennel on Pip's map):
+  - Explore the puppy room: tap Mum and the five puppies in their basket, the puppy scales, the bowls, the toy box, the collars and Dr Ade the vet to hear how newborn puppies are looked after, and win a sticker for each.
+  - New Puppies: an 8-page picture story, read aloud, about Pip's mum having a litter of five puppies (Patch, Biscuit, Pepper, Bramble and Daisy). The birth happens off the page: Pip goes to bed, and in the morning there are puppies. It covers eyes opening at about two weeks, and litters versus one baby at a time.
+  - Bedtime Run: the ball run with toy balls. Roll three balls out of the toy box into the puppy basket (past the sleepy cat's basket). Free build plus 12 puzzles.
+  - Puppy Train: the syllable train with 12 animal words (puppy, kitten, piglet, rabbit, duckling, basket, blanket, tadpole, hedgehog, family, animal, stethoscope).
+  - How Many Babies?: tap each baby to count a mum's litter, clutch of eggs or single baby (eggs hatch into chicks), then pick the number (from level 2). Up to 5, then 6, then 8 babies.
+  - Find My Mum: drag each baby animal (puppy, kitten, piglet, chick, duckling, calf, lamb, foal) to its mum (3 mums, then 4, then 4 with two babies each).
+  - 11 puppy stickers and a Puppy Helper badge for collecting them all.
 - **Rewards:**
-  - 21 Rescue Station stickers, 11 zoo stickers, 12 Monster Maths stickers, 11 school stickers, 11 supermarket stickers and 11 toy shop stickers
+  - 21 Rescue Station stickers, 11 zoo stickers, 12 Monster Maths stickers, 11 school stickers, 11 supermarket stickers, 11 toy shop stickers and 11 puppy stickers
   - 6 team badges
   - a Word Book of red words
   - My Pictures for saved colouring pages
@@ -153,6 +161,8 @@ The app is plain HTML, CSS and JavaScript, with no build step. All artwork is dr
 | `js/supermarket.js` | The Supermarket world pack: its words, story, Trolley Run puzzles, Shop Train words, Pack the Bags rounds, Shopping List, shop home screen, stickers and badge |
 | `js/toyshop-art.js` | Toy Shop drawings: toys, UK coins, Pip's purse and piggy bank, the jack-in-the-box, Sam and the till, teddies and their clothes, price tags and birthday things |
 | `js/toyshop.js` | The Toy Shop world pack: its words, story, Coin Run puzzles, Toy Train words, Just the Right Size rounds, Pay with Coins, toy shop home screen, stickers and badge |
+| `js/puppies-art.js` | New Puppies drawings: Pip's mum, the five puppies, the basket, scales, bowls, toy box, collars, Dr Ade the vet, and farm animal mums and babies |
+| `js/puppies.js` | The New Puppies world pack: its words, story, Bedtime Run puzzles, Puppy Train words, Find My Mum rounds, How Many Babies?, puppy room home screen, stickers and badge |
 | `fonts/` | Andika and Fredoka, bundled for offline use (SIL Open Font License) |
 | `docs/` | Style guide and image prompts |
 
