@@ -877,3 +877,17 @@ button:focus-visible { outline: 5px solid var(--hivis); outline-offset: 3px; }
 .pc-coin svg { width: 100%; height: 100%; display: block; overflow: visible; pointer-events: none; }
 .pc-coin:active { transform: scale(.92); }
 .pc-coin.hint, .pc-coin.target { animation: hintRing 1s steps(1) infinite; }
+
+/* ---------- New Puppies ---------- */
+.pup-home .scene-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pup-spot .spot-art.bounce > * { animation: penBounce .7s; transform-box: fill-box; transform-origin: 50% 100%; }
+.pup-spot.hint, .pup-spot.target { filter: url(#glow); }
+.br-pick.pup-run, .ballrun.pup-run { background: linear-gradient(#f3efff, #e4dcff); }
+.tr-pick.pup-train { background: linear-gradient(#fff1d6, #dff3ff); }
+.pup-story { background: radial-gradient(circle at 50% 40%, #fffaf0, #ffc999); }
+.sorter.pup-mum { background: linear-gradient(#dff3ff 0 55%, #b9e6a0 55%); }
+.pup-mum .so-item { border-radius: 50%; }
+.pup-mum .so-art svg.gulp { animation: penBounce .6s; transform-origin: 50% 100%; }
+/* How Many Babies? */
+.fam-kid .num { transition: opacity .2s; }
+.fam-kid.hint, .fam-kid.target, .choice.hint, .choice.target { filter: url(#glow); }

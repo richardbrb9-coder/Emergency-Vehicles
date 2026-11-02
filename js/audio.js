@@ -180,7 +180,16 @@
     burp() { const v = settings().calm ? 0.07 : 0.16; tone({ freq: 130, to: 70, dur: 0.55, vol: v, type: 'sawtooth', attack: 0.04 }); tone({ freq: 95, to: 60, start: 0.05, dur: 0.5, vol: v * .7, type: 'square', attack: 0.04 }); noise(0.45, { type: 'lowpass', f1: 380, f2: 140, vol: v * 1.4 }); },
     gobble() { tone({ freq: 260, to: 140, dur: 0.12, vol: 0.16, type: 'square' }); noise(0.08, { type: 'lowpass', f1: 900, vol: 0.25, start: 0.1 }); tone({ freq: 200, to: 110, start: 0.14, dur: 0.1, vol: 0.12 }); },
     squeak() { [0, 0.16].forEach(s => tone({ freq: 1900, to: 2600, start: s, dur: 0.09, vol: 0.06, type: 'sine' })); },
-    plop() { tone({ freq: 500, to: 160, dur: 0.15, vol: 0.18, type: 'sine' }); }
+    plop() { tone({ freq: 500, to: 160, dur: 0.15, vol: 0.18, type: 'sine' }); },
+    // Puppies and farm animals (soft and friendly)
+    yip() { [0, 0.18].forEach(s => tone({ freq: 900, to: 1400, start: s, dur: 0.09, vol: 0.1, type: 'triangle' })); },
+    oink() { [0, 0.2].forEach(s => { tone({ freq: 260, to: 180, start: s, dur: 0.14, vol: 0.12, type: 'sawtooth' }); noise(0.12, { type: 'bandpass', f1: 500, q: 3, vol: 0.12, start: s }); }); },
+    cluck() { [0, 0.14, 0.28].forEach((s, i) => tone({ freq: 700 + i * 60, to: 450, start: s, dur: 0.07, vol: 0.1, type: 'square' })); },
+    quack() { [0, 0.24].forEach(s => tone({ freq: 520, to: 380, start: s, dur: 0.16, vol: 0.1, type: 'sawtooth' })); },
+    moo() { const v = settings().calm ? 0.05 : 0.1; tone({ freq: 160, to: 210, dur: 0.35, vol: v, type: 'sawtooth', attack: 0.08 }); tone({ freq: 210, to: 140, start: 0.34, dur: 0.6, vol: v, type: 'sawtooth' }); },
+    baa() { for (let i = 0; i < 5; i++) tone({ freq: i % 2 ? 470 : 500, start: i * 0.08, dur: 0.1, vol: 0.09, type: 'sawtooth' }); },
+    neigh() { tone({ freq: 700, to: 1200, dur: 0.2, vol: 0.08, type: 'sawtooth' }); for (let i = 0; i < 4; i++) tone({ freq: 1100 - i * 120, to: 900 - i * 120, start: 0.2 + i * 0.09, dur: 0.09, vol: 0.07, type: 'sawtooth' }); },
+    crack() { [0, 0.25, 0.5].forEach(s => noise(0.05, { type: 'highpass', f1: 2000, vol: 0.3, start: s })); }
   };
 
   // ---------- Narrator ----------
