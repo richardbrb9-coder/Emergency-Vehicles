@@ -284,7 +284,7 @@
   // Puppy Train: animal words in beats
   // =====================================================================
   // beats: shown on the carriages. say: how the voice is asked to say each beat (short "ih" sounds, cut from "it").
-  // alone / carrier: see the Rescue Station words in js/train.js.
+  // alone / carrier: see the Rescue Station words in js/train.js. ipa: an exact pronunciation for an alone beat (steth, not "steeth").
   WordTrain.packs.puppies = {
     id: 'puppies',
     words: [
@@ -299,7 +299,7 @@
       { id: 'hedgehog',    word: 'hedgehog',    beats: ['hedge', 'hog'],         say: ['hedge', 'hog'],         pic: 'hedgehog' },
       { id: 'family',      word: 'family',      beats: ['fam', 'i', 'ly'],       say: ['fam', 'ih', 'lee'],     pic: 'family', alone: [1], carrier: { 1: 'it' } },
       { id: 'animal',      word: 'animal',      beats: ['an', 'i', 'mal'],       say: ['ann', 'ih', 'mull'],    pic: 'animals', alone: [1], carrier: { 1: 'it' } },
-      { id: 'stethoscope', word: 'stethoscope', beats: ['steth', 'o', 'scope'],  say: ['steth', 'uh', 'scope'], pic: 'stethoscope' }
+      { id: 'stethoscope', word: 'stethoscope', beats: ['steth', 'o', 'scope'],  say: ['steth', 'uh', 'scope'], pic: 'stethoscope', alone: [0], ipa: { 0: 'stɛθ' } }
     ]
   };
   const TRAIN_TILE = `<svg viewBox="0 0 330 200"><g transform="translate(0 24) scale(.8)">${WordTrain.inner(WordTrain.ENGINE)}</g>

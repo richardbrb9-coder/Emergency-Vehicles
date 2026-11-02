@@ -108,7 +108,9 @@ function alone(w, i, file) {
   return (async () => {
     const raw = path.join(tmp, 'alone.mp3');
     for (let tries = 0; tries < 8; tries++) {
-      fs.writeFileSync(raw, await synth({ text: w.say[i] }, 0.9));
+      // ipa: an exact pronunciation for a beat the voice gets wrong from spelling alone ("steth" came out "steeth").
+      const input = w.ipa && w.ipa[i] ? { ssml: `<speak><phoneme alphabet="ipa" ph="${w.ipa[i]}">${w.say[i]}</phoneme></speak>` } : { text: w.say[i] };
+      fs.writeFileSync(raw, await synth(input, 0.9));
       const parts = voiced(raw);
       if (!parts.length) continue;
       const [a, b] = parts.reduce((x, y) => (y[1] - y[0] > x[1] - x[0] ? y : x));
