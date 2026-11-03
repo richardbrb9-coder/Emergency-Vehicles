@@ -509,7 +509,10 @@ button:focus-visible { outline: 5px solid var(--hivis); outline-offset: 3px; }
 @keyframes pipWave { from { transform: rotate(-20deg); } to { transform: rotate(25deg); } }
 .place-art { transform-box: fill-box; transform-origin: 50% 100%; }
 
-.world-chips { display: flex; gap: 1.4vmin; flex-wrap: wrap; justify-content: center; max-width: min(96vw, 160vmin); }
+.world-chips { display: flex; gap: 1.2vmin; flex-wrap: nowrap; justify-content: safe center; max-width: 96vw; flex: none;
+  overflow-x: auto; scrollbar-width: none; padding: .4vmin .4vmin 1.2vmin; touch-action: pan-x; }
+.world-chips::-webkit-scrollbar { display: none; }
+.world-chip { flex: none; }
 .world-chip { display: grid; justify-items: center; gap: .4vmin; padding: .8vmin 1.2vmin; border-radius: 2.6vmin;
   background: rgba(255,255,255,.55); border: .5vmin solid transparent; font: 700 2vmin var(--font-ui); color: var(--ink); }
 .world-chip.on { background: #fff; border-color: var(--ink); box-shadow: 0 .6vmin 0 rgba(0,0,0,.18); }
@@ -891,3 +894,22 @@ button:focus-visible { outline: 5px solid var(--hivis); outline-offset: 3px; }
 /* How Many Babies? */
 .fam-kid .num { transition: opacity .2s; }
 .fam-kid.hint, .fam-kid.target, .choice.hint, .choice.target { filter: url(#glow); }
+
+/* ---------- Pip's map: slides sideways ---------- */
+.map-wrap { overflow: hidden; }
+.map-scroll { position: absolute; inset: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+  touch-action: pan-x; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+.map-scroll::-webkit-scrollbar { display: none; }
+.map-scroll .map-svg { height: 100%; width: auto; aspect-ratio: 2900 / 900; max-width: none; }
+.map-arrow { position: absolute; z-index: 30; top: 50%; width: 11vmin; height: 11vmin; margin-top: -5.5vmin;
+  border-radius: 50%; display: grid; place-items: center; background: #f07a1a; border: .8vmin solid #fff;
+  box-shadow: 0 1vmin 0 rgba(0,0,0,.25); transition: transform .12s ease; }
+.map-arrow svg { width: 60%; height: 60%; }
+.map-arrow:active { transform: scale(.88); }
+.map-arrow.left { left: calc(2vmin + var(--safe-l)); }
+.map-arrow.right { right: calc(2vmin + var(--safe-r)); }
+.map-arrow.nudge { animation: nudge 1.4s ease-in-out infinite; }
+@keyframes nudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(1.6vmin); } }
+.map-smoke { animation: puff 1s ease-in-out infinite alternate; }
+@keyframes puff { from { transform: translateY(0); opacity: .6; } to { transform: translateY(-6px); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .map-arrow.nudge, .map-smoke { animation: none; } }

@@ -183,6 +183,31 @@
     puppies: {
       body: `<path d="M70 130 H130 L136 184 Q100 196 64 184 Z" fill="#ffd21f" ${S}/><path d="M100 168 C92 160 86 152 94 148 C98 146 100 150 100 152 C100 150 102 146 106 148 C114 152 108 160 100 168 Z" fill="#e53935"/>`,
       head: ''
+    },
+    // Pip's Days Out: worn when Pip tries them on at the map, and later in each world.
+    bus: { // a guard's cap and a little rucksack
+      body: `<path d="M72 128 L66 182 M128 128 L134 182" stroke="#e53935" stroke-width="9" stroke-linecap="round"/>`,
+      head: `<path d="M68 40 Q100 4 132 40 Z" fill="#1e3a7a" ${S3}/><path d="M68 40 H132" stroke="#ffd21f" stroke-width="5"/>
+        <path d="M64 40 Q100 34 136 40 Q128 52 100 50 Q72 52 64 40 Z" fill="#14264f" ${S3}/><circle cx="100" cy="24" r="5" fill="#ffd21f" ${S3}/>`
+    },
+    seaside: { // sun hat and sunglasses
+      body: '',
+      head: `<rect x="66" y="64" width="31" height="22" rx="10" fill="#1b2233" ${S3}/><rect x="103" y="64" width="31" height="22" rx="10" fill="#1b2233" ${S3}/>
+        <path d="M97 72 Q100 69 103 72" fill="none" ${S3}/><path d="M72 70 L80 70" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+        <ellipse cx="100" cy="38" rx="66" ry="11" fill="#f6d77a" ${S3}/><path d="M70 36 Q72 6 100 6 Q128 6 130 36 Z" fill="#f6d77a" ${S3}/>
+        <path d="M71 30 Q100 24 129 30" stroke="#ff6f9c" stroke-width="7" fill="none"/>`
+    },
+    library: { // round reading glasses and a library card on a lanyard
+      body: `<path d="M76 128 L100 158 L124 128" fill="none" stroke="#1e5bd6" stroke-width="5"/>
+        <rect x="86" y="152" width="28" height="20" rx="3" fill="#fff" ${S3}/><path d="M91 159 H109 M91 165 H103" stroke="#c2185b" stroke-width="3"/>`,
+      head: `<circle cx="82" cy="76" r="15" fill="#fff" fill-opacity=".25" ${S3}/><circle cx="118" cy="76" r="15" fill="#fff" fill-opacity=".25" ${S3}/>
+        <path d="M97 74 Q100 70 103 74 M67 74 L56 70 M133 74 L144 70" fill="none" ${S3}/>`
+    },
+    museum: { // explorer's hat and a magnifying glass
+      body: `<path d="M150 150 L162 124" stroke="#8b5a2b" stroke-width="8" stroke-linecap="round"/>
+        <circle cx="168" cy="110" r="15" fill="#bfe6ff" fill-opacity=".7" stroke="${OL}" stroke-width="5"/>`,
+      head: `<path d="M66 40 Q66 4 100 4 Q134 4 134 40 Z" fill="#d6b46a" ${S3}/><path d="M68 32 Q100 24 132 32" stroke="#8b5a2b" stroke-width="6" fill="none"/>
+        <ellipse cx="100" cy="40" rx="50" ry="8" fill="#c39a4a" ${S3}/>`
     }
   };
   const pip = (outfit = 'rescue') => {
