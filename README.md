@@ -1,6 +1,6 @@
 # Pip's World 🐶🗺️
 
-A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Ten worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo, Monster Maths, School, the Supermarket, the Toy Shop, New Puppies, the Library, Bus and Train, and the Seaside. Slide the map past the "Pip's Days Out" signpost for the newest places.
+A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Eleven worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo, Monster Maths, School, the Supermarket, the Toy Shop, New Puppies, the Library, the Museum, Bus and Train, and the Seaside. Slide the map past the "Pip's Days Out" signpost for the newest places.
 
 At the Rescue Station, Pip shows children 9 rescue vehicles, each with a short mission to play. There are also 12 games, a sticker book, team badges and a Rescue Cadet certificate. Everything is read aloud, and the app works fully offline once it is installed.
 
@@ -139,8 +139,16 @@ If Chrome doesn't offer to install, a white **📲 How to install** button shows
   - Rhyme Time: Pip says a word; tap the picture that rhymes with it, from three (15 rhyming pairs such as cat and hat, moon and spoon, clock and sock). 4 words, then 5, then 6.
   - Sound Shelves: drag pictures to the shelf for their first sound, in phonics order: s and a, then t, then p (sock, ant, tiger, panda...). 4 pictures, then 6, then 8.
   - 11 library stickers and a Bookworm badge for collecting them all.
+- **Museum** (one of Pip's Days Out: slide the map past the signpost and tap the museum on the hill):
+  - Explore the museum: tap the dinosaur skeleton, the fossil case, the old toys, the knight's armour, the space gallery and the painting to hear about things from long ago, and win a sticker for each. Tap the wobbly dinosaur egg too.
+  - The Bone Hunt: an 8-page picture story, read aloud. Pip and Mum visit the museum, where Professor Fen has lost a dinosaur leg bone. Pip follows a trail of paw prints past the fossils, old toys, knight, space gallery and painting, and finds Bramble the puppy in the gift shop, with the bone.
+  - Fossil Run: the ball run with fossils. Roll three fossils into the tray (and not into the nest). Free build plus 12 puzzles.
+  - Museum Train: the syllable train with 12 museum words (fossil, statue, painting, treasure, armour, mammoth, castle, skeleton, telescope, volcano, astronaut, pterodactyl).
+  - Long Ago or Now?: sort things into long ago or now (candle or light bulb, horse and cart or car, old phone or mobile...). 4 things, then 6, then 8.
+  - Dino Dig: brush the sand away with a finger to find dinosaur bones, then drag each bone onto the skeleton. 3 bones, then 4, then 5.
+  - 11 museum stickers and a Little Explorer badge for collecting them all.
 - **Rewards:**
-  - 21 Rescue Station stickers, 11 zoo stickers, 12 Monster Maths stickers, 11 school stickers, 11 supermarket stickers, 11 toy shop stickers, 11 puppy stickers, 11 bus and train stickers, 11 seaside stickers and 11 library stickers
+  - 21 Rescue Station stickers, 11 zoo stickers, 12 Monster Maths stickers, 11 school stickers, 11 supermarket stickers, 11 toy shop stickers, 11 puppy stickers, 11 bus and train stickers, 11 seaside stickers, 11 library stickers and 11 museum stickers
   - 6 team badges
   - a Word Book of red words
   - My Pictures for saved colouring pages
@@ -192,6 +200,8 @@ The app is plain HTML, CSS and JavaScript, with no build step. All artwork is dr
 | `js/sea-art.js` | Seaside drawings: the beach, beach hut, lifeguard tower and flags, rock pool and its creatures, sandcastle, ice cream van, lighthouse, shells and sand bucket, Kai the lifeguard, the seagull, and the Sink or Float? and Pack for the Beach pictures |
 | `js/sea.js` | The Seaside world pack: its words, story, Shell Run puzzles, Seaside Train words, Pack for the Beach rounds, Sink or Float?, beach home screen, stickers and badge |
 | `js/lib-art.js` | Library drawings: the library room, bookshelves, Miss Rosa the librarian, the front desk and scanner, the picture-book box, the story-time rug, the beanbags, the alphabet frieze, the returns slot, the bookworm, the library card, the Book Run shelf and fish tank, and the Library Train, Rhyme Time and Sound Shelves pictures |
+| `js/museum-art.js` | Museum drawings: the museum hall, the dinosaur skeleton (in parts, for Dino Dig), Professor Fen, the fossil and old toys cases, the knight's armour, the space gallery, the painting, the dinosaur egg, the Fossil Run tray and nest, and the Museum Train and Long Ago or Now? pictures |
+| `js/museum.js` | The Museum world pack: its words, story, Fossil Run puzzles, Museum Train words, Long Ago or Now? things, Dino Dig, museum home screen, stickers and badge |
 | `js/lib.js` | The Library world pack: its words, story, Book Run puzzles, Library Train words, Sound Shelves rounds, Rhyme Time, library home screen, stickers and badge |
 | `fonts/` | Andika and Fredoka, bundled for offline use (SIL Open Font License) |
 | `docs/` | Style guide and image prompts |
@@ -209,6 +219,12 @@ To run it locally, serve the folder over HTTP (for example with `python3 -m http
 **Adding a world:** in `js/worlds.js`, set `built: true` and a `home` screen name for the world, then add its screens to `App.screens` and list each one in `App.screenWorld` (for example `App.screenWorld.zooGate = 'zoo'`) so Pip wears that world's outfit and the home button goes to that world's home. `js/zoo.js` is the example to copy: it adds games with the shared engines, `BallRun.mount`, `WordTrain.mount`, `Sorter.mount` and `Story.mount`, each given the world's own levels, pictures and lines, with `world` and `back` set so its stickers go on the world's page and "more games" returns to the world's home. A world's sticker page and badge go in `Rewards.pages` and `Rewards.extraBadges`. Pip's outfits are in `PIP_OUTFITS` in `js/art.js`. Pip's moods and actions: `App.Pip.mood('cheer' | 'surprised' | 'thinking')` and `App.Pip.act('jump' | 'dance' | 'wave')`.
 
 ## Build history
+
+### Pip's Days Out: Museum
+- The Museum opens on the hill on Pip's map: the dinosaur hall, with Mum, Professor Fen and a wobbly dinosaur egg. All of Pip's Days Out are now open.
+- Five games: The Bone Hunt story, Fossil Run (12 puzzles), Museum Train (12 words), Long Ago or Now? and the new Dino Dig (brush away sand, then rebuild the skeleton).
+- New sound made in code: a brush in the sand.
+- 160 new voice clips in the Aoede voice: 118 lines, 12 words and 30 Museum Train beats.
 
 ### Pip's Days Out: Library
 - The Library opens on Pip's map, just past the Days Out signpost: Pip's first library card, with Mum, Miss Rosa the librarian and a cheeky bookworm.

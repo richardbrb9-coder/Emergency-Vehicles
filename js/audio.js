@@ -198,6 +198,7 @@
     // Library: a page turning, and a quiet "shh".
     page() { noise(0.22, { type: 'highpass', f1: 2400, f2: 5200, vol: 0.12 }); noise(0.12, { type: 'bandpass', f1: 900, vol: 0.06, start: 0.06 }); },
     shh() { noise(0.9, { type: 'highpass', f1: 3200, f2: 2600, vol: settings().calm ? 0.05 : 0.09 }); },
+    brush() { noise(0.18, { type: 'bandpass', f1: 1800, f2: 1200, vol: settings().calm ? 0.04 : 0.07 }); },
     crack() { [0, 0.25, 0.5].forEach(s => noise(0.05, { type: 'highpass', f1: 2000, vol: 0.3, start: s })); }
   };
 
