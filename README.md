@@ -1,6 +1,6 @@
 # Pip's World 🐶🗺️
 
-A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Nine worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo, Monster Maths, School, the Supermarket, the Toy Shop, New Puppies, Bus and Train, and the Seaside. Slide the map past the "Pip's Days Out" signpost for the newest places.
+A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Ten worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo, Monster Maths, School, the Supermarket, the Toy Shop, New Puppies, the Library, Bus and Train, and the Seaside. Slide the map past the "Pip's Days Out" signpost for the newest places.
 
 At the Rescue Station, Pip shows children 9 rescue vehicles, each with a short mission to play. There are also 12 games, a sticker book, team badges and a Rescue Cadet certificate. Everything is read aloud, and the app works fully offline once it is installed.
 
@@ -131,8 +131,16 @@ If Chrome doesn't offer to install, a white **📲 How to install** button shows
   - Sink or Float?: guess first, then drop each thing into the water tank and watch it float or sink (apple, rubber duck, beach ball, leaf, toy boat, sponge, stone, key, coin, metal spoon, marble, seashell), with a simple reason for each. 4 things, then 5, then 6.
   - Pack for the Beach: drag sun hats, suncream, water and towels into the beach bag, and leave scarves, snow boots and school bags at home. 4 things, then 6, then 8.
   - 11 seaside stickers and a Seaside Star badge for collecting them all.
+- **Library** (one of Pip's Days Out: slide the map past the signpost and tap the library):
+  - Explore the library: tap Miss Rosa at the front desk, the returns slot, the story-time rug, the picture-book box, the beanbag corner and the alphabet to hear about libraries and looking after books, and win a sticker for each. Tap the cheeky bookworm too.
+  - My Library Card: an 8-page picture story, read aloud. Pip and Mum get Pip's first library card, choose picture books, use quiet voices, listen at story time, scan the books out, read them at bedtime with a bookmark, and post them back.
+  - Book Run: the ball run with books. Slide three books out of the returns chute onto the shelf of their colour (and not into the fish tank). Free build plus 12 puzzles.
+  - Library Train: the syllable train with 12 story words (story, bookmark, beanbag, dragon, pirate, princess, giant, wizard, library, magazine, poetry, adventure).
+  - Rhyme Time: Pip says a word; tap the picture that rhymes with it, from three (15 rhyming pairs such as cat and hat, moon and spoon, clock and sock). 4 words, then 5, then 6.
+  - Sound Shelves: drag pictures to the shelf for their first sound, in phonics order: s and a, then t, then p (sock, ant, tiger, panda...). 4 pictures, then 6, then 8.
+  - 11 library stickers and a Bookworm badge for collecting them all.
 - **Rewards:**
-  - 21 Rescue Station stickers, 11 zoo stickers, 12 Monster Maths stickers, 11 school stickers, 11 supermarket stickers, 11 toy shop stickers, 11 puppy stickers, 11 bus and train stickers and 11 seaside stickers
+  - 21 Rescue Station stickers, 11 zoo stickers, 12 Monster Maths stickers, 11 school stickers, 11 supermarket stickers, 11 toy shop stickers, 11 puppy stickers, 11 bus and train stickers, 11 seaside stickers and 11 library stickers
   - 6 team badges
   - a Word Book of red words
   - My Pictures for saved colouring pages
@@ -183,6 +191,8 @@ The app is plain HTML, CSS and JavaScript, with no build step. All artwork is dr
 | `js/bus.js` | The Bus and Train world pack: its words, story, Ticket Run puzzles, Station Train words, Safe or Not Safe? rounds, Next Stop!, bus stop and station home screen, stickers and badge |
 | `js/sea-art.js` | Seaside drawings: the beach, beach hut, lifeguard tower and flags, rock pool and its creatures, sandcastle, ice cream van, lighthouse, shells and sand bucket, Kai the lifeguard, the seagull, and the Sink or Float? and Pack for the Beach pictures |
 | `js/sea.js` | The Seaside world pack: its words, story, Shell Run puzzles, Seaside Train words, Pack for the Beach rounds, Sink or Float?, beach home screen, stickers and badge |
+| `js/lib-art.js` | Library drawings: the library room, bookshelves, Miss Rosa the librarian, the front desk and scanner, the picture-book box, the story-time rug, the beanbags, the alphabet frieze, the returns slot, the bookworm, the library card, the Book Run shelf and fish tank, and the Library Train, Rhyme Time and Sound Shelves pictures |
+| `js/lib.js` | The Library world pack: its words, story, Book Run puzzles, Library Train words, Sound Shelves rounds, Rhyme Time, library home screen, stickers and badge |
 | `fonts/` | Andika and Fredoka, bundled for offline use (SIL Open Font License) |
 | `docs/` | Style guide and image prompts |
 
@@ -199,6 +209,13 @@ To run it locally, serve the folder over HTTP (for example with `python3 -m http
 **Adding a world:** in `js/worlds.js`, set `built: true` and a `home` screen name for the world, then add its screens to `App.screens` and list each one in `App.screenWorld` (for example `App.screenWorld.zooGate = 'zoo'`) so Pip wears that world's outfit and the home button goes to that world's home. `js/zoo.js` is the example to copy: it adds games with the shared engines, `BallRun.mount`, `WordTrain.mount`, `Sorter.mount` and `Story.mount`, each given the world's own levels, pictures and lines, with `world` and `back` set so its stickers go on the world's page and "more games" returns to the world's home. A world's sticker page and badge go in `Rewards.pages` and `Rewards.extraBadges`. Pip's outfits are in `PIP_OUTFITS` in `js/art.js`. Pip's moods and actions: `App.Pip.mood('cheer' | 'surprised' | 'thinking')` and `App.Pip.act('jump' | 'dance' | 'wave')`.
 
 ## Build history
+
+### Pip's Days Out: Library
+- The Library opens on Pip's map, just past the Days Out signpost: Pip's first library card, with Mum, Miss Rosa the librarian and a cheeky bookworm.
+- Five games: the My Library Card story, Book Run (12 puzzles), Library Train (12 words), Sound Shelves (first sounds s, a, t, p) and the new Rhyme Time.
+- New sounds made in code: a page turning, and a quiet "shh".
+- Sound Shelves lines give the recorded voice the exact letter sound (`CONTENT.ssml`, read by `tools/make-voice.mjs`).
+- 230 new voice clips in the Aoede voice: 190 lines, 12 words and 28 Library Train beats.
 
 ### Pip's Days Out: Seaside
 - The Seaside opens at the end of the railway on Pip's map: the beach, with Pip's whole family, Kai the lifeguard and a cheeky seagull.

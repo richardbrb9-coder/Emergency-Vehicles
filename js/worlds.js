@@ -21,8 +21,8 @@
     { id: 'puppies',     name: 'New Puppies',    of: 'the new puppies', colour: '#f07a1a', built: true, home: 'puppies',
       go: "Let's go and see the new puppies!" },
     // Pip's Days Out: further along the map, past the signpost. The railway runs from the station to the seaside.
-    { id: 'library',     name: 'Library',        of: 'the library', colour: '#c2185b', built: false, out: true,
-      soon: "Shh! The library is full of books and stories. It's coming soon!" },
+    { id: 'library',     name: 'Library',        of: 'the library', colour: '#c2185b', built: true, out: true, home: 'libroom',
+      go: "Let's go to the library and choose some books!" },
     { id: 'museum',      name: 'Museum',         of: 'the museum', colour: '#8a5a24', built: false, out: true,
       soon: "Roar! There's a great big dinosaur at the museum. It's coming soon!" },
     { id: 'bus',         name: 'Bus and Train',  of: 'the bus and train', colour: '#d6331f', built: true, out: true, home: 'busstation',

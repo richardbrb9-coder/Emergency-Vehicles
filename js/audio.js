@@ -195,6 +195,9 @@
     // Seaside: the waves washing in, and a seagull's cry.
     waves() { noise(1.6, { type: 'lowpass', f1: 400, f2: 1400, vol: settings().calm ? 0.06 : 0.12 }); noise(1.2, { type: 'lowpass', f1: 1200, f2: 300, vol: 0.08, start: 1.2 }); },
     gull() { [0, 0.34].forEach(s => { tone({ freq: 1500, to: 2300, start: s, dur: 0.12, vol: 0.07, type: 'sawtooth' }); tone({ freq: 2300, to: 1300, start: s + 0.12, dur: 0.18, vol: 0.07, type: 'sawtooth' }); }); },
+    // Library: a page turning, and a quiet "shh".
+    page() { noise(0.22, { type: 'highpass', f1: 2400, f2: 5200, vol: 0.12 }); noise(0.12, { type: 'bandpass', f1: 900, vol: 0.06, start: 0.06 }); },
+    shh() { noise(0.9, { type: 'highpass', f1: 3200, f2: 2600, vol: settings().calm ? 0.05 : 0.09 }); },
     crack() { [0, 0.25, 0.5].forEach(s => noise(0.05, { type: 'highpass', f1: 2000, vol: 0.3, start: s })); }
   };
 

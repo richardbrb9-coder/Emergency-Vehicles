@@ -34,6 +34,8 @@ const page = await browser.newPage();
 await page.goto(pathToFileURL(path.join(root, 'index.html')).href);
 await page.waitForFunction(() => window.CONTENT && window.Worlds);
 const lines = await page.evaluate(() => window.CONTENT.lines);
+// A line can have an exact SSML version for the recorded voice (for example a letter's sound in Sound Shelves).
+const ssml = await page.evaluate(() => window.CONTENT.ssml || {});
 const trainWords = await page.evaluate(() => Object.values(window.WordTrain ? window.WordTrain.packs : {}).flatMap(p => p.words));
 await browser.close();
 
@@ -59,7 +61,7 @@ let made = 0;
 for (const [id, text] of todo) {
   const file = path.join(outDir, id + '.mp3');
   if (fs.existsSync(file) && !force) continue;
-  fs.writeFileSync(file, await synth({ text }));
+  fs.writeFileSync(file, await synth(ssml[id] ? { ssml: ssml[id] } : { text }));
   made++;
   console.log('made', id);
 }
