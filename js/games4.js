@@ -153,6 +153,12 @@
   // Look Closer: a close-up slowly zooms out; guess which vehicle it is
   // =====================================================================
   const ALL = ['fire', 'ambulance', 'police', 'tow', 'medical', 'airamb', 'helitack', 'lifeboat', 'hover'];
+  CONTENT.spoken.push(() => [
+    ...NUM.slice(1).map(n => n + '!'),
+    ...NUM.slice(2).map((_, i) => A.line('count.yes', { n: i + 2 })), // a convoy has 2 to 10 vehicles
+    ...ALL.map(id => A.line('closer.yes', { name: A.vehicle(id).name })),
+    ...RESCUES.flatMap(R => ['maze.intro', 'maze.hint'].map(k => A.line(k, { vehicle: A.vehicle(R.v).name.toLowerCase() })))
+  ]);
   A.screens.closer = (arg, alive) => {
     A.ui({ home: true });
     const lvl = A.level('closer');

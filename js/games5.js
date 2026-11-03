@@ -6,6 +6,7 @@
   const shuffle = a => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
   const ALL = ['fire', 'ambulance', 'police', 'tow', 'medical', 'airamb', 'helitack', 'lifeboat', 'hover'];
   const SEA = ['lifeboat', 'hover'], AIR = ['airamb', 'helitack'];
+  CONTENT.spoken.push(() => ALL.map(id => A.line('jigsaw.done', { name: A.vehicle(id).name })));
 
   const ICONS = {
     jigsaw: `<svg viewBox="-60 -60 120 120"><path d="M-46 -46 H-6 Q-10 -60 4 -60 Q18 -60 14 -46 H46 V-6 Q60 -10 60 4 Q60 18 46 14 H46 V46 H-46 Z" fill="#ffd21f" ${S}/><path d="M-46 0 H46 M0 -46 V46" stroke="${OL}" stroke-width="4"/></svg>`,

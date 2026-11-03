@@ -69,8 +69,12 @@ window.CONTENT = {
     'grownups.hold':   'Grown-ups: press and hold'
   },
 
-  // Recorded voice files go here once they exist. Empty means the device voice reads every line.
-  voiceFiles: {}
+  // Recorded voice clips (filled in by js/voice.js, made by tools/make-voice.mjs).
+  voiceFiles: {},
+
+  // Lines with a name or a number filled in (for example "You earned the {badge} badge!"): each file adds a function
+  // that lists every version it can say, so tools/make-voice.mjs records each one in the same voice as the rest.
+  spoken: []
 };
 
 // ---------- Phase 2: the four special rescue vehicles ----------
@@ -306,12 +310,12 @@ Object.assign(window.CONTENT.lines, {
   'book.badges':       'Badges',
   'book.words':        'Word Book',
   'book.pictures':     'My Pictures',
-  'book.badgesIntro':  'Finish rescues to earn a badge for each team.',
+  'book.badgesIntro':  'Every place has its own badge. Tap a badge to find out how to earn it!',
   'book.wordsIntro':   'Here are all the red words you have learned. Tap one to hear it.',
   'book.wordsNone':    'No red words yet. You will find them on the rescues!',
   'book.picsNone':     'Colour in a picture and it will appear here.',
   'badge.new':         'You earned the {badge} badge!',
   'badge.locked':      'To earn this badge: {how}.',
-  'cert.ready':        'Congratulations, Rescue Cadet {name}! You earned every badge!',
+  'cert.ready':        'Congratulations, Rescue Cadet! You earned every badge!',
   'cert.title':        'Rescue Cadet certificate'
 });

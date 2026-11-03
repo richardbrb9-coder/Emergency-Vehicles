@@ -634,6 +634,8 @@ const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'sev
     A.later(() => { if (alive() && !A.isModalOpen()) checkBadge(); }, 2200);
   };
 
+  CONTENT.spoken.push(() => IDS.map(id => `Tap ${MON[id].name} in Monster Town to find this sticker.`));
+
   // ---------- Monster Town's page in the sticker book, and its badge ----------
   Rewards.pages.monsters = () => ({
     html: IDS.map(id => `<button data-kind="mm" data-id="${id}" aria-label="${MON[id].name}">${MA.sticker(id, P().monsters.includes(id))}<span>${P().monsters.includes(id) ? MON[id].name : '?'}</span></button>`).join('')

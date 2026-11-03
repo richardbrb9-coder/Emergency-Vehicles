@@ -427,6 +427,8 @@ window.ZOO_EATS = { monkey: 'banana', penguin: 'fish', giraffe: 'leaves', panda:
     A.later(() => { if (alive() && !A.isModalOpen()) checkBadge(); }, 2200);
   };
 
+  CONTENT.spoken.push(() => ANIMALS.map(a => `Tap the ${a} at the zoo to find this sticker.`));
+
   // ---------- The zoo's page in the sticker book, and its badge ----------
   Rewards.pages.zoo = () => ({
     html: ANIMALS.map(a => `<button data-kind="za" data-id="${a}" aria-label="${cap(a)}">${Z.sticker(a, P().animals.includes(a))}<span>${P().animals.includes(a) ? cap(a) : '?'}</span></button>`).join('')

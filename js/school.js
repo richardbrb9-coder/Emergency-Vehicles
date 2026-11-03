@@ -491,6 +491,9 @@
     A.later(() => { if (alive() && !A.isModalOpen()) checkBadge(); }, 2200);
   };
 
+  const findLine = id => `Tap ${id === 'teacher' ? 'Mrs Bell' : id === 'hamster' ? 'Nibbles' : 'the ' + SA.SPOTS[id].name.toLowerCase().replace('my ', '')} in the classroom to find this sticker.`;
+  CONTENT.spoken.push(() => SPOT_IDS.map(findLine));
+
   // ---------- School's page in the sticker book, and its badge ----------
   Rewards.pages.school = () => ({
     html: SPOT_IDS.map(id => `<button data-kind="sc" data-id="${id}" aria-label="${SA.SPOTS[id].name}">${SA.sticker(id, P().school.includes(id))}<span>${P().school.includes(id) ? SA.SPOTS[id].name : '?'}</span></button>`).join('')
@@ -498,7 +501,7 @@
     tap(kind, id) {
       if (kind !== 'sc') return false;
       if (P().school.includes(id)) { Sfx.sparkle(); A.say('school.name.' + id); }
-      else { Sfx.boing(); A.sayText(`Tap ${id === 'teacher' ? 'Mrs Bell' : id === 'hamster' ? 'Nibbles' : 'the ' + SA.SPOTS[id].name.toLowerCase().replace('my ', '')} in the classroom to find this sticker.`); }
+      else { Sfx.boing(); A.sayText(findLine(id)); }
       return true;
     }
   });

@@ -353,11 +353,12 @@
     }
   });
 
+  CONTENT.lines['police.radioCall'] = 'Calling all officers. Please look out for a brown teddy bear. Over!';
   async function policeRadio(c) {
     const { el, alive } = c;
     c.endStep();
     Sfx.crackle(); Sfx.beep(2);
-    await A.sayText('Calling all officers. Please look out for a brown teddy bear. Over!');
+    await A.say('police.radioCall');
     await c.learn('radio');
     if (!alive()) return;
     c.step('search', Object.keys(SPOTS).map(k => el('spot-' + k)), 'police.m.search');
