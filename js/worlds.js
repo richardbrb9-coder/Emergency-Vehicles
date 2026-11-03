@@ -27,8 +27,8 @@
       soon: "Roar! There's a great big dinosaur at the museum. It's coming soon!" },
     { id: 'bus',         name: 'Bus and Train',  of: 'the bus and train', colour: '#d6331f', built: true, out: true, home: 'busstation',
       go: "All aboard! Let's go on the bus and the train with Grandad!" },
-    { id: 'seaside',     name: 'Seaside',        of: 'the seaside', colour: '#0a8fb0', built: false, out: true,
-      soon: "I can hear the waves! A sunny seaside holiday is coming soon!" }
+    { id: 'seaside',     name: 'Seaside',        of: 'the seaside', colour: '#0a8fb0', built: true, out: true, home: 'beach',
+      go: "Hooray, a seaside holiday! Let's go to the beach!" }
   ];
   const world = id => WORLDS.find(w => w.id === id);
 

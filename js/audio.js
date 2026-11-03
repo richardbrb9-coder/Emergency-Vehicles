@@ -192,6 +192,9 @@
     // Bus and Train: the bus bell (ding ding) and the doors opening.
     ding() { [0, 0.3].forEach(s => { tone({ freq: 1568, type: 'sine', start: s, dur: 0.6, vol: 0.12 }); tone({ freq: 3136, type: 'sine', start: s, dur: 0.3, vol: 0.04 }); }); },
     doors() { noise(0.45, { type: 'highpass', f1: 3000, f2: 1200, vol: 0.14 }); tone({ freq: 300, to: 220, start: 0.4, dur: 0.12, vol: 0.08, type: 'triangle' }); },
+    // Seaside: the waves washing in, and a seagull's cry.
+    waves() { noise(1.6, { type: 'lowpass', f1: 400, f2: 1400, vol: settings().calm ? 0.06 : 0.12 }); noise(1.2, { type: 'lowpass', f1: 1200, f2: 300, vol: 0.08, start: 1.2 }); },
+    gull() { [0, 0.34].forEach(s => { tone({ freq: 1500, to: 2300, start: s, dur: 0.12, vol: 0.07, type: 'sawtooth' }); tone({ freq: 2300, to: 1300, start: s + 0.12, dur: 0.18, vol: 0.07, type: 'sawtooth' }); }); },
     crack() { [0, 0.25, 0.5].forEach(s => noise(0.05, { type: 'highpass', f1: 2000, vol: 0.3, start: s })); }
   };
 
