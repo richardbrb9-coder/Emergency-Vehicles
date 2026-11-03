@@ -23,8 +23,8 @@
     // Pip's Days Out: further along the map, past the signpost. The railway runs from the station to the seaside.
     { id: 'library',     name: 'Library',        of: 'the library', colour: '#c2185b', built: true, out: true, home: 'libroom',
       go: "Let's go to the library and choose some books!" },
-    { id: 'museum',      name: 'Museum',         of: 'the museum', colour: '#8a5a24', built: false, out: true,
-      soon: "Roar! There's a great big dinosaur at the museum. It's coming soon!" },
+    { id: 'museum',      name: 'Museum',         of: 'the museum', colour: '#8a5a24', built: true, out: true, home: 'museumhall',
+      go: "Let's go to the museum and see the great big dinosaur!" },
     { id: 'bus',         name: 'Bus and Train',  of: 'the bus and train', colour: '#d6331f', built: true, out: true, home: 'busstation',
       go: "All aboard! Let's go on the bus and the train with Grandad!" },
     { id: 'seaside',     name: 'Seaside',        of: 'the seaside', colour: '#0a8fb0', built: true, out: true, home: 'beach',
