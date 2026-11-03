@@ -189,6 +189,9 @@
     moo() { const v = settings().calm ? 0.05 : 0.1; tone({ freq: 160, to: 210, dur: 0.35, vol: v, type: 'sawtooth', attack: 0.08 }); tone({ freq: 210, to: 140, start: 0.34, dur: 0.6, vol: v, type: 'sawtooth' }); },
     baa() { for (let i = 0; i < 5; i++) tone({ freq: i % 2 ? 470 : 500, start: i * 0.08, dur: 0.1, vol: 0.09, type: 'sawtooth' }); },
     neigh() { tone({ freq: 700, to: 1200, dur: 0.2, vol: 0.08, type: 'sawtooth' }); for (let i = 0; i < 4; i++) tone({ freq: 1100 - i * 120, to: 900 - i * 120, start: 0.2 + i * 0.09, dur: 0.09, vol: 0.07, type: 'sawtooth' }); },
+    // Bus and Train: the bus bell (ding ding) and the doors opening.
+    ding() { [0, 0.3].forEach(s => { tone({ freq: 1568, type: 'sine', start: s, dur: 0.6, vol: 0.12 }); tone({ freq: 3136, type: 'sine', start: s, dur: 0.3, vol: 0.04 }); }); },
+    doors() { noise(0.45, { type: 'highpass', f1: 3000, f2: 1200, vol: 0.14 }); tone({ freq: 300, to: 220, start: 0.4, dur: 0.12, vol: 0.08, type: 'triangle' }); },
     crack() { [0, 0.25, 0.5].forEach(s => noise(0.05, { type: 'highpass', f1: 2000, vol: 0.3, start: s })); }
   };
 
