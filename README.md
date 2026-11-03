@@ -1,6 +1,6 @@
 # Pip's World 🐶🗺️
 
-A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Seven worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo, Monster Maths, School, the Supermarket, the Toy Shop and New Puppies.
+A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Eight worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo, Monster Maths, School, the Supermarket, the Toy Shop, New Puppies and Bus and Train. Slide the map past the "Pip's Days Out" signpost for the newest places.
 
 At the Rescue Station, Pip shows children 9 rescue vehicles, each with a short mission to play. There are also 12 games, a sticker book, team badges and a Rescue Cadet certificate. Everything is read aloud, and the app works fully offline once it is installed.
 
@@ -115,8 +115,16 @@ If Chrome doesn't offer to install, a white **📲 How to install** button shows
   - How Many Babies?: tap each baby to count a mum's litter, clutch of eggs or single baby (eggs hatch into chicks), then pick the number (from level 2). Up to 5, then 6, then 8 babies.
   - Find My Mum: drag each baby animal (puppy, kitten, piglet, chick, duckling, calf, lamb, foal) to its mum (3 mums, then 4, then 4 with two babies each).
   - 11 puppy stickers and a Puppy Helper badge for collecting them all.
+- **Bus and Train** (one of Pip's Days Out: slide the map past the signpost and tap the bus by the station):
+  - Explore the bus stop and the station: tap the bus stop, the red bus (with Dot the bus driver), the bell button, the ticket machine, the platform clock and Mr Amin the train guard to hear how buses and trains work, and win a sticker for each. Tap Grandad to say hello.
+  - All Aboard!: an 8-page picture story, read aloud. Pip and Grandad wait at the bus stop, tap on, ring the bell, Stop Look and Listen at the crossing, buy tickets, stand behind the yellow line, mind the gap, and wave from the train on its way to the seaside.
+  - Ticket Run: the ball run with passengers. Roll three passengers out of the bus shelter onto the open-top bus (and not into the puddle). Free build plus 12 puzzles.
+  - Station Train: the syllable train with 12 travel words (ticket, platform, suitcase, driver, window, signal, carriage, timetable, umbrella, passenger, conductor, motorway).
+  - Next Stop!: drive the bus stop by stop with the green arrow, and ring the bell at the right stop. First by picture ("Ring the bell at the zoo!"), then, from level 2, by counting ("Grandad wants to get off at the third stop"). 4 stops, then 5.
+  - Safe or Not Safe?: drag road, bus and train pictures to the green tick or the red cross (holding hands by the road, the green and red man, the yellow line, sitting on the bus, seat belts, leaning out of windows). 4 pictures, then 6, then 8.
+  - 11 bus and train stickers and a Happy Traveller badge for collecting them all.
 - **Rewards:**
-  - 21 Rescue Station stickers, 11 zoo stickers, 12 Monster Maths stickers, 11 school stickers, 11 supermarket stickers, 11 toy shop stickers and 11 puppy stickers
+  - 21 Rescue Station stickers, 11 zoo stickers, 12 Monster Maths stickers, 11 school stickers, 11 supermarket stickers, 11 toy shop stickers, 11 puppy stickers and 11 bus and train stickers
   - 6 team badges
   - a Word Book of red words
   - My Pictures for saved colouring pages
@@ -163,6 +171,8 @@ The app is plain HTML, CSS and JavaScript, with no build step. All artwork is dr
 | `js/toyshop.js` | The Toy Shop world pack: its words, story, Coin Run puzzles, Toy Train words, Just the Right Size rounds, Pay with Coins, toy shop home screen, stickers and badge |
 | `js/puppies-art.js` | New Puppies drawings: Pip's mum, the five puppies, the basket, scales, bowls, toy box, collars, Dr Ade the vet, and farm animal mums and babies |
 | `js/puppies.js` | The New Puppies world pack: its words, story, Bedtime Run puzzles, Puppy Train words, Find My Mum rounds, How Many Babies?, puppy room home screen, stickers and badge |
+| `js/bus-art.js` | Bus and Train drawings: the red bus, the open-top bus, the train, the bus stop, bell button, ticket machine, platform clock, crossing lights, Grandad, Dot the bus driver, Mr Amin the guard, passengers and the safety pictures |
+| `js/bus.js` | The Bus and Train world pack: its words, story, Ticket Run puzzles, Station Train words, Safe or Not Safe? rounds, Next Stop!, bus stop and station home screen, stickers and badge |
 | `fonts/` | Andika and Fredoka, bundled for offline use (SIL Open Font License) |
 | `docs/` | Style guide and image prompts |
 
@@ -179,6 +189,12 @@ To run it locally, serve the folder over HTTP (for example with `python3 -m http
 **Adding a world:** in `js/worlds.js`, set `built: true` and a `home` screen name for the world, then add its screens to `App.screens` and list each one in `App.screenWorld` (for example `App.screenWorld.zooGate = 'zoo'`) so Pip wears that world's outfit and the home button goes to that world's home. `js/zoo.js` is the example to copy: it adds games with the shared engines, `BallRun.mount`, `WordTrain.mount`, `Sorter.mount` and `Story.mount`, each given the world's own levels, pictures and lines, with `world` and `back` set so its stickers go on the world's page and "more games" returns to the world's home. A world's sticker page and badge go in `Rewards.pages` and `Rewards.extraBadges`. Pip's outfits are in `PIP_OUTFITS` in `js/art.js`. Pip's moods and actions: `App.Pip.mood('cheer' | 'surprised' | 'thinking')` and `App.Pip.act('jump' | 'dance' | 'wave')`.
 
 ## Build history
+
+### Pip's Days Out: Bus and Train
+- The first of Pip's Days Out opens on the map: the bus stop and the station, with Grandad, Dot the bus driver and Mr Amin the guard.
+- Five games: the All Aboard! story, Ticket Run (12 puzzles), Station Train (12 words), Safe or Not Safe? and the new Next Stop! (counting stops and ringing the bell).
+- New sounds made in code: the bus bell and the doors.
+- 192 new voice clips in the Aoede voice: 151 lines, 12 words and 29 Station Train beats.
 
 ### Pip's World, Phase 5b: Supermarket
 - The Supermarket opens from Pip's map. The shop home screen has six places to visit (each gives a fact about the weekly shop and a sticker) and five games along the bottom. Pip wears his green shop apron.
