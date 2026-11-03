@@ -1,6 +1,6 @@
 # Pip's World 🐶🗺️
 
-A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Eight worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo, Monster Maths, School, the Supermarket, the Toy Shop, New Puppies and Bus and Train. Slide the map past the "Pip's Days Out" signpost for the newest places.
+A free, ad-free app for children aged 4 to 6. Children pick a place on Pip's map and play there with Pip the pup. Nine worlds are open: the Rescue Station (the original *To the Rescue!* app), the Zoo, Monster Maths, School, the Supermarket, the Toy Shop, New Puppies, Bus and Train, and the Seaside. Slide the map past the "Pip's Days Out" signpost for the newest places.
 
 At the Rescue Station, Pip shows children 9 rescue vehicles, each with a short mission to play. There are also 12 games, a sticker book, team badges and a Rescue Cadet certificate. Everything is read aloud, and the app works fully offline once it is installed.
 
@@ -123,8 +123,16 @@ If Chrome doesn't offer to install, a white **📲 How to install** button shows
   - Next Stop!: drive the bus stop by stop with the green arrow, and ring the bell at the right stop. First by picture ("Ring the bell at the zoo!"), then, from level 2, by counting ("Grandad wants to get off at the third stop"). 4 stops, then 5.
   - Safe or Not Safe?: drag road, bus and train pictures to the green tick or the red cross (holding hands by the road, the green and red man, the yellow line, sitting on the bus, seat belts, leaning out of windows). 4 pictures, then 6, then 8.
   - 11 bus and train stickers and a Happy Traveller badge for collecting them all.
+- **Seaside** (one of Pip's Days Out: slide the map to the end of the railway and tap the beach):
+  - Explore the beach: tap the beach hut, Kai the lifeguard on the lifeguard tower, the rock pool, the sandcastle, the ice cream van and the lighthouse to hear about the seaside and staying safe, and win a sticker for each. Tap the cheeky seagull too.
+  - Sunny Holiday: an 8-page picture story, read aloud. Pip's whole family (Mum, Grandad and the five puppies) pack for the beach, put on suncream and sun hats, build a sandcastle, look in a rock pool, swim between the red and yellow flags, rest in the shade (where a seagull takes Grandad's chip) and watch the sunset.
+  - Shell Run: the ball run with shells. Roll three shells off the wave into the sand bucket (and not into the rock pool). Free build plus 12 puzzles.
+  - Seaside Train: the syllable train with 12 seaside words (seagull, starfish, lighthouse, bucket, suncream, seaweed, ice cream, sandcastle, jellyfish, octopus, sunglasses, holiday).
+  - Sink or Float?: guess first, then drop each thing into the water tank and watch it float or sink (apple, rubber duck, beach ball, leaf, toy boat, sponge, stone, key, coin, metal spoon, marble, seashell), with a simple reason for each. 4 things, then 5, then 6.
+  - Pack for the Beach: drag sun hats, suncream, water and towels into the beach bag, and leave scarves, snow boots and school bags at home. 4 things, then 6, then 8.
+  - 11 seaside stickers and a Seaside Star badge for collecting them all.
 - **Rewards:**
-  - 21 Rescue Station stickers, 11 zoo stickers, 12 Monster Maths stickers, 11 school stickers, 11 supermarket stickers, 11 toy shop stickers, 11 puppy stickers and 11 bus and train stickers
+  - 21 Rescue Station stickers, 11 zoo stickers, 12 Monster Maths stickers, 11 school stickers, 11 supermarket stickers, 11 toy shop stickers, 11 puppy stickers, 11 bus and train stickers and 11 seaside stickers
   - 6 team badges
   - a Word Book of red words
   - My Pictures for saved colouring pages
@@ -173,6 +181,8 @@ The app is plain HTML, CSS and JavaScript, with no build step. All artwork is dr
 | `js/puppies.js` | The New Puppies world pack: its words, story, Bedtime Run puzzles, Puppy Train words, Find My Mum rounds, How Many Babies?, puppy room home screen, stickers and badge |
 | `js/bus-art.js` | Bus and Train drawings: the red bus, the open-top bus, the train, the bus stop, bell button, ticket machine, platform clock, crossing lights, Grandad, Dot the bus driver, Mr Amin the guard, passengers and the safety pictures |
 | `js/bus.js` | The Bus and Train world pack: its words, story, Ticket Run puzzles, Station Train words, Safe or Not Safe? rounds, Next Stop!, bus stop and station home screen, stickers and badge |
+| `js/sea-art.js` | Seaside drawings: the beach, beach hut, lifeguard tower and flags, rock pool and its creatures, sandcastle, ice cream van, lighthouse, shells and sand bucket, Kai the lifeguard, the seagull, and the Sink or Float? and Pack for the Beach pictures |
+| `js/sea.js` | The Seaside world pack: its words, story, Shell Run puzzles, Seaside Train words, Pack for the Beach rounds, Sink or Float?, beach home screen, stickers and badge |
 | `fonts/` | Andika and Fredoka, bundled for offline use (SIL Open Font License) |
 | `docs/` | Style guide and image prompts |
 
@@ -189,6 +199,12 @@ To run it locally, serve the folder over HTTP (for example with `python3 -m http
 **Adding a world:** in `js/worlds.js`, set `built: true` and a `home` screen name for the world, then add its screens to `App.screens` and list each one in `App.screenWorld` (for example `App.screenWorld.zooGate = 'zoo'`) so Pip wears that world's outfit and the home button goes to that world's home. `js/zoo.js` is the example to copy: it adds games with the shared engines, `BallRun.mount`, `WordTrain.mount`, `Sorter.mount` and `Story.mount`, each given the world's own levels, pictures and lines, with `world` and `back` set so its stickers go on the world's page and "more games" returns to the world's home. A world's sticker page and badge go in `Rewards.pages` and `Rewards.extraBadges`. Pip's outfits are in `PIP_OUTFITS` in `js/art.js`. Pip's moods and actions: `App.Pip.mood('cheer' | 'surprised' | 'thinking')` and `App.Pip.act('jump' | 'dance' | 'wave')`.
 
 ## Build history
+
+### Pip's Days Out: Seaside
+- The Seaside opens at the end of the railway on Pip's map: the beach, with Pip's whole family, Kai the lifeguard and a cheeky seagull.
+- Five games: the Sunny Holiday story, Shell Run (12 puzzles), Seaside Train (12 words), Pack for the Beach and the new Sink or Float? (guess, then watch).
+- New sounds made in code: waves and a seagull.
+- 179 new voice clips in the Aoede voice: 138 lines, 12 words and 29 Seaside Train beats.
 
 ### Pip's Days Out: Bus and Train
 - The first of Pip's Days Out opens on the map: the bus stop and the station, with Grandad, Dot the bus driver and Mr Amin the guard.
