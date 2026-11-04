@@ -25,6 +25,45 @@ window.WordTrain.packs.rescue = {
   ]
 };
 
+// ---------- Red word beats ----------
+// The card shows each beat spelled as it is in the word (hel - i - tack), like the Word Train carriages, and the voice
+// says each beat from its own clip (audio/voice/syl.rw-<word>.<n>.mp3), with the sounds agreed for the Word Train:
+// a short "ih" for a lone i or e. voice: how the voice tool is asked to say each beat; alone / carrier: see js/train.js.
+// train: the word is also a Word Train word, so its beat clips are used. same: a beat that reuses another beat's clip.
+(function () {
+  const ih = { same: { 1: 'syl.helicopter.1' } };
+  const BEATS = {
+    hydrant:    { train: 'hydrant' },
+    nozzle:     { train: 'nozzle' },
+    hovercraft: { train: 'hovercraft' },
+    lifeboat:   { train: 'lifeboat' },
+    circuit:    { beats: ['cir', 'cuit'], voice: ['sur', 'kit'] },
+    winch:      { beats: ['winch'] },
+    crane:      { beats: ['crane'] },
+    helitack:   { beats: ['hel', 'i', 'tack'], voice: ['hel', 'ih', 'tack'], ...ih },
+    wildfire:   { beats: ['wild', 'fire'], voice: ['wild', 'fire'] },
+    paramedic:  { beats: ['par', 'a', 'med', 'ic'], voice: ['parr', 'uh', 'med', 'ick'] },
+    stretcher:  { beats: ['stretch', 'er'], voice: ['stretch', 'uh'] },
+    patrol:     { beats: ['pa', 'trol'], voice: ['puh', 'trole'] },
+    radio:      { beats: ['ra', 'di', 'o'], voice: ['ray', 'dee', 'oh'] },
+    helipad:    { beats: ['hel', 'i', 'pad'], voice: ['hel', 'ih', 'pad'], ...ih },
+    medevac:    { beats: ['med', 'e', 'vac'], voice: ['med', 'ih', 'vack'], ...ih },
+    lifejacket: { beats: ['life', 'jack', 'et'], voice: ['life', 'jack', 'it'] }
+  };
+  const C = window.CONTENT;
+  Object.entries(BEATS).forEach(([key, b]) => {
+    const w = C.words[key];
+    if (!w) return;
+    const t = b.train && window.WordTrain.packs.rescue.words.find(x => x.id === b.train);
+    w.beats = t ? t.beats : b.beats;
+    // The clip for each beat: none for a one-beat word (the card just says the word).
+    w.clips = w.beats.length < 2 ? [] : w.beats.map((_, i) => t ? `syl.${t.id}.${i}` : (b.same && b.same[i]) || `syl.rw-${key}.${i}`);
+    if (!t && w.beats.length > 1) w.beatWord = { id: 'rw-' + key, word: w.word, beats: b.beats, say: b.voice, alone: b.alone, carrier: b.carrier, same: b.same };
+    C.lines['word.' + key] = w.word[0].toUpperCase() + w.word.slice(1) + '.';
+    C.lines['word.' + key + '.meaning'] = w.meaning;
+  });
+})();
+
 (function () {
   const A = window.App;
   if (!A) return;

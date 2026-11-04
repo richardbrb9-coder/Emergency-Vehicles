@@ -2,8 +2,9 @@
 //
 //   GOOGLE_TTS_API_KEY=... node tools/make-voice.mjs [--only map.] [--voice en-GB-Chirp3-HD-Aoede] [--force]
 //
-// It opens the app in a headless browser to read every line in CONTENT.lines, skips lines with {vars}
-// (those stay on the device voice), and saves each clip as audio/voice/<line id>.mp3. Clips that already
+// It opens the app in a headless browser to read every line in CONTENT.lines and saves each clip as
+// audio/voice/<line id>.mp3. A line with {vars} is recorded once for each version the app can say (CONTENT.spoken
+// lists them), as audio/voice/x.<hash of the words>.mp3, so the app never falls back to the device's own voice. Clips that already
 // exist are kept unless --force is given. Then it rewrites js/voice.js (the list of clips the app plays)
 // and bumps VERSION in sw.js so installed apps pick the new clips up.
 //
@@ -36,10 +37,18 @@ await page.waitForFunction(() => window.CONTENT && window.Worlds);
 const lines = await page.evaluate(() => window.CONTENT.lines);
 // A line can have an exact SSML version for the recorded voice (for example a letter's sound in Sound Shelves).
 const ssml = await page.evaluate(() => window.CONTENT.ssml || {});
-const trainWords = await page.evaluate(() => Object.values(window.WordTrain ? window.WordTrain.packs : {}).flatMap(p => p.words));
+// Word Train words, and the red words' beats (the same recipe).
+const trainWords = await page.evaluate(() => [...Object.values(window.WordTrain ? window.WordTrain.packs : {}).flatMap(p => p.words),
+  ...Object.values(window.CONTENT.words).map(w => w.beatWord).filter(Boolean)]);
+// Every version of the lines with a name or number filled in, keyed as the app looks them up.
+const spoken = await page.evaluate(() => {
+  const out = {};
+  window.CONTENT.spoken.flatMap(f => f()).forEach(t => { const k = window.Voice.textKey(t); if (out[k] && out[k] !== t) throw new Error('clash ' + k); out[k] = t.trim().replace(/\s+/g, ' '); });
+  return out;
+});
 await browser.close();
 
-const todo = Object.entries(lines).filter(([id, text]) => id.startsWith(only) && !/[{}]/.test(text));
+const todo = [...Object.entries(lines).filter(([, text]) => !/[{}]/.test(text)), ...Object.entries(spoken)].filter(([id]) => id.startsWith(only));
 fs.mkdirSync(outDir, { recursive: true });
 console.log(`${todo.length} lines to voice with ${voice}`);
 
@@ -125,10 +134,13 @@ function alone(w, i, file) {
 }
 for (const w of trainWords) {
   const ids = w.beats.map((_, i) => `syl.${w.id}.${i}`);
+  // same: a beat that plays another word's clip, so it isn't kept here.
+  const own = i => !(w.same && w.same[i]);
+  const tidy = () => ids.forEach((id, i) => { if (!own(i)) fs.rmSync(path.join(outDir, id + '.mp3'), { force: true }); });
   const one = ids.indexOf(only);
   if (one >= 0) { await alone(w, one, path.join(outDir, ids[one] + '.mp3')); console.log('made beat alone', ids[one]); made++; continue; }
   if (!ids.some(id => id.startsWith(only) || only.startsWith('syl.' + w.id))) continue;
-  if (ids.every(id => fs.existsSync(path.join(outDir, id + '.mp3'))) && !force) continue;
+  if (ids.every((id, i) => !own(i) || fs.existsSync(path.join(outDir, id + '.mp3'))) && !force) continue;
   const whole = path.join(tmp, w.id + '.mp3');
   // The voice doesn't always pause where asked, so try a few times (with and without commas).
   let parts = [];
@@ -139,11 +151,12 @@ for (const w of trainWords) {
   if (parts.length === w.beats.length) {
     parts.forEach(([a, b], i) => ff(['-i', whole, '-ss', Math.max(0, a - 0.03).toFixed(3), '-to', (b + 0.08).toFixed(3), '-ac', '1', '-c:a', 'libmp3lame', '-b:a', '48k', path.join(outDir, ids[i] + '.mp3')]));
     for (const i of w.alone || []) await alone(w, i, path.join(outDir, ids[i] + '.mp3'));
+    tidy();
     console.log('made beats', w.id, parts.map(([a, b]) => (b - a).toFixed(2) + 's').join(' '));
   } else {
     // The pauses didn't split cleanly: say each beat on its own instead.
     console.log(`beats for ${w.id}: found ${parts.length} parts, not ${w.beats.length}; saying each beat alone`);
-    for (let i = 0; i < w.beats.length; i++) fs.writeFileSync(path.join(outDir, ids[i] + '.mp3'), await synth({ text: w.say[i] }, 0.9));
+    for (let i = 0; i < w.beats.length; i++) if (own(i)) fs.writeFileSync(path.join(outDir, ids[i] + '.mp3'), await synth({ text: w.say[i] }, 0.9));
   }
   made += w.beats.length;
 }

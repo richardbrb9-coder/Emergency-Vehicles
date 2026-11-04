@@ -30,6 +30,9 @@
   A.games = [];
   A.addGame = (id, colour, art, { world = 'rescue', back = 'games' } = {}) => A.games.push({ id, colour, art, world, back, title: CONTENT.lines['games.' + id] });
   A.worldGames = world => A.games.filter(g => g.world === world);
+  // How Pip says a game's name inside a line: "the Bone Hunt sticker" (not "the The Bone Hunt"), and "Next Stop!" (not "Next Stop!!").
+  A.gameIn = g => g.title.replace(/^The /, '');
+  A.gameCheer = g => /[!?]$/.test(g.title) ? g.title : g.title + '!';
   A.game = id => A.games.find(g => g.id === id);
   // How many times this game has been finished: games get a little harder each time.
   A.level = id => Math.min(2, A.progress.plays[id] || 0);
@@ -63,7 +66,7 @@
         </div>`);
       document.querySelector('#modal .again').onclick = () => { Sfx.tap(); A.closeModal(); A.go(id); };
       document.querySelector('#modal .more').onclick = () => { Sfx.tap(); A.closeModal(); A.go(g.back); };
-      A.later(() => A.sayText(`You earned the ${g.title} sticker!`), 1600);
+      A.later(() => A.sayText(`You earned the ${A.gameIn(g)} sticker!`), 1600);
     } else if (buttons) endButtons(id, g ? g.back : 'games');
   };
 
@@ -225,6 +228,11 @@
   // Call 999: dial nine nine nine, then choose the right service for the picture
   // =====================================================================
   const SERVICES = { fire: 'fire engine', ambulance: 'ambulance', police: 'police car' };
+  CONTENT.spoken.push(() => [
+    ...A.games.map(g => `You earned the ${A.gameIn(g)} sticker!`),
+    ...KIT.flatMap(k => [A.line('dress.next', { item: k.name }), A.line('dress.wrong', { item: k.name })]),
+    ...Object.values(SERVICES).map(service => A.line('call.yes', { service }))
+  ]);
   const SCENES = {
     fire: () => `<svg viewBox="0 0 400 300" aria-label="A house on fire">
         <rect width="400" height="300" fill="#bfe6ff"/><rect y="250" width="400" height="50" fill="#7cc46a"/>

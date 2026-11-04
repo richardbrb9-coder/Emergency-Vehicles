@@ -90,6 +90,8 @@
     });
   }
   const say = (id, vars) => sayText(line(id, vars), Object.keys(vars || {}).length ? null : id);
+  // Every version of this file's lines with a name filled in (see CONTENT.spoken).
+  C.spoken.push(() => C.vehicles.flatMap(v => [line('hub.away', { name: v.name }), `Door ${v.door}. The ${v.name}!`, `You earned the ${v.name} sticker!`]));
   function hush() { talkId++; Voice.stop(); pipBtn.classList.remove('talking'); }
 
   // ---------- Hints: glow what to tap, and repeat the instruction if nothing happens ----------
@@ -177,6 +179,7 @@
   }
 
   // Red word card. Resolves when the child closes it.
+  let cardTalk = 0;
   function wordCard(key) {
     const w = C.words[key];
     if (!progress.words.includes(key)) { progress.words.push(key); saveProgress(); }
@@ -188,14 +191,28 @@
           <div>
             <div class="label">Red word</div>
             <div class="big">${w.word}</div>
-            <div class="say">${w.say}</div>
+            <div class="say">${w.beats.map(b => `<span>${b}</span>`).join(' - ')}</div>
             <p class="meaning">${w.meaning}</p>
             <div class="btn-row" style="justify-content:flex-start">
               <button class="big-btn hear" style="background:#8e5bd6" aria-label="Hear it again">${ICON.speak}</button>
             </div>
           </div>
-        </div>`, () => { hush(); resolve(); });
-      const speak = () => sayText(`${w.word}. ${w.say.replace(/ - /g, ' ')}. ${w.meaning}`);
+        </div>`, () => { cardTalk++; hush(); resolve(); });
+      // The word, then its beats one by one (each lights up on the card), then what it means. All recorded clips.
+      const beatEls = [...modal.querySelectorAll('.say span')];
+      const speak = async () => {
+        const my = ++cardTalk, on = () => my === cardTalk;
+        beatEls.forEach(b => b.classList.remove('on'));
+        await say('word.' + key);
+        for (let i = 0; i < w.clips.length && on(); i++) {
+          beatEls.forEach((b, j) => b.classList.toggle('on', j === i));
+          await sayText(w.beats[i], w.clips[i]);
+          if (on()) await wait(150);
+        }
+        if (!on()) return;
+        beatEls.forEach(b => b.classList.remove('on'));
+        await say('word.' + key + '.meaning');
+      };
       modal.querySelector('.hear').onclick = () => { Sfx.tap(); speak(); };
       modal.querySelector('.big').onclick = speak;
       Sfx.sparkle();
@@ -255,6 +272,16 @@
     b.addEventListener('contextmenu', e => e.preventDefault());
   })();
 
+  // Where each world keeps its stickers in the saved progress, and how many stickers it has.
+  // Game stickers from every world are kept together in progress.games.
+  const stickerSets = () => {
+    const n = (obj, list) => (window[obj] && window[obj][list] || []).length;
+    return [['stickers', C.vehicles.length], ['games', (window.App.games || []).length], ['animals', n('Zoo', 'ANIMALS')], ['monsters', n('Monsters', 'IDS')],
+      ['school', n('School', 'SPOT_IDS')], ['supermarket', n('Supermarket', 'SPOT_IDS')], ['shop', n('ToyShop', 'SPOT_IDS')],
+      ['puppies', n('Puppies', 'SPOT_IDS')], ['bus', n('BusTrain', 'SPOT_IDS')], ['library', n('Library', 'SPOT_IDS')],
+      ['seaside', n('Seaside', 'SPOT_IDS')], ['museum', n('Museum', 'SPOT_IDS')]];
+  };
+
   function openGrownups() {
     hush();
     const rows = [
@@ -269,7 +296,8 @@
         ${rows}
         <div class="toggle-row"><label for="child-name">Child's first name (for the Rescue Cadet certificate)</label>
           <input id="child-name" class="name-input" maxlength="20" autocomplete="off" value="${(Settings.name || '').replace(/"/g, '&quot;')}"></div>
-        <p style="margin-top:2vmin">Stickers collected: ${progress.stickers.length + progress.games.length + progress.animals.length + progress.monsters.length + progress.school.length + progress.supermarket.length + progress.shop.length} of ${C.vehicles.length + (window.App && App.games ? App.games.length : 0) + (window.Zoo ? Zoo.ANIMALS.length : 0) + (window.Monsters ? Monsters.IDS.length : 0) + (window.School ? School.SPOT_IDS.length : 0) + (window.Supermarket ? Supermarket.SPOT_IDS.length : 0) + (window.ToyShop ? ToyShop.SPOT_IDS.length : 0)}. Red words learned: ${progress.words.length}.</p>
+        <p style="margin-top:2vmin">Stickers collected: ${stickerSets().reduce((n, [k]) => n + (progress[k] || []).length, 0)} of ${stickerSets().reduce((n, [, all]) => n + all, 0)}.
+          Badges earned: ${(progress.badges || []).length} of ${window.Rewards ? Rewards.BADGES.length + Rewards.extraBadges.length : 0}. Red words learned: ${progress.words.length}.</p>
         <div class="toggle-row"><span>${installState()}</span>
           ${installPrompt ? '<button class="text-btn" id="install" style="margin:0">Install app</button>' : ''}</div>
         <div class="btn-line">
@@ -293,7 +321,7 @@
         btn.textContent = done; btn.disabled = true; btn.classList.remove('danger');
       };
     };
-    const clearStickers = () => { progress.stickers = []; progress.games = []; progress.animals = []; progress.monsters = []; progress.school = []; progress.supermarket = []; progress.shop = []; progress.badges = []; progress.certShown = false; };
+    const clearStickers = () => { stickerSets().forEach(([k]) => { progress[k] = []; }); progress.badges = []; progress.certShown = false; };
     confirmReset(modal.querySelector('#reset-stickers'), 'Stickers and badges reset', clearStickers);
     confirmReset(modal.querySelector('#reset'), 'Everything has been reset', () => {
       clearStickers(); progress.words = []; progress.gallery = []; progress.plays = {};
@@ -652,24 +680,9 @@
     }
   };
 
-  // ---------- Sticker book ----------
-  screens.stickers = () => {
-    ui({ home: true });
-    sceneEl.innerHTML = `<div class="book"><div class="book-page">${C.vehicles.map(v => `
-      <button data-id="${v.id}" aria-label="${v.name}">${Art.sticker(v, progress.stickers.includes(v.id))}
-      <span>${progress.stickers.includes(v.id) ? v.name : '?'}</span></button>`).join('')}</div></div>`;
-    sceneEl.querySelectorAll('.book-page button').forEach(b => b.onclick = () => {
-      const v = vehicle(b.dataset.id);
-      if (progress.stickers.includes(v.id)) { Sfx.sparkle(); sayText(`The ${v.name}!`); }
-      else { Sfx.boing(); sayText(`Open door number ${v.door} to find this sticker.`); }
-    });
-    const n = progress.stickers.length;
-    if (n) say('stickers.count', { n, stickers: n === 1 ? 'sticker' : 'stickers' }); else say('stickers.none');
-  };
-
   // Shared toolkit for vehicle screens defined in other files.
   window.App = {
-    screens, screenWorld, Pip, go, say, sayText, hush, Hint, later, every, wait, tween, ease, easeOut, svgPoint,
+    screens, screenWorld, Pip, go, say, sayText, line, hush, Hint, later, every, wait, tween, ease, easeOut, svgPoint,
     wordCard, reward, ui, confetti, progress, saveProgress, openModal, closeModal, ICON, Settings, vehicle, alivePhone: () => $('#btn-phone'), isModalOpen: () => !modal.hidden,
     isTalking: () => pipBtn.classList.contains('talking'), current: () => current, bookFrom: () => bookFrom
   };

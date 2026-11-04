@@ -11,6 +11,9 @@
     helitack: { name: 'water bucket', art: `<svg viewBox="-50 -60 100 110"><path d="M0 -56 V-30 M-30 -26 L0 -50 L30 -26" fill="none" stroke="${OL}" stroke-width="4"/><path d="M-36 -26 H36 L24 34 H-24 Z" fill="#f07a1a" ${S3}/><ellipse cx="0" cy="-22" rx="30" ry="7" fill="#5cc3ff"/></svg>` }
   };
 
+  CONTENT.spoken.push(() => Object.entries(TOOLS).flatMap(([v, t]) => [
+    A.line('match.yes', { vehicle: A.vehicle(v).name, tool: t.name }), `The ${t.name}. Which vehicle uses it?`, `The ${A.vehicle(v).name}.`]));
+
   const shuffle = a => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
 
   A.screens.match = (arg, alive) => {

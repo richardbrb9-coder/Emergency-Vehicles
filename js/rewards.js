@@ -51,7 +51,7 @@
         <div class="cert-band"></div>
       </div>`);
     Sfx.fanfare(); A.confetti();
-    A.say('cert.ready', { name: safe || 'Super Helper' });
+    A.say('cert.ready');
   }
 
   // ---------- New badges are presented when the child comes back to the station ----------
@@ -134,6 +134,9 @@
     scene().innerHTML = `<div class="book">
       <div class="tabs" role="tablist">${TABS.map(t => `<button role="tab" class="tab${t.id === tab ? ' on' : ''}" data-tab="${t.id}" aria-selected="${t.id === tab}" aria-label="${C.lines['book.' + t.id]}">${t.icon}<span>${C.lines['book.' + t.id]}</span></button>`).join('')}</div>
       ${body}</div>`;
+    // With many worlds the chips scroll sideways: keep the open world's chip in view.
+    const onChip = scene().querySelector('.world-chip.on');
+    if (onChip) onChip.scrollIntoView({ block: 'nearest', inline: 'center' });
     scene().querySelectorAll('.world-chip').forEach(c => c.onclick = () => {
       if (c.dataset.world === bookWorld) return;
       Sfx.tap(); bookWorld = c.dataset.world; A.screens.stickers('stickers', alive);
@@ -151,7 +154,7 @@
         }
         case 'g': {
           const g = A.game(id);
-          if (p.games.includes(id)) { Sfx.sparkle(); A.sayText(`${g.title}!`); }
+          if (p.games.includes(id)) { Sfx.sparkle(); A.sayText(A.gameCheer(g)); }
           else { Sfx.boing(); A.sayText(`Play ${g.title} to find this sticker.`); }
           break;
         }
@@ -187,12 +190,26 @@
       A.Pip.mood('thinking');
       A.say('book.worldSoon', { name: Worlds.world(bookWorld).of });
     } else if (tab === 'stickers') {
-      const n = p.stickers.length + p.games.length;
+      const n = p.stickers.length + A.worldGames('rescue').filter(g => p.games.includes(g.id)).length;
       if (n) A.say('stickers.count', { n, stickers: n === 1 ? 'sticker' : 'stickers' }); else A.say('stickers.none');
     } else if (tab === 'badges') A.say('book.badgesIntro');
     else if (tab === 'words') A.say(p.words.length ? 'book.wordsIntro' : 'book.wordsNone');
     else if (!p.gallery.length) A.say('book.picsNone');
   };
+
+  // Every version of the book's lines with a name or number filled in (see CONTENT.spoken).
+  CONTENT.spoken.push(() => {
+    const C = CONTENT, rescueStickers = C.vehicles.length + A.worldGames('rescue').length;
+    return [
+      ...C.vehicles.flatMap(v => [`The ${v.name}!`, `Open door number ${v.door} to find this sticker.`]),
+      ...A.games.flatMap(g => [A.gameCheer(g), `Play ${g.title} to find this sticker.`]),
+      ...BADGES.flatMap(b => [`The ${b.name} badge!`, A.line('badge.locked', { how: b.how }), A.line('badge.new', { badge: b.name })]),
+      ...EXTRA.map(b => `The ${b.name} badge!`),
+      ...Array.from({ length: rescueStickers }, (_, i) => A.line('stickers.count', { n: i + 1, stickers: i ? 'stickers' : 'sticker' })),
+      ...Worlds.WORLDS.filter(w => !w.built).map(w => A.line('book.worldSoon', { name: w.of })),
+      'Earn all six badges to get your Rescue Cadet certificate!', 'You have not found this red word yet.'
+    ];
+  });
 
   window.Rewards = { BADGES, earned, badgeSvg, certificate, pages: PAGES, extraBadges: EXTRA };
 })();

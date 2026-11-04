@@ -204,7 +204,7 @@
 
   // ---------- Narrator ----------
   // Prefers a British voice. Calls onWord(index) as each word is spoken so the subtitle can follow along.
-  const PREFERRED = ['Google UK English Female', 'Microsoft Libby', 'Microsoft Sonia', 'Microsoft Maisie', 'Serena', 'Kate', 'Martha', 'Stephanie', 'Fiona', 'Moira', 'Samantha', 'Karen'];
+  const PREFERRED = ['Google UK English Female', 'Microsoft Libby', 'Microsoft Sonia', 'Microsoft Maisie', 'Serena', 'Kate', 'Martha', 'Stephanie'];
   let voice = null;
   function pickVoice() {
     if (!('speechSynthesis' in window)) return;
@@ -223,6 +223,13 @@
 
   let token = 0, clip = null;
   const Voice = {
+    // The clip id for a line's exact words: "x." and a hash of the text (FNV-1a). tools/make-voice.mjs uses this too.
+    textKey(text) {
+      const t = String(text).trim().replace(/\s+/g, ' ');
+      let h = 0x811c9dc5;
+      for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+      return 'x.' + h.toString(16).padStart(8, '0');
+    },
     // Resolves when the line has finished (or been interrupted).
     say(text, { id = null, onWord = null } = {}) {
       Voice.stop();
@@ -241,7 +248,10 @@
             if (i >= words.length) clearInterval(fallback);
           }, msPerWord);
         };
-        const file = id && window.CONTENT.voiceFiles[id];
+        // A line with its own id plays that clip. Any other line (one with a name or number filled in) plays the clip
+        // recorded for its exact words, so every line is in the same recorded voice.
+        const file = (id && window.CONTENT.voiceFiles[id]) || window.CONTENT.voiceFiles[Voice.textKey(text)];
+        if (!file && s.voice) console.warn('No recorded clip for:', text);
         if (!s.voice) {
           startFallback(330);
           setTimeout(done, Math.max(1500, words.length * 330));
