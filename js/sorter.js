@@ -33,7 +33,16 @@ window.Sorter = {};
       const binEls = [...root.querySelectorAll('.so-bin')], itemEls = [...root.querySelectorAll('.so-item')];
       let left = items.length, busy = false;
 
-      const binAt = (x, y) => binEls.find(b => { const r = b.getBoundingClientRect(); return x >= r.left - 10 && x <= r.right + 10 && y >= r.top - 10 && y <= r.bottom + 10; });
+      // Which place an item is over: the finger or the middle of the item counts, with a margin round each place.
+      // The nearest place wins if two are close.
+      const gap = (x, y, r) => Math.hypot(Math.max(r.left - x, 0, x - r.right), Math.max(r.top - y, 0, y - r.bottom));
+      const binAt = (finger, middle) => {
+        const on = binEls.find(b => gap(...finger, b.getBoundingClientRect()) === 0);
+        if (on) return on;
+        let best = null, bestD = 24;
+        binEls.forEach(b => { const r = b.getBoundingClientRect(); [finger, middle].forEach(([x, y]) => { const d = gap(x, y, r); if (d < bestD) { best = b; bestD = d; } }); });
+        return best;
+      };
       const hintNext = () => {
         const el = itemEls.find(e => !e.classList.contains('placed'));
         if (!el) return;
@@ -73,18 +82,20 @@ window.Sorter = {};
           if (busy || el.classList.contains('placed')) return;
           e.preventDefault();
           const x0 = e.clientX, y0 = e.clientY; let moved = false, over = null;
+          const r0 = el.getBoundingClientRect(), mx = r0.left + r0.width / 2, my = r0.top + r0.height / 2;
+          const pts = ev => [[ev.clientX, ev.clientY], [mx + ev.clientX - x0, my + ev.clientY - y0]];
           el.setPointerCapture(e.pointerId); el.classList.add('dragging'); Sfx.tap(); A.Hint.clear();
           el.onpointermove = ev => {
             if (Math.hypot(ev.clientX - x0, ev.clientY - y0) > 10) moved = true;
             el.style.transform = `translate(${ev.clientX - x0}px, ${ev.clientY - y0}px) scale(1.1)`;
-            const b = binAt(ev.clientX, ev.clientY);
+            const b = binAt(...pts(ev));
             if (b !== over) { if (over) over.classList.remove('over'); over = b; if (b) b.classList.add('over'); }
           };
           el.onpointerup = el.onpointercancel = ev => {
             el.onpointermove = el.onpointerup = el.onpointercancel = null;
             el.classList.remove('dragging');
             if (over) over.classList.remove('over');
-            const b = moved && ev.type === 'pointerup' ? binAt(ev.clientX, ev.clientY) : null;
+            const b = moved && ev.type === 'pointerup' ? binAt(...pts(ev)) : null;
             if (!moved) { el.style.transform = ''; if (it.name) A.say(it.name); return; }
             if (b && b.dataset.bin === it.bin) return right(el, b, it);
             if (b) wrong(b, it);

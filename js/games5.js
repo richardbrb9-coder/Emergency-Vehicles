@@ -82,7 +82,8 @@
       let start = null, moved = false;
       piece.addEventListener('pointerdown', e => {
         if (piece.classList.contains('placed')) return;
-        start = { x: e.clientX, y: e.clientY }; moved = false;
+        const r = piece.getBoundingClientRect();
+        start = { x: e.clientX, y: e.clientY, mx: r.left + r.width / 2, my: r.top + r.height / 2 }; moved = false;
         piece.setPointerCapture(e.pointerId); piece.classList.add('dragging'); Sfx.tap();
       });
       piece.addEventListener('pointermove', e => {
@@ -93,9 +94,10 @@
       });
       const end = e => {
         if (!start) return;
-        start = null; piece.classList.remove('dragging');
+        const st = start; start = null; piece.classList.remove('dragging');
         if (moved) {
-          const s = slotAt(e.clientX, e.clientY);
+          // The middle of the piece decides where it lands, not where the finger grabbed it; the finger counts too.
+          const at = slotAt(st.mx + e.clientX - st.x, st.my + e.clientY - st.y), s = at === +piece.dataset.i ? at : slotAt(e.clientX, e.clientY) === +piece.dataset.i ? +piece.dataset.i : at;
           if (s === +piece.dataset.i) { place(piece); return; }
           if (s >= 0) { Sfx.boing(); }
           piece.style.transition = 'transform .25s'; piece.style.transform = '';

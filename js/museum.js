@@ -375,10 +375,27 @@
       if (now - lastBrush > 260) { lastBrush = now; Sfx.brush(); }
       if (now - lastCheck > 200) { lastCheck = now; checkFound(); }
     };
-    // Which bone (if found and not yet placed) is under a point on the screen.
-    const boneAt = (cx, cy) => [...found].find(id => { if (placed.has(id)) return false; const b = under.querySelector(`.dig-bone[data-id="${id}"]`).getBoundingClientRect();
-      return cx >= b.left - 10 && cx <= b.right + 10 && cy >= b.top - 10 && cy <= b.bottom + 10; });
-    const slotAt = (cx, cy) => [...root.querySelectorAll('.dig-slot')].find(s => { const b = s.getBoundingClientRect(); return cx >= b.left - 14 && cx <= b.right + 14 && cy >= b.top - 14 && cy <= b.bottom + 14; });
+    // How far a point is from a box on the screen (0 inside it).
+    const gap = (x, y, b) => Math.hypot(Math.max(b.left - x, 0, x - b.right), Math.max(b.top - y, 0, y - b.bottom));
+    // Which bone (if found and not yet placed) is nearest a point on the screen. Small fingers miss thin bones,
+    // so a touch near a bone (not only on it) picks it up.
+    const GRAB = 44, DROP = 70;
+    const boneAt = (cx, cy) => {
+      let best = null, bestD = GRAB;
+      found.forEach(id => { if (placed.has(id)) return; const d = gap(cx, cy, under.querySelector(`.dig-bone[data-id="${id}"]`).getBoundingClientRect()); if (d <= bestD) { best = id; bestD = d; } });
+      return best;
+    };
+    // Which empty slot on the skeleton a bone is dropped on. It checks the finger and the middle of the bone, so it
+    // doesn't matter which end of the bone the child grabbed. Right on a slot counts (the bone's own slot first);
+    // otherwise the nearest slot within reach.
+    const slotAt = (id, pts) => {
+      const slots = [...root.querySelectorAll('.dig-slot')].map(s => [s, pts.map(([x, y]) => gap(x, y, s.getBoundingClientRect()))]);
+      const on = slots.filter(([, ds]) => ds.includes(0)).sort(([s]) => (s.dataset.id === id ? -1 : 1))[0];
+      if (on) return on[0];
+      let best = null, bestD = DROP;
+      slots.forEach(([s, ds]) => { const d = Math.min(...ds); if (d < bestD) { best = s; bestD = d; } });
+      return best;
+    };
     canvas.onpointerdown = e => {
       if (busy) return;
       e.preventDefault(); canvas.setPointerCapture(e.pointerId);
@@ -395,16 +412,18 @@
       const bb = src.getBBox();
       fly.innerHTML = `<svg viewBox="${bb.x - 4} ${bb.y - 4} ${bb.width + 8} ${bb.height + 8}">${MA.DINO[id].art('#f4ead2')}</svg>`;
       document.body.appendChild(fly); src.style.opacity = .25; Sfx.tap(); A.Hint.clear();
-      const x0 = e.clientX, y0 = e.clientY; let over = null;
+      const x0 = e.clientX, y0 = e.clientY, mx = b.left + b.width / 2, my = b.top + b.height / 2; let over = null;
+      // The finger, and where the middle of the bone is now.
+      const pts = ev => [[ev.clientX, ev.clientY], [mx + ev.clientX - x0, my + ev.clientY - y0]];
       canvas.onpointermove = ev => {
         fly.style.transform = `translate(${ev.clientX - x0}px, ${ev.clientY - y0}px) scale(1.1)`;
-        const s = slotAt(ev.clientX, ev.clientY);
+        const s = slotAt(id, pts(ev));
         if (s !== over) { if (over) over.classList.remove('over'); over = s; if (s) s.classList.add('over'); }
       };
       canvas.onpointerup = canvas.onpointercancel = async ev => {
         canvas.onpointermove = canvas.onpointerup = canvas.onpointercancel = null;
         if (over) over.classList.remove('over');
-        const s = ev.type === 'pointerup' ? slotAt(ev.clientX, ev.clientY) : null;
+        const s = ev.type === 'pointerup' ? slotAt(id, pts(ev)) : null;
         fly.remove();
         if (s && s.dataset.id === id) {
           placed.add(id); src.remove();
