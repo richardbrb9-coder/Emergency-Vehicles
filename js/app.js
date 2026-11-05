@@ -279,7 +279,7 @@
     return [['stickers', C.vehicles.length], ['games', (window.App.games || []).length], ['animals', n('Zoo', 'ANIMALS')], ['monsters', n('Monsters', 'IDS')],
       ['school', n('School', 'SPOT_IDS')], ['supermarket', n('Supermarket', 'SPOT_IDS')], ['shop', n('ToyShop', 'SPOT_IDS')],
       ['puppies', n('Puppies', 'SPOT_IDS')], ['bus', n('BusTrain', 'SPOT_IDS')], ['library', n('Library', 'SPOT_IDS')],
-      ['seaside', n('Seaside', 'SPOT_IDS')], ['museum', n('Museum', 'SPOT_IDS')]];
+      ['seaside', n('Seaside', 'SPOT_IDS')], ['museum', n('Museum', 'SPOT_IDS')], ['dinos', n('DinoArt', 'IDS')]];
   };
 
   function openGrownups() {

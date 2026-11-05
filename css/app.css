@@ -993,7 +993,7 @@ button:focus-visible { outline: 5px solid var(--hivis); outline-offset: 3px; }
 .dig-under, .dig-sand { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .dig-sand { cursor: grab; touch-action: none; }
 .dig-pit.hint, .dig-pit.target { animation: hintRing 1s steps(1) infinite; }
-.dig-bone.found { animation: penBounce .6s; transform-box: fill-box; transform-origin: 50% 50%; }
+.dig-bone-in.found { animation: penBounce .6s; transform-box: fill-box; transform-origin: 50% 50%; }
 .dig-board { position: absolute; right: calc(3vw + var(--safe-r, 0px)); top: 50%; transform: translateY(-46%); width: min(44vw, 80vmin); }
 .dig-board svg { width: 100%; height: auto; display: block; }
 .dig-slot.over > * { stroke: #ffd21f; }
@@ -1001,7 +1001,39 @@ button:focus-visible { outline: 5px solid var(--hivis); outline-offset: 3px; }
 .dig-fly { position: fixed; z-index: 60; pointer-events: none; filter: drop-shadow(0 1vmin 0 rgba(27,34,51,.3)); }
 .dig-fly svg { width: 100%; height: 100%; }
 .dig-board.roar, .roar { animation: penBounce .8s 2; transform-origin: 50% 100%; }
+/* The dinosaur comes to life: the skeleton fades and the living dinosaur stomps */
+.dig-live { opacity: 0; transition: opacity .6s; pointer-events: none; }
+.dig-skel { transition: opacity .6s; }
+.dig-board.alive .dig-live { opacity: 1; animation: dinoStomp .5s ease-in-out 4 .3s; transform-box: fill-box; transform-origin: 50% 100%; }
+.dig-board.alive .dig-skel { opacity: 0; }
+@keyframes dinoStomp { 50% { transform: translateY(-3%) rotate(-1.5deg); } }
+.dig-size { position: absolute; left: calc(4vw + var(--safe-l, 0px)); top: 50%; transform: translateY(-46%);
+  width: min(48vw, 84vmin); aspect-ratio: 700 / 520; border-radius: 3vmin; overflow: hidden; border: 1.2vmin solid #fff;
+  box-shadow: 0 1.4vmin 0 rgba(27,34,51,.3); animation: pop .5s backwards; }
+.dig-size svg { width: 100%; height: 100%; display: block; }
+.dig-other { width: 30%; margin: 1.5vmin 0 0 auto; border-radius: 2vmin; }
+.dig-other svg { width: 100%; height: auto; display: block; }
+.dig-other.over { filter: url(#glow); outline: .8vmin solid #ffd21f; }
+.dig-other.got { animation: penBounce .6s; }
+/* Dino Dig's picker: five dinosaurs and the Dino Hall */
+.dig-cards { position: absolute; left: 50%; top: calc(20vmin + var(--safe-t, 0px)); transform: translateX(-50%); display: grid; grid-template-columns: repeat(3, auto); gap: 3vmin; }
+.dig-card { position: relative; width: min(27vw, 44vmin, calc((100vh - 44vmin) / 1.24)); background: var(--c); border: .8vmin solid #fff; border-radius: 3.5vmin; padding: 1.2vmin 1.2vmin .4vmin;
+  box-shadow: 0 1.2vmin 0 rgba(0,0,0,.22); animation: pop .4s backwards; display: grid; grid-template-rows: auto 7vmin; transition: transform .12s; }
+.dig-card:active { transform: scale(.95); }
+.dig-card .art { display: block; background: #f6f1e6; border-radius: 2.4vmin; aspect-ratio: 740 / 460; overflow: hidden; }
+.dig-card .art svg { width: 100%; height: 100%; display: block; }
+.dig-card .label { font: 700 3.6vmin/7vmin var(--font-ui); color: #fff; text-align: center; text-shadow: 0 .3vmin 0 rgba(0,0,0,.25); }
+.dig-card .got-star { position: absolute; top: -2vmin; right: -2vmin; width: 7vmin; height: 7vmin; border-radius: 50%; background: var(--hivis); border: .6vmin solid #fff;
+  display: grid; place-items: center; font: 700 4vmin/1 var(--font-ui); color: var(--ink); }
+.dig-card.hall .art { display: grid; place-items: center; }
+.dig-card.hall .art svg { width: auto; height: 100%; }
+/* The Dino Hall */
+.dino-hall .scene-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.dino-hall .hall-dig { position: absolute; right: calc(3vmin + var(--safe-r, 0px)); bottom: calc(3vmin + var(--safe-b, 0px)); width: min(15.5vmin, 13.5vw); }
+.hall-art.bounce { animation: dinoStomp .5s ease-in-out 4; transform-box: fill-box; transform-origin: 50% 100%; }
 @media (orientation: portrait) {
+  .dig-size { left: 50%; top: 18%; transform: translateX(-50%); width: 88vw; }
+  .dig-cards { grid-template-columns: repeat(2, auto); }
   .dig-pit { left: 50%; top: 18%; transform: translateX(-50%); width: 88vw; }
   .dig-board { right: auto; left: 50%; top: auto; bottom: 14%; transform: translateX(-50%); width: 80vw; }
 }
