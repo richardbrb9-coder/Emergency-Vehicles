@@ -547,6 +547,15 @@ button:focus-visible { outline: 5px solid var(--hivis); outline-offset: 3px; }
 .br-level.done { background: #e3f7e8; }
 .br-level.next { box-shadow: 0 0 0 1vmin var(--hivis), 0 .9vmin 0 rgba(0,0,0,.18); animation: pop .4s backwards, nudge 1.6s ease-in-out infinite 1s; }
 @keyframes nudge { 50% { transform: scale(1.07); } }
+/* Easy / Medium / Hard tabs above the puzzle numbers (all open) */
+.br-right { display: flex; flex-direction: column; gap: 3vmin; align-items: stretch; }
+.br-tabs { display: flex; gap: 1.6vmin; }
+.br-tab { flex: 1; height: 11vmin; border-radius: 3vmin; background: #fff; border: .7vmin solid var(--ink); box-shadow: 0 .9vmin 0 rgba(0,0,0,.18);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .3vmin; color: var(--ink); opacity: .75; }
+.br-tab.on { background: var(--tab); color: #fff; opacity: 1; transform: translateY(-.6vmin); box-shadow: 0 1.4vmin 0 rgba(0,0,0,.22); }
+.br-tab:active { transform: scale(.94); }
+.br-stars { font: 700 3.6vmin/1 var(--font-ui); color: var(--hivis); -webkit-text-stroke: .25vmin var(--ink); letter-spacing: .2vmin; }
+.br-tabname { font: 700 3.4vmin/1 var(--font-ui); }
 .br-level b { position: absolute; top: -1.8vmin; right: -1.8vmin; width: 5.6vmin; height: 5.6vmin; border-radius: 50%; background: var(--hivis); border: .5vmin solid #fff;
   display: grid; place-items: center; font: 700 3.4vmin/1 var(--font-ui); color: var(--ink); }
 

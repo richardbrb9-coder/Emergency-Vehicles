@@ -9,6 +9,12 @@ window.ZOO_EATS = { monkey: 'banana', penguin: 'fish', giraffe: 'leaves', panda:
   // Built from the Water Run puzzles turned the other way round, then with a second animal under the chute
   // in most of them (the decoy), so the food has to be steered past it. Each was checked solvable by running its physics.
   const zl = (animal, decoyAnimal, p) => Object.assign({ balls: 6, animal, food: EATS[animal], decoyAnimal }, p);
+  // Medium and Hard: mixed food come down, and logic pieces sort them. g(t, k) is a gate (or not gate) for kind k.
+  // want: the only kind the animal takes; goal2/want2: a second hungry animal for another kind. Every puzzle was found
+  // and checked by running its physics: the hint wins, and without the gate (or with a gate of another kind) it doesn't.
+  const g = (t, k) => ({ t, k });
+  const lv = p => Object.assign({ balls: 8, kinds: [...new Set(p.mix)], food: p.want }, p);
+
   BR.packs.zoo = {
     id: 'zoo',
     free: { hose: 12, goal: 1, balls: 8, animal: 'elephant', food: 'watermelon' },
@@ -30,6 +36,26 @@ window.ZOO_EATS = { monkey: 'banana', penguin: 'fish', giraffe: 'leaves', panda:
       zl('panda', 'monkey',     { hose: 8, goal: 1, decoy: 7, tray: ['seesaw', 'long'], hint: [{ t: 'seesaw', c: 7, r: 3 }, { t: 'long', c: 3, r: 4, f: true }] }),
       zl('lion', 'zebra',       { hose: 7, goal: 0, decoy: 7, fixed: [{ t: 'block', c: 7, r: 5 }, { t: 'block', c: 4, r: 6 }], tray: ['bucket', 'long'],
         hint: [{ t: 'bucket', c: 7, r: 1, f: true }, { t: 'long', c: 2, r: 4, f: true }] })
+    ],
+    medium: [
+      lv({ animal: 'monkey', hose: 3, goal: 3, want: 'banana', mix: ['banana', 'apple'], tray: [g('gate', 'banana')], hint: [{ t: 'gate', k: 'banana', c: 3, r: 1 }] }),
+      lv({ animal: 'penguin', hose: 10, goal: 9, want: 'fish', mix: ['fish', 'banana'], tray: [g('gate', 'fish')], hint: [{ t: 'gate', k: 'fish', c: 9, r: 1, f: true }] }),
+      lv({ animal: 'giraffe', hose: 2, goal: 6, want: 'leaves', mix: ['leaves', 'meat'], tray: [g('gate', 'leaves'), 'long'], hint: [{ t: 'long', c: 1, r: 1 }, { t: 'gate', k: 'leaves', c: 5, r: 2 }] }),
+      lv({ animal: 'panda', hose: 11, goal: 6, want: 'bamboo', mix: ['bamboo', 'fish'], tray: [g('gate', 'bamboo'), 'long'], hint: [{ t: 'long', c: 8, r: 1, f: true }, { t: 'gate', k: 'bamboo', c: 6, r: 2, f: true }] }),
+      lv({ animal: 'elephant', hose: 4, goal: 9, want: 'watermelon', mix: ['watermelon', 'banana'], fixed: [{ t: 'block', c: 7, r: 4 }], tray: [g('gate', 'watermelon'), 'ramp'], hint: [{ t: 'gate', k: 'watermelon', c: 4, r: 1 }, { t: 'ramp', c: 5, r: 3 }] }),
+      lv({ animal: 'lion', hose: 9, goal: 2, want: 'meat', mix: ['meat', 'leaves'], tray: [g('gate', 'meat'), 'curve'], hint: [{ t: 'gate', k: 'meat', c: 9, r: 1, f: true }, { t: 'curve', c: 7, r: 4, f: true }] }),
+      lv({ animal: 'monkey', hose: 2, goal: 9, want: 'banana', mix: ['banana', 'fish'], tray: [g('gate', 'banana'), 'spring'], hint: [{ t: 'spring', c: 2, r: 1 }, { t: 'gate', k: 'banana', c: 4, r: 1 }] }),
+      lv({ animal: 'penguin', hose: 12, goal: 6, want: 'fish', mix: ['fish', 'apple'], fixed: [{ t: 'block', c: 12, r: 4 }], tray: [g('gate', 'fish'), 'long'], hint: [{ t: 'gate', k: 'fish', c: 11, r: 1, f: true }, { t: 'long', c: 10, r: 5, f: true }] })
+    ],
+    hard: [
+      lv({ animal: 'monkey', animal2: 'giraffe', hose: 5, goal: 4, goal2: 8, want: 'banana', want2: 'leaves', mix: ['banana', 'leaves'], tray: [g('gate', 'banana')], hint: [{ t: 'gate', k: 'banana', c: 5, r: 3 }] }),
+      lv({ animal: 'penguin', animal2: 'panda', hose: 2, goal: 4, goal2: 9, want: 'fish', want2: 'bamboo', mix: ['fish', 'bamboo'], tray: [g('gate', 'fish'), 'long'], hint: [{ t: 'gate', k: 'fish', c: 1, r: 2 }, { t: 'long', c: 5, r: 5 }] }),
+      lv({ animal: 'lion', hose: 8, goal: 7, want: 'meat', mix: ['meat', 'leaves', 'banana'], balls: 9, tray: [g('gate', 'leaves'), g('gate', 'meat')], hint: [{ t: 'gate', k: 'meat', c: 7, r: 1, f: true }] }),
+      lv({ animal: 'monkey', hose: 3, goal: 9, want: 'banana', mix: ['banana', 'apple', 'fish'], balls: 9, tray: [g('not', 'banana'), 'long'], hint: [{ t: 'not', k: 'banana', c: 3, r: 1 }, { t: 'long', c: 5, r: 2 }] }),
+      lv({ animal: 'elephant', animal2: 'lion', hose: 6, goal: 2, goal2: 10, want: 'watermelon', want2: 'meat', mix: ['watermelon', 'meat'], tray: ['flip', 'long'], hint: [{ t: 'flip', c: 5, r: 2, f: true }, { t: 'long', c: 6, r: 4 }] }),
+      lv({ animal: 'monkey', animal2: 'penguin', hose: 3, goal: 3, goal2: 6, want: 'banana', want2: 'fish', mix: ['banana', 'fish', 'apple'], balls: 9, tray: [g('gate', 'banana'), g('gate', 'fish')], hint: [{ t: 'gate', k: 'banana', c: 3, r: 1 }, { t: 'gate', k: 'fish', c: 5, r: 2 }] }),
+      lv({ animal: 'panda', animal2: 'monkey', hose: 7, goal: 1, goal2: 11, want: 'bamboo', want2: 'banana', mix: ['bamboo', 'banana'], tray: ['flip', 'long', 'long'], hint: [{ t: 'flip', c: 6, r: 2, f: true }, { t: 'long', c: 4, r: 4, f: true }, { t: 'long', c: 8, r: 4 }] }),
+      lv({ animal: 'giraffe', animal2: 'penguin', hose: 2, goal: 6, goal2: 2, want: 'leaves', want2: 'fish', mix: ['leaves', 'fish'], fixed: [{ t: 'block', c: 9, r: 5 }], tray: [g('not', 'leaves'), 'long'], hint: [{ t: 'not', k: 'leaves', c: 2, r: 1 }, { t: 'long', c: 3, r: 3 }] })
     ]
   };
 
@@ -149,6 +175,16 @@ window.ZOO_EATS = { monkey: 'banana', penguin: 'fish', giraffe: 'leaves', panda:
     L['zoorun.want.' + a] = `The ${a} is hungry! Help the ${f} roll down to the ${a}.`;
     L['zoorun.no.' + a] = `Oops! That food is for the ${a}.`;
     L['zoorun.fed.' + a] = `Yum yum! Three ${f} for the ${a}!`;
+    // Medium and Hard: mixed food comes down the chute, and the gates sort it.
+    L['zoorun.only.' + a] = `The ${a} only eats ${f}! Build a run so that only the ${f} reach the ${a}.`;
+    L['zoorun.wrong.' + a] = `Yuck! The ${a} only eats ${f}. Try again!`;
+  });
+  Object.assign(L, {
+    'zoorun.two':    'Two hungry animals! Give each animal the food it likes.',
+    'zoorun.fedtwo': 'Yum yum! Every animal has the food it likes!',
+    'zoorun.p.gate': 'A food gate! Only the food in the picture drops through the trapdoor. Everything else rolls over the top.',
+    'zoorun.p.not':  'A not gate! Everything drops through the trapdoor, except the food in the picture.',
+    'zoorun.p.flip': 'A flip-flop! It sends one thing this way, then the next thing that way.'
   });
   [...new Set([...Object.keys(EATS), ...Object.values(HOMES).flat()])].forEach(a => { L['zoo.name.' + a] = `${cap(Z.ANIMALS[a].name)}!`; });
 
@@ -222,40 +258,46 @@ window.ZOO_EATS = { monkey: 'banana', penguin: 'fish', giraffe: 'leaves', panda:
   const SNACK_ICON = `<svg viewBox="-60 -60 120 120"><path d="M-50 -30 L0 -6" stroke="${OL}" stroke-width="13" stroke-linecap="round"/><path d="M-50 -30 L0 -6" stroke="#f07a1a" stroke-width="8" stroke-linecap="round"/>
     <g transform="translate(-28 -44) scale(.42)">${Z.FOOD.banana}</g><g transform="translate(14 -14) scale(.4)">${Z.FOOD.apple}</g>
     <g transform="translate(6 30) scale(.5)">${Z.animal('monkey', 'open')}</g></svg>`;
+  // A hungry animal at the bottom of the board, with three hearts that fill up as it eats.
+  function hungry(ctx, st, col, animal, hits, chew, shake) {
+    const { won, now } = st, x = (col + 1) * CELL + (shake > 0 ? Math.sin(shake * 1.2) * 10 : 0);
+    const mood = chew > 0 ? 'munch' : won ? 'smile' : 'open', bob = won ? Math.sin(now / 120) * 6 : 0;
+    drawImg(ctx, Z.animalImage(animal, mood), x, H - 100 + bob, 200, 206);
+    for (let i = 0; i < NEED; i++) {
+      const hx = x - 44 + i * 44, hy = H - 222;
+      ctx.save(); ctx.translate(hx, hy); ctx.scale(1.3, 1.3);
+      ctx.beginPath(); ctx.moveTo(0, 10); ctx.bezierCurveTo(-18, -2, -12, -18, 0, -8); ctx.bezierCurveTo(12, -18, 18, -2, 0, 10);
+      ctx.fillStyle = i < hits ? '#e53935' : 'rgba(255,255,255,.8)'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = OL; ctx.stroke(); ctx.restore();
+    }
+  }
   const zooTheme = {
     board: leafy,
-    source(ctx, level, now, dripping) {
+    source(ctx, level, now, dripping, next) {
       const x = (level.hose + 0.5) * CELL, { line, poly } = BR.draw;
       poly(ctx, [{ x: x - 44, y: -6 }, { x: x + 44, y: -6 }, { x: x + 40, y: 40 }, { x: x - 40, y: 40 }], '#c98b4e');
       line(ctx, x - 40, 14, x + 40, 14, '#a8622c', 4);
       poly(ctx, [{ x: x - 20, y: 40 }, { x: x + 20, y: 40 }, { x: x + 14, y: 62 }, { x: x - 14, y: 62 }], '#8b5a2b');
-      if (dripping) drawImg(ctx, Z.foodImage(level.food), x, 48 + (now / 25) % 6, 26, 26);
+      if (dripping) drawImg(ctx, Z.foodImage(next || level.food), x, 48 + (now / 25) % 6, 26, 26);
     },
-    ball(ctx, b, level) { drawImg(ctx, Z.foodImage(level.food), b.position.x, b.position.y, 40, 40, b.angle); },
-    goal(ctx, st) {
-      const { level, fx, hits, won, now } = st, x = (level.goal + 1) * CELL;
-      const mood = fx.chew > 0 ? 'munch' : won ? 'smile' : 'open', bob = won ? Math.sin(now / 120) * 6 : 0;
-      drawImg(ctx, Z.animalImage(level.animal, mood), x, H - 100 + bob, 200, 206);
-      for (let i = 0; i < NEED; i++) { // three hearts fill up as the animal eats
-        const hx = x - 44 + i * 44, hy = H - 222;
-        ctx.save(); ctx.translate(hx, hy); ctx.scale(1.3, 1.3);
-        ctx.beginPath(); ctx.moveTo(0, 10); ctx.bezierCurveTo(-18, -2, -12, -18, 0, -8); ctx.bezierCurveTo(12, -18, 18, -2, 0, 10);
-        ctx.fillStyle = i < hits ? '#e53935' : 'rgba(255,255,255,.8)'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = OL; ctx.stroke(); ctx.restore();
-      }
-    },
+    ball(ctx, b, level) { drawImg(ctx, Z.foodImage(b.kind || level.food), b.position.x, b.position.y, 40, 40, b.angle); },
+    kindPic(ctx, k, x, y, size) { drawImg(ctx, Z.foodImage(k), x, y, size, size); },
+    goal(ctx, st) { hungry(ctx, st, st.level.goal, st.level.animal, st.hits, st.fx.chew, st.fx.shake); },
+    goal2(ctx, st) { hungry(ctx, st, st.level.goal2, st.level.animal2, st.hits2, st.fx.chew2, st.fx.shake2); },
     decoy(ctx, st) {
       const { level, fx } = st, x = (level.decoy + 1) * CELL + (fx.shake > 0 ? Math.sin(fx.shake * 1.2) * 10 : 0);
       drawImg(ctx, Z.animalImage(level.decoyAnimal, 'smile'), x, H - 96, 190, 196);
     },
     splash: '#9ccc65',
     release() { Sfx.plop(); },
-    hit(ev, fx) { Sfx.chomp(2); fx.chew = 36; fx.burst(ev.x, ev.y, 8, '#ff8fa3', 1.2); },
-    win(fx) { fx.chew = 0; },
+    hit(ev, fx) { Sfx.chomp(2); if (ev.g === 2) fx.chew2 = 36; else fx.chew = 36; fx.burst(ev.x, ev.y, 8, '#ff8fa3', 1.2); },
+    win(fx) { fx.chew = 0; fx.chew2 = 0; },
     tapGoal(level) { sound(level.animal); },
+    tapGoal2(level) { sound(level.animal2); },
     tapDecoy(level) { sound(level.decoyAnimal); },
     refuse: level => 'zoorun.no.' + level.animal,
-    intro: level => 'zoorun.want.' + level.animal,
-    winLine: level => 'zoorun.fed.' + level.animal
+    wrong: (level, ev) => 'zoorun.wrong.' + (ev.g === 2 ? level.animal2 : level.animal),
+    intro: level => level.goal2 != null ? 'zoorun.two' : level.want ? 'zoorun.only.' + level.animal : 'zoorun.want.' + level.animal,
+    winLine: level => level.goal2 != null ? 'zoorun.fedtwo' : 'zoorun.fed.' + level.animal
   };
   BR.mount(Object.assign({ screen: 'zoorun', lines: 'zoorun', colour: '#2e9e4f', icon: SNACK_ICON, pack: BR.packs.zoo, theme: zooTheme, cls: 'zoo-run' }, COMMON));
 
