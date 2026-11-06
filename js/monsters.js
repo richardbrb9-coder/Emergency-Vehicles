@@ -33,7 +33,33 @@ const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'sev
         hint: [{ t: 'bucket', c: 5, r: 1 }, { t: 'long', c: 8, r: 4 }] })
     ]
   };
-  BR.ballNumber = (level, idx) => level.nums[idx % level.nums.length];
+
+  // Medium and Hard: mixed things come down, and gates (or a flip-flop) sort them. Each level is one of the
+  // checked Zoo and Puppies layouts (some mirrored) with this world's things, and was checked again by running its physics.
+  ((pack, g, lv) => {
+    pack.medium = [
+      lv({ hose: 4, goal: 4, balls: 8, mix: [2, 3], want: 2, tray: [g('gate', 2)], hint: [{ t: 'gate', k: 2, c: 4, r: 1 }], monster: 'gobble' }),
+      lv({ hose: 3, goal: 3, balls: 8, mix: [3, 1], want: 3, tray: [g('gate', 3)], hint: [{ t: 'gate', k: 3, c: 3, r: 1 }], monster: 'zug' }),
+      lv({ hose: 12, goal: 7, balls: 8, mix: [1, 2], want: 1, tray: [g('gate', 1), 'long'], hint: [{ t: 'long', c: 10, r: 1, f: true }, { t: 'gate', k: 1, c: 8, r: 2, f: true }], monster: 'trixie' }),
+      lv({ hose: 11, goal: 6, balls: 8, mix: [2, 3], want: 2, tray: [g('gate', 2), 'long'], hint: [{ t: 'long', c: 8, r: 1, f: true }, { t: 'gate', k: 2, c: 6, r: 2, f: true }], monster: 'boxy' }),
+      lv({ hose: 5, goal: 10, balls: 8, mix: [3, 1], want: 3, fixed: [{ t: 'block', c: 8, r: 4 }], tray: [g('gate', 3), 'ramp'], hint: [{ t: 'gate', k: 3, c: 4, r: 2 }, { t: 'ramp', c: 6, r: 5 }], monster: 'twinkle' }),
+      lv({ hose: 9, goal: 2, balls: 8, mix: [1, 2], want: 1, tray: [g('gate', 1), 'curve'], hint: [{ t: 'gate', k: 1, c: 9, r: 1, f: true }, { t: 'curve', c: 7, r: 4, f: true }], monster: 'hexie' }),
+      lv({ balls: 6, hose: 10, goal: 9, goal2: 3, mix: [3], tray: [g('count', 3), 'long'], hint: [{ t: 'count', k: 3, c: 9, r: 1, f: true }, { t: 'long', c: 5, r: 2, f: true }], monster: 'gobble', g2: { monster: 'boxy' } }),
+      lv({ balls: 6, hose: 3, goal: 3, goal2: 9, mix: [2], tray: [g('count', 3), 'long'], hint: [{ t: 'count', k: 3, c: 3, r: 1, f: false }, { t: 'long', c: 5, r: 2, f: false }], monster: 'zug', g2: { monster: 'twinkle' } })
+    ];
+    pack.hard = [
+      lv({ hose: 9, goal: 8, balls: 8, mix: [1, 2], goal2: 4, want: 1, want2: 2, tray: [g('gate', 1)], hint: [{ t: 'gate', k: 1, c: 8, r: 3, f: true }], monster: 'trixie', g2: { monster: 'hexie' } }),
+      lv({ hose: 10, goal: 6, balls: 8, mix: [2, 3], goal2: 3, want: 2, want2: 3, tray: [g('gate', 2), 'long'], hint: [{ t: 'gate', k: 2, c: 9, r: 3, f: true }, { t: 'long', c: 7, r: 5, f: true }], monster: 'boxy', g2: { monster: 'gobble' } }),
+      lv({ balls: 9, hose: 3, goal: 3, decoy: 6, want: 2, mix: [2, 1, 3], tray: [g('gate', 2), 'bin'], hint: [{ t: 'gate', k: 2, c: 3, r: 1 }, { t: 'bin', c: 5, r: 1 }], monster: 'twinkle', decoyMonster: 'hexie' }),
+      lv({ balls: 9, hose: 10, goal: 9, decoy: 6, want: 3, mix: [3, 1, 2], tray: [g('gate', 3), 'bin'], hint: [{ t: 'gate', k: 3, c: 9, r: 1, f: true }, { t: 'bin', c: 7, r: 1 }], monster: 'hexie', decoyMonster: 'gobble' }),
+      lv({ hose: 7, goal: 11, balls: 8, mix: [2, 3], goal2: 3, want: 2, want2: 3, tray: ['flip', 'long'], hint: [{ t: 'flip', c: 6, r: 2 }, { t: 'long', c: 7, r: 4 }], monster: 'gobble', g2: { monster: 'boxy' } }),
+      lv({ hose: 3, goal: 3, balls: 9, mix: [3, 1, 2], goal2: 6, want: 3, want2: 1, tray: [g('gate', 3), g('gate', 1)], hint: [{ t: 'gate', k: 3, c: 3, r: 1 }, { t: 'gate', k: 1, c: 5, r: 2 }], monster: 'zug', g2: { monster: 'twinkle' } }),
+      lv({ hose: 7, goal: 12, balls: 8, mix: [1, 2], goal2: 1, want: 1, want2: 2, tray: ['flip', 'long', 'long'], hint: [{ t: 'flip', c: 7, r: 2 }, { t: 'long', c: 7, r: 4 }, { t: 'long', c: 3, r: 4, f: true }], monster: 'trixie', g2: { monster: 'hexie' } }),
+      lv({ hose: 2, goal: 6, balls: 8, mix: [2, 3], goal2: 2, want: 2, want2: 3, fixed: [{ t: 'block', c: 9, r: 5 }], tray: [g('not', 2), 'long'], hint: [{ t: 'not', k: 2, c: 2, r: 1 }, { t: 'long', c: 3, r: 3 }], monster: 'boxy', g2: { monster: 'gobble' } })
+    ];
+  })(window.BallRun.packs.monsters, (t, k) => ({ t, k }), o => Object.assign({ balls: 8, kinds: [...new Set(o.mix)] }, o));
+
+  BR.ballNumber = (level, idx) => { const n = level.mix || level.nums; return n[idx % n.length]; };
 })();
 
 (function () {
@@ -253,12 +279,14 @@ const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'sev
       if (dripping) line(ctx, x - 12, 54, x + 12, 54, '#ffd21f', 4);
     },
     ball(ctx, b, level) { ballOnCanvas(ctx, b.position.x, b.position.y, BR.ballNumber(level, b.idx), b.angle); },
+    kindPic(ctx, k, x, y, size) { ballOnCanvas(ctx, x, y, k, 0, size * .42); },
+    bubbleY: 335, // above the sum (2 + 2 + 2) shown over the monster
     goal(ctx, st) {
       const { level, fx, hits, won, now } = st, x = (level.goal + 1) * CELL;
       const mood = fx.burp > 0 ? 'burp' : fx.chew > 0 ? 'munch' : won ? 'smile' : 'open', bob = won ? Math.sin(now / 120) * 6 : 0;
       drawImg(ctx, MA.monsterImage(level.monster, mood), x, H - 104 + bob, 190, 216);
       // The sum so far, above the monster: 2 + 1 + 3 = 6
-      const shown = hits ? eaten.slice(0, NEED) : [];
+      const shown = hits && !st.second ? eaten.slice(0, NEED) : [];
       if (!shown.length) return;
       const parts = shown.flatMap((n, i) => i ? ['+', n] : [n]);
       if (won && shown.length === NEED) parts.push('=', shown.reduce((a, b) => a + b, 0));
@@ -279,6 +307,7 @@ const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'sev
     splash: '#b39ddb',
     release() { Sfx.plop(); },
     hit(ev, fx, level) {
+      if (ev.g === 2) { Sfx.gobble(); fx.chew = 30; return; }
       if (ev.n === 1) eaten = [];
       eaten.push(BR.ballNumber(level, ev.idx));
       Sfx.gobble(); fx.chew = 30; fx.burst(ev.x, ev.y, 8, MA.numColour(eaten[eaten.length - 1]), 1.2);

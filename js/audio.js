@@ -258,8 +258,8 @@
           return;
         }
         if (file) {
-          clip = new Audio(file);
-          clip.onloadedmetadata = () => startFallback((clip.duration * 1000) / words.length);
+          const c = clip = new Audio(file); // keep our own reference: clip is cleared if another line starts first
+          clip.onloadedmetadata = () => startFallback((c.duration * 1000) / words.length);
           clip.onended = done; clip.onerror = done;
           clip.play().catch(done);
           return;

@@ -36,7 +36,11 @@
     // flip: a flip-flop: a paddle under a little funnel that sends one thing left, then the next thing right.
     gate:   { w: 2, h: 2, flip: true, colour: '#00a19a', kind: 'gate', segs: GATE, trap: [0.62, 0.32, 1.38, 0.58], chute: CHUTE },
     not:    { w: 2, h: 2, flip: true, colour: '#e86aa6', kind: 'not', segs: GATE, trap: [0.62, 0.32, 1.38, 0.58], chute: CHUTE },
-    flip:   { w: 2, h: 2, flip: true, colour: '#f2b705', kind: 'flip', segs: [[0.1, 0.06, 0.72, 0.6], [1.9, 0.06, 1.28, 0.6]] }
+    flip:   { w: 2, h: 2, flip: true, colour: '#f2b705', kind: 'flip', segs: [[0.1, 0.06, 0.72, 0.6], [1.9, 0.06, 1.28, 0.6]] },
+    // count: a counting gate: its trapdoor lets the first k things through (any kind), then shuts.
+    // bin:   a reject bin: anything that falls in stays there.
+    count:  { w: 2, h: 2, flip: true, colour: '#1e5bd6', kind: 'count', segs: GATE, trap: [0.62, 0.32, 1.38, 0.58], chute: CHUTE },
+    bin:    { w: 2, h: 2, flip: false, colour: '#596178', kind: 'bin', segs: [[0.12, 0.3, 0.3, 1.88], [0.3, 1.88, 1.7, 1.88], [1.7, 1.88, 1.88, 0.3]] }
   };
   // Collision groups: the board and pieces are group 1, the trapdoors group 2, and each kind of ball has its own bit.
   const TRAP = 0x0002, kindBit = (level, k) => { const i = (level.kinds || []).indexOf(k); return i < 0 ? 0 : 0x0010 << i; };
@@ -95,8 +99,14 @@
       if (d.trap) {
         const bit = kindBit(this.level, p.k), [x1, y1] = toWorld(p, d.trap[0], d.trap[1]), [x2, y2] = toWorld(p, d.trap[2], d.trap[3]);
         // An Only gate is solid for every kind but its own; a Not gate is solid only for its own kind.
-        const mask = d.kind === 'gate' ? 0xFFFF & ~bit : bit;
-        bodies.push(seg(x1, y1, x2, y2, { collisionFilter: { category: TRAP, mask, group: 0 } }));
+        const mask = d.kind === 'gate' ? 0xFFFF & ~bit : d.kind === 'count' ? 0 : bit;
+        const trap = seg(x1, y1, x2, y2, { collisionFilter: { category: TRAP, mask, group: 0 } });
+        bodies.push(trap);
+        if (d.kind === 'count') { // a sensor in the chute counts what falls through; the trapdoor shuts at k
+          const [cx, cy] = toWorld(p, 1, 1.1);
+          const eye = M.Bodies.rectangle(cx, cy, CELL * 0.6, 20, { isStatic: true, isSensor: true, label: 'counter' });
+          p.trap = trap; p.passed = 0; p.seen = new Set(); bodies.push(eye);
+        }
         d.chute.forEach(([a, b, c2, e]) => { const [x1, y1] = toWorld(p, a, b), [x2, y2] = toWorld(p, c2, e); bodies.push(seg(x1, y1, x2, y2)); });
       }
       if (d.kind === 'flip') {
@@ -105,6 +115,10 @@
         p.paddle = paddle; p.hinge = { x, y }; p.side = 1; p.pending = 0; p.seen = new Set();
         M.Body.setAngle(paddle, 0.62 * (p.f ? -1 : 1));
         bodies.push(paddle);
+      }
+      if (d.kind === 'bin') {
+        const [x, y] = toWorld(p, 1, 1.45);
+        bodies.push(M.Bodies.rectangle(x, y, CELL * 1.2, CELL * 0.7, { isStatic: true, isSensor: true, label: 'bin' }));
       }
       if (d.kind === 'block') bodies.push(M.Bodies.rectangle((p.c + 0.5) * CELL, (p.r + 0.5) * CELL, CELL - 8, CELL - 8, { isStatic: true, chamfer: { radius: 10 }, label: 'part', friction: 0.05 }));
       if (d.kind === 'spring') {
@@ -160,6 +174,7 @@
       if (p.plank) { M.Body.setAngle(p.plank, -0.32 * (p.f ? -1 : 1)); M.Body.setAngularVelocity(p.plank, 0); M.Body.setVelocity(p.plank, { x: 0, y: 0 }); M.Body.setPosition(p.plank, p.pivot); }
       if (p.cup && p.angle) { M.Body.rotate(p.cup, -p.angle, p.axle); p.angle = 0; p.state = 'fill'; }
       if (p.paddle) { p.side = 1; p.pending = 0; p.seen = new Set(); M.Body.setAngle(p.paddle, 0.62 * (p.f ? -1 : 1)); }
+      if (p.trap) { p.passed = 0; p.seen = new Set(); p.trap.collisionFilter.mask = 0; }
     }
     // The flip-flop paddle swaps sides a moment after each new thing lands on it.
     flipNow(p) { p.side = -p.side; p.pending = 0; M.Body.setAngle(p.paddle, 0.62 * (p.f ? -1 : 1) * p.side); this.events.push({ type: 'flip' }); }
@@ -174,7 +189,7 @@
       if ((other.label === 'goal' || other.label === 'goal2') && !ball.gone) {
         ball.gone = true;
         const g = other.label === 'goal' ? 1 : 2, want = g === 1 ? l.want : l.want2;
-        if (want && ball.kind !== want) { // the wrong kind: this run can't win, and no more are sent
+        if (want != null && ball.kind !== want) { // the wrong kind: this run can't win, and no more are sent
           if (!this.won) { this.spoiled = true; this.toRelease = this.released; }
           this.events.push({ type: 'wrong', g, kind: ball.kind, x: ball.position.x, y: ball.position.y });
           return;
@@ -182,12 +197,20 @@
         const n = g === 1 ? ++this.hits : ++this.hits2;
         this.events.push({ type: 'hit', g, x: ball.position.x, y: ball.position.y, n, idx: ball.idx, kind: ball.kind });
         if (!this.won && !this.spoiled && this.hits >= NEED && (l.goal2 == null || this.hits2 >= NEED)) { this.won = true; this.events.push({ type: 'win' }); }
+      } else if (other.label === 'counter') {
+        const p = other.piece;
+        if (!p.seen.has(ball.id) && p.passed < p.k) { p.seen.add(ball.id); p.passed++; this.events.push({ type: 'count', n: p.passed });
+          if (p.passed >= p.k) { p.trap.collisionFilter.mask = 0xFFFF; this.events.push({ type: 'shut' }); } }
+      } else if (other.label === 'bin' && !ball.gone) {
+        ball.gone = true; this.events.push({ type: 'binned', x: ball.position.x, y: ball.position.y, kind: ball.kind });
       } else if (other.label === 'flip') {
         const p = other.piece;
         if (!p.seen.has(ball.id)) { p.seen.add(ball.id); if (!p.pending) p.pending = this.t + 9; }
       } else if (other.label === 'decoy' && !ball.gone) {
         ball.gone = true; this.missed++;
-        this.events.push({ type: 'decoy', x: ball.position.x, y: ball.position.y });
+        // In logic levels (mixed kinds) the decoy must be kept clear: anything landing on it spoils the run.
+        if (l.mix && !this.won) { this.spoiled = true; this.toRelease = this.released; }
+        this.events.push({ type: 'decoy', x: ball.position.x, y: ball.position.y, kind: ball.kind });
       } else if (other.label === 'spring' && this.t - (ball.sprung || -99) > 10) {
         ball.sprung = this.t;
         const dir = other.piece.f ? -1 : 1;
@@ -293,6 +316,32 @@ window.BallRun.packs.rescue = {
   ].map(p => Object.assign({ balls: 6 }, p))
 };
 
+  // Medium and Hard: mixed things come down, and gates (or a flip-flop) sort them. Each level is one of the
+  // checked Zoo and Puppies layouts (some mirrored) with this world's things, and was checked again by running its physics.
+  ((pack, g, lv) => {
+    pack.medium = [
+      lv({ hose: 3, goal: 3, balls: 8, mix: ['water', 'leaf'], want: 'water', tray: [g('gate', 'water')], hint: [{ t: 'gate', k: 'water', c: 3, r: 1 }] }),
+      lv({ hose: 9, goal: 8, balls: 8, mix: ['water', 'leaf'], want: 'water', tray: [g('gate', 'water')], hint: [{ t: 'gate', k: 'water', c: 8, r: 1, f: true }] }),
+      lv({ hose: 11, goal: 6, balls: 8, mix: ['water', 'leaf'], want: 'water', tray: [g('gate', 'water'), 'long'], hint: [{ t: 'long', c: 9, r: 1, f: true }, { t: 'gate', k: 'water', c: 7, r: 2, f: true }] }),
+      lv({ hose: 1, goal: 5, balls: 8, mix: ['water', 'leaf'], want: 'water', tray: [g('gate', 'water'), 'long'], hint: [{ t: 'long', c: 1, r: 1 }, { t: 'gate', k: 'water', c: 5, r: 2 }] }),
+      lv({ hose: 4, goal: 9, balls: 8, mix: ['water', 'leaf'], want: 'water', fixed: [{ t: 'block', c: 7, r: 4 }], tray: [g('gate', 'water'), 'ramp'], hint: [{ t: 'gate', k: 'water', c: 4, r: 1 }, { t: 'ramp', c: 5, r: 3 }] }),
+      lv({ hose: 10, goal: 3, balls: 8, mix: ['water', 'leaf'], want: 'water', tray: [g('gate', 'water'), 'curve'], hint: [{ t: 'gate', k: 'water', c: 10, r: 1, f: true }, { t: 'curve', c: 8, r: 4, f: true }] }),
+      lv({ hose: 11, goal: 3, balls: 8, mix: ['water', 'leaf'], want: 'water', tray: [g('gate', 'water'), 'spring'], hint: [{ t: 'spring', c: 11, r: 1, f: true }, { t: 'gate', k: 'water', c: 8, r: 1, f: true }] }),
+      lv({ hose: 1, goal: 6, balls: 8, mix: ['water', 'leaf'], want: 'water', fixed: [{ t: 'block', c: 1, r: 4 }], tray: [g('gate', 'water'), 'long'], hint: [{ t: 'long', c: 1, r: 1 }, { t: 'gate', k: 'water', c: 5, r: 2 }] })
+    ];
+    pack.hard = [
+      lv({ hose: 5, goal: 4, balls: 8, mix: ['water', 'leaf'], goal2: 8, want: 'water', want2: 'leaf', tray: [g('gate', 'water')], hint: [{ t: 'gate', k: 'water', c: 5, r: 3 }] }),
+      lv({ hose: 3, goal: 6, balls: 8, mix: ['water', 'leaf'], goal2: 9, want: 'water', want2: 'leaf', tray: [g('gate', 'water'), 'long'], hint: [{ t: 'gate', k: 'water', c: 3, r: 3 }, { t: 'long', c: 3, r: 5 }] }),
+      lv({ hose: 5, goal: 5, balls: 9, mix: ['water', 'leaf', 'twig'], want: 'water', tray: [g('gate', 'leaf'), g('gate', 'water')], hint: [{ t: 'gate', k: 'water', c: 5, r: 1 }] }),
+      lv({ hose: 3, goal: 9, balls: 9, mix: ['water', 'leaf', 'twig'], want: 'water', tray: [g('not', 'water'), 'long'], hint: [{ t: 'not', k: 'water', c: 3, r: 1 }, { t: 'long', c: 5, r: 2 }] }),
+      lv({ hose: 6, goal: 2, balls: 8, mix: ['water', 'leaf'], goal2: 10, want: 'water', want2: 'leaf', tray: ['flip', 'long'], hint: [{ t: 'flip', c: 5, r: 2, f: true }, { t: 'long', c: 6, r: 4 }] }),
+      lv({ hose: 10, goal: 9, balls: 9, mix: ['water', 'leaf', 'twig'], goal2: 6, want: 'water', want2: 'leaf', tray: [g('gate', 'water'), g('gate', 'leaf')], hint: [{ t: 'gate', k: 'water', c: 9, r: 2, f: true }, { t: 'gate', k: 'leaf', c: 7, r: 3, f: true }] }),
+      lv({ hose: 6, goal: 11, balls: 8, mix: ['water', 'leaf'], goal2: 1, want: 'water', want2: 'leaf', tray: ['flip', 'long', 'long'], hint: [{ t: 'flip', c: 6, r: 2 }, { t: 'long', c: 6, r: 4 }, { t: 'long', c: 2, r: 4, f: true }] }),
+      lv({ hose: 11, goal: 6, balls: 8, mix: ['water', 'leaf'], goal2: 10, want: 'water', want2: 'leaf', fixed: [{ t: 'block', c: 4, r: 5 }], tray: [g('not', 'water'), 'long'], hint: [{ t: 'not', k: 'water', c: 10, r: 1, f: true }, { t: 'long', c: 7, r: 4, f: true }] })
+    ];
+  })(window.BallRun.packs.rescue, (t, k) => ({ t, k }), o => Object.assign({ balls: 8, kinds: [...new Set(o.mix)] }, o));
+
+
 // ---------- The ball run screen ----------
 // BallRun.mount(cfg) adds one world's ball run game: cfg.screen (also the game id and its progress key),
 // cfg.lines (prefix of its voice lines), cfg.pack (levels), cfg.theme (how the source, balls and goal look and sound).
@@ -332,7 +381,20 @@ window.BallRun.packs.rescue = {
     'brlevel.easy':   'Easy puzzles.',
     'brlevel.medium': 'Medium puzzles. These are a bit trickier!',
     'brlevel.hard':   'Hard puzzles! Have a good think.',
-    'brlevel.done':   'You solved every puzzle on this page! Well done!'
+    'brlevel.done':   'You solved every puzzle on this page! Well done!',
+    // Medium and Hard puzzles (mixed things, gates) in worlds without their own lines for them.
+    'brlogic.only':   'Look at the picture in the bubble. Only things like that can go in! Use a gate to sort them.',
+    'brlogic.two':    'Two bubbles, two pictures! Send each thing to the place that shows its picture.',
+    'brlogic.share':  'Share them out fairly! Three for each. A counting gate can help.',
+    'brlogic.wrong':  "Oops! That one doesn't go there. Look at the picture in the bubble, and try again!",
+    'brlogic.woke':   'Oh no, that one landed in the wrong place! Keep the way clear, and try again.',
+    'brlogic.sorted': 'Brilliant sorting! Everything went to the right place!',
+    'brlogic.shared': 'Three each! That is fair sharing!',
+    'brlogic.p.gate':  'A gate! Only things like the picture drop through the trapdoor. Everything else rolls over the top.',
+    'brlogic.p.not':   'A not gate! Everything drops through the trapdoor, except things like the picture.',
+    'brlogic.p.flip':  'A flip-flop! It sends one thing this way, then the next thing that way.',
+    'brlogic.p.count': 'A counting gate! It counts things through its trapdoor. When it gets to its number, the trapdoor shuts.',
+    'brlogic.p.bin':   'A reject bin! Anything that falls in stays in the bin.'
   });
 
   const ICON = `<svg viewBox="-60 -60 120 120"><path d="M-50 -30 L0 -6" stroke="${OL}" stroke-width="13" stroke-linecap="round"/><path d="M-50 -30 L0 -6" stroke="#f07a1a" stroke-width="8" stroke-linecap="round"/>
@@ -370,7 +432,8 @@ window.BallRun.packs.rescue = {
       ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillRect(Math.min(cx0, cx1), cy0, Math.abs(cx1 - cx0), cy1 - cy0);
       d.chute.forEach(([a, b, c, e]) => { const s = [...tw(a, b), ...tw(c, e)]; line(ctx, ...s, OL, 19 * k); line(ctx, ...s, '#9aa3b5', 12 * k); });
       const t = [...tw(d.trap[0], d.trap[1]), ...tw(d.trap[2], d.trap[3])];
-      ctx.save(); ctx.setLineDash([14, 10]); line(ctx, ...t, OL, 12 * k); line(ctx, ...t, d.colour, 7 * k); ctx.restore();
+      const shut = d.kind === 'count' && p.passed >= p.k;
+      ctx.save(); if (!shut) ctx.setLineDash([14, 10]); line(ctx, ...t, OL, 12 * k); line(ctx, ...t, d.colour, 7 * k); ctx.restore();
       const [ax, ay] = tw(1, 1.35); // a down arrow in the chute
       ctx.fillStyle = d.colour; ctx.strokeStyle = OL; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.moveTo(ax - 14, ay - 8); ctx.lineTo(ax + 14, ay - 8); ctx.lineTo(ax, ay + 12); ctx.closePath(); ctx.fill(); ctx.stroke();
@@ -383,7 +446,20 @@ window.BallRun.packs.rescue = {
       const f = segs[0], l = segs[segs.length - 1];
       bolt(ctx, f[0], f[1], p.fixed); bolt(ctx, l[2], l[3], p.fixed);
     }
-    if (d.chute && p.k) { const [bx, by] = tw(1, 0.95); kindBadge(ctx, p.k, bx, by, 24, d.kind === 'not'); }
+    if (d.chute && p.k != null && d.kind === 'count') { // how many more it lets through: 3, 2, 1, then a padlock
+      const [bx, by] = tw(1, 0.95), left = p.k - (p.passed || 0);
+      ctx.fillStyle = left ? '#fff' : '#ffd21f'; ctx.strokeStyle = OL; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(bx, by, 24, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.font = '700 32px Fredoka, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = OL;
+      if (left) ctx.fillText(left, bx, by + 2);
+      else { ctx.beginPath(); ctx.roundRect(bx - 11, by - 3, 22, 16, 3); ctx.fill(); ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(bx, by - 4, 7, Math.PI, 0); ctx.stroke(); }
+    } else if (d.chute && p.k != null) { const [bx, by] = tw(1, 0.95); kindBadge(ctx, p.k, bx, by, 24, d.kind === 'not'); }
+    if (d.kind === 'bin') { // a grey bin with a red cross on its front
+      const [x0, y0] = tw(0.3, 0.6), [x1, y1] = tw(1.7, 1.86);
+      ctx.fillStyle = 'rgba(89,97,120,.25)'; ctx.fillRect(Math.min(x0, x1), y0, Math.abs(x1 - x0), y1 - y0);
+      const [cx, cy] = tw(1, 1.25);
+      line(ctx, cx - 18, cy - 18, cx + 18, cy + 18, '#fff', 13); line(ctx, cx + 18, cy - 18, cx - 18, cy + 18, '#fff', 13);
+      line(ctx, cx - 18, cy - 18, cx + 18, cy + 18, '#e53935', 8); line(ctx, cx + 18, cy - 18, cx - 18, cy + 18, '#e53935', 8);
+    }
     if (d.kind === 'flip') {
       poly(ctx, p.paddle.vertices, d.colour);
       bolt(ctx, p.hinge.x, p.hinge.y, false);
@@ -497,18 +573,38 @@ window.BallRun.packs.rescue = {
     line(ctx, x - 16, 36, x + 16, 36, '#e0a800', 4);
     if (dripping) { ctx.fillStyle = '#5cc3ff'; ctx.beginPath(); ctx.arc(x, 66 + (now / 20) % 8, 5, 0, Math.PI * 2); ctx.fill(); }
   }
-  function drawBall(ctx, b) {
-    const { x, y } = b.position;
-    ctx.fillStyle = '#5cc3ff'; ctx.strokeStyle = OL; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(x, y, R, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.beginPath(); ctx.arc(x - 4, y - 5, 4, 0, Math.PI * 2); ctx.fill();
+  // Medium and Hard Water Run puzzles mix water with leaves and twigs blowing about; only water puts out a fire,
+  // and the leaves go in the garden bin.
+  function drawThing(ctx, kind, x, y, s = 1, rot = 0) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.rotate(rot); ctx.strokeStyle = OL; ctx.lineWidth = 3;
+    if (kind === 'leaf') {
+      ctx.fillStyle = '#5cb85c'; ctx.beginPath(); ctx.moveTo(-R - 2, 0); ctx.quadraticCurveTo(0, -R - 4, R + 2, 0); ctx.quadraticCurveTo(0, R + 4, -R - 2, 0); ctx.fill(); ctx.stroke();
+      line(ctx, -R + 2, 0, R - 2, 0, '#2e7d32', 2.5);
+    } else if (kind === 'twig') {
+      line(ctx, -R - 4, 4, R + 4, -4, OL, 11); line(ctx, -R - 4, 4, R + 4, -4, '#8a5a3c', 6); line(ctx, 0, 0, 6, -12, OL, 8); line(ctx, 0, 0, 6, -12, '#8a5a3c', 4);
+    } else {
+      ctx.fillStyle = '#5cc3ff'; ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.beginPath(); ctx.arc(-4, -5, 4, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function drawBall(ctx, b) { drawThing(ctx, b.kind, b.position.x, b.position.y, 1, b.kind ? b.angle : 0); }
+  function gardenBin(ctx, x, hits, shake) { // a green garden bin, filling with leaves
+    const dx = shake > 0 ? Math.sin(shake * 1.2) * 8 : 0;
+    for (let i = 0; i < Math.min(3, hits); i++) drawThing(ctx, 'leaf', x + dx - 30 + i * 30, H - 158 - (i % 2) * 8, 1, i - 1);
+    poly(ctx, [{ x: x + dx - 62, y: H - 150 }, { x: x + dx + 62, y: H - 150 }, { x: x + dx + 52, y: H - 12 }, { x: x + dx - 52, y: H - 12 }], '#2e9e4f');
+    line(ctx, x + dx - 70, H - 150, x + dx + 70, H - 150, OL, 14); line(ctx, x + dx - 70, H - 150, x + dx + 70, H - 150, '#1f7a3a', 8);
+    [-30, 30].forEach(o => { ctx.fillStyle = '#596178'; ctx.beginPath(); ctx.arc(x + dx + o, H - 12, 10, 0, Math.PI * 2); ctx.fill(); });
   }
   const water = {
-    source: (ctx, level, now, dripping) => drawHose(ctx, level.hose, now, dripping),
+    source: (ctx, level, now, dripping, next) => { drawHose(ctx, level.hose, now, dripping && !next); if (dripping && next) drawThing(ctx, next, (level.hose + .5) * CELL, 68, .6); },
     ball: (ctx, b) => drawBall(ctx, b),
+    kindPic: (ctx, k, x, y, size) => drawThing(ctx, k, x, y, size / 34),
     goal: (ctx, st) => drawFire(ctx, (st.level.goal + 1) * CELL, H - 6, NEED - st.hits, st.now),
+    goal2: (ctx, st) => gardenBin(ctx, (st.level.goal2 + 1) * CELL, st.hits2, st.fx.shake2),
+    bubbleY: 270,
     splash: '#5cc3ff',
-    hit(ev, fx) { Sfx.splash(); Sfx.hiss(); fx.burst(ev.x, ev.y, 10, '#bfe6ff', 1.4); fx.steam = 40; },
+    hit(ev, fx) { if (ev.g === 2) { Sfx.plop(); fx.burst(ev.x, ev.y, 6, '#5cb85c', 1.2); return; } Sfx.splash(); Sfx.hiss(); fx.burst(ev.x, ev.y, 10, '#bfe6ff', 1.4); fx.steam = 40; },
     win(fx) { fx.steam = 120; },
     over(ctx, st) {
       const fx = st.fx;
@@ -605,7 +701,7 @@ window.BallRun.packs.rescue = {
         tray.forEach((it, i) => {
           const b = document.createElement('button');
           b.className = 'br-item' + (it.placed ? ' used' : '');
-          b.setAttribute('aria-label', it.k ? it.t + ' ' + it.k : it.t);
+          b.setAttribute('aria-label', it.k != null ? it.t + ' ' + it.k : it.t);
           b.appendChild(pieceIcon(it.t, it.k));
           b.addEventListener('pointerdown', e => { if (!it.placed) startDrag(e, { t: it.t, k: it.k, f: false, tray: i }, null); });
           trayEl.appendChild(b);
@@ -613,7 +709,7 @@ window.BallRun.packs.rescue = {
       }
       renderTray();
       // Pictures of foods and balls are images that may still be loading the first time; draw the tray again once they are in.
-      if (tray.some(it => it.k)) [400, 1500].forEach(ms => A.later(() => { if (alive()) renderTray(); }, ms));
+      if (tray.some(it => it.k != null)) [400, 1500].forEach(ms => A.later(() => { if (alive()) renderTray(); }, ms));
 
       // ----- Dragging pieces -----
       let drag = null;
@@ -623,7 +719,7 @@ window.BallRun.packs.rescue = {
         e.preventDefault();
         Sfx.tap(); A.Hint.clear();
         drag = { piece, from, x0: e.clientX, y0: e.clientY, moved: false, id: e.pointerId, shape: shapeOf(piece.t, piece.f, piece.k) };
-        if (!said[piece.t] && !from) { said[piece.t] = true; A.say(theme.pieceLine ? theme.pieceLine(piece) : L('p.' + piece.t)); }
+        if (!said[piece.t] && !from) { said[piece.t] = true; A.say(CONTENT.lines[L('p.' + piece.t)] ? L('p.' + piece.t) : 'brlogic.p.' + piece.t); }
         dragEl.innerHTML = ''; dragEl.appendChild(pieceIcon(piece.t, piece.k));
         moveDrag(e);
       }
@@ -698,15 +794,25 @@ window.BallRun.packs.rescue = {
         if (ev.type === 'splash') fx.burst(ev.x, H - 8, 6, theme.splash);
         if (ev.type === 'decoy') {
           fx.shake = 40; Sfx.boing();
+          if (!refused && level.mix && !theme.logicLines) { refused = true; A.say('brlogic.woke'); }
           if (!refused && theme.refuse) { refused = true; A.say(theme.refuse(level)); }
         }
         if (ev.type === 'flip') Sfx.clank(1.4);
+        if (ev.type === 'count') Sfx.plink(1.2 + ev.n * .15);
+        if (ev.type === 'shut') Sfx.clank(1);
+        if (ev.type === 'binned') { Sfx.clank(.8); fx.burst(ev.x, ev.y, 5, '#9aa3b5'); }
         if (ev.type === 'wrong') { // the wrong kind reached a goal: this run is spoilt
           if (ev.g === 2) fx.shake2 = 40; else fx.shake = 40;
           Sfx.boing();
-          if (!refused) { refused = true; A.say(theme.wrong ? theme.wrong(level, ev) : L('again')); }
+          if (!refused) { refused = true; A.say(theme.wrong ? theme.wrong(level, ev) : 'brlogic.wrong'); }
         }
-        if (ev.type === 'hit' && ev.g === 2) { hits2 = ev.n; theme.hit(ev, fx, level); if (ev.n <= NEED) A.say(L('n' + ev.n)); }
+        if (ev.type === 'hit' && ev.g === 2) { // themes animate fx.chew; for the second goal that is fx.chew2
+          hits2 = ev.n; const chew = fx.chew; theme.hit(ev, fx, level); if (!theme.goal2) { fx.chew2 = fx.chew; fx.chew = chew; }
+          if (ev.n <= NEED) { // the theme's own count for the second goal if it has one ("Two!", "Six pence!"), else plain numbers
+            const id = [theme.hitLine && theme.hitLine(ev, level2), L('n' + ev.n), 'ballrun.n' + ev.n].find(x => x && CONTENT.lines[x]);
+            A.say(id);
+          }
+        }
         else if (ev.type === 'hit') {
           hits = ev.n; theme.hit(ev, fx, level);
           if (ev.n <= NEED) A.say(theme.hitLine ? theme.hitLine(ev, level) : L('n' + ev.n));
@@ -721,7 +827,7 @@ window.BallRun.packs.rescue = {
         if (free) { A.confetti(); Sfx.chime(); A.say(theme.freeLine ? theme.freeLine(level) : L('freeOut')); return; }
         const first = !solved().includes(key(tier, index));
         if (first) { solved().push(key(tier, index)); A.saveProgress(); }
-        await A.say(theme.winLine ? theme.winLine(level) : L('out'));
+        await A.say(logicLine('win') || (theme.winLine ? theme.winLine(level) : L('out')));
         if (!alive()) return;
         const tierDone = tier.list.every((_, i) => solved().includes(key(tier, i)));
         const allDone = TIERS.every(t => t.list.every((_, i) => solved().includes(key(t, i))));
@@ -750,6 +856,30 @@ window.BallRun.packs.rescue = {
         if (!want) { A.say(L('again')); return; }
         hint = { piece: Object.assign({}, want, { f: !!want.f }), shape: shapeOf(want.t, want.f, want.k) };
         A.say(L('hint'));
+      }
+
+      // Worlds without lines of their own for logic puzzles (theme.logicLines) use the shared brlogic ones.
+      function logicLine(when) {
+        if (!level.mix || theme.logicLines) return null;
+        const share = level.want == null && level.goal2 != null;
+        if (when === 'intro') return share ? 'brlogic.share' : level.goal2 != null ? 'brlogic.two' : 'brlogic.only';
+        if (when === 'win') return share ? 'brlogic.shared' : level.goal2 != null ? 'brlogic.sorted' : null;
+      }
+      // The second goal is drawn by the theme's own goal picture unless it has a goal2 of its own;
+      // level.g2 holds what is different about it (another monster, another colour of pot ...).
+      const level2 = level.goal2 != null ? Object.assign({}, level, { goal: level.goal2, want: level.want2 }, level.g2 || {}) : null;
+      const fx2 = { chew: 0, shake: 0, burp: 0, steam: 0, burst: fx.burst };
+      function drawGoal2(ctx, st) {
+        if (theme.goal2) return theme.goal2(ctx, st);
+        fx2.chew = fx.chew2 || 0; fx2.shake = fx.shake2 || 0;
+        theme.goal(ctx, Object.assign({}, st, { level: level2, hits: st.hits2, fx: fx2, second: true }));
+      }
+      // A bubble over each goal shows what it takes, in worlds that don't show it themselves.
+      function bubbles(ctx) {
+        if (!level.mix || theme.logicLines) return;
+        const y = H - (theme.bubbleY || 255);
+        if (level.want != null) kindBadge(ctx, level.want, (level.goal + 1) * CELL, y, 32);
+        if (level.want2 != null) kindBadge(ctx, level.want2, (level.goal2 + 1) * CELL, y, 32);
       }
 
       // ----- Animation loop: fixed physics steps, drawn every frame -----
@@ -784,7 +914,8 @@ window.BallRun.packs.rescue = {
         sim.pieces.forEach(p => drawPiece(ctx, p, now));
         if (level.decoy != null && theme.decoy) theme.decoy(ctx, st);
         theme.goal(ctx, st);
-        if (level.goal2 != null && theme.goal2) theme.goal2(ctx, st);
+        if (level.goal2 != null) drawGoal2(ctx, st);
+        bubbles(ctx);
         sim.balls.forEach(b => theme.ball(ctx, b, level));
         theme.source(ctx, level, now, sim.running && sim.released < sim.toRelease, level.mix ? level.mix[sim.released % level.mix.length] : null);
         for (let i = parts.length - 1; i >= 0; i--) {
@@ -805,6 +936,7 @@ window.BallRun.packs.rescue = {
       requestAnimationFrame(frame);
 
       if (free) A.say(L('free'));
+      else if (logicLine('intro')) A.say(logicLine('intro'));
       else if (theme.intro) A.say(theme.intro(level, index));
       else A.say(L('puzzle'));
       if (!free) A.Hint.set([trayEl.querySelector('.br-item')], L('puzzle'));

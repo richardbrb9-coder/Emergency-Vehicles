@@ -31,6 +31,31 @@
         hint: [{ t: 'bucket', c: 5, r: 1 }, { t: 'long', c: 8, r: 4 }] })
     ]
   };
+
+  // Medium and Hard: mixed things come down, and gates (or a flip-flop) sort them. Each level is one of the
+  // checked Zoo and Puppies layouts (some mirrored) with this world's things, and was checked again by running its physics.
+  ((pack, g, lv) => {
+    pack.medium = [
+      lv({ hose: 10, goal: 9, balls: 8, mix: [0, 1], want: 0, tray: [g('gate', 0)], hint: [{ t: 'gate', k: 0, c: 9, r: 1, f: true }] }),
+      lv({ hose: 4, goal: 4, balls: 8, mix: [1, 2], want: 1, tray: [g('gate', 1)], hint: [{ t: 'gate', k: 1, c: 4, r: 1 }] }),
+      lv({ hose: 2, goal: 6, balls: 8, mix: [2, 3], want: 2, tray: [g('gate', 2), 'long'], hint: [{ t: 'long', c: 1, r: 1 }, { t: 'gate', k: 2, c: 5, r: 2 }] }),
+      lv({ hose: 12, goal: 7, balls: 8, mix: [3, 4], want: 3, tray: [g('gate', 3), 'long'], hint: [{ t: 'long', c: 9, r: 1, f: true }, { t: 'gate', k: 3, c: 7, r: 2, f: true }] }),
+      lv({ hose: 4, goal: 9, balls: 8, mix: [4, 5], want: 4, fixed: [{ t: 'block', c: 7, r: 4 }], tray: [g('gate', 4), 'ramp'], hint: [{ t: 'gate', k: 4, c: 4, r: 1 }, { t: 'ramp', c: 5, r: 3 }] }),
+      lv({ hose: 10, goal: 3, balls: 8, mix: [5, 0], want: 5, tray: [g('gate', 5), 'curve'], hint: [{ t: 'gate', k: 5, c: 10, r: 1, f: true }, { t: 'curve', c: 8, r: 4, f: true }] }),
+      lv({ hose: 2, goal: 9, balls: 8, mix: [0, 1], want: 0, tray: [g('gate', 0), 'spring'], hint: [{ t: 'spring', c: 2, r: 1 }, { t: 'gate', k: 0, c: 4, r: 1 }] }),
+      lv({ hose: 1, goal: 6, balls: 8, mix: [1, 2], want: 1, fixed: [{ t: 'block', c: 1, r: 4 }], tray: [g('gate', 1), 'long'], hint: [{ t: 'long', c: 1, r: 1 }, { t: 'gate', k: 1, c: 5, r: 2 }] })
+    ];
+    pack.hard = [
+      lv({ hose: 8, goal: 8, balls: 8, mix: [2, 3], goal2: 4, want: 2, want2: 3, tray: [g('gate', 2)], hint: [{ t: 'gate', k: 2, c: 7, r: 3, f: true }] }),
+      lv({ hose: 3, goal: 6, balls: 8, mix: [3, 4], goal2: 9, want: 3, want2: 4, tray: [g('gate', 3), 'long'], hint: [{ t: 'gate', k: 3, c: 3, r: 3 }, { t: 'long', c: 3, r: 5 }] }),
+      lv({ hose: 5, goal: 5, balls: 9, mix: [4, 5, 0], want: 4, tray: [g('gate', 5), g('gate', 4)], hint: [{ t: 'gate', k: 4, c: 5, r: 1 }] }),
+      lv({ hose: 10, goal: 3, balls: 9, mix: [5, 0, 1], want: 5, tray: [g('not', 5), 'long'], hint: [{ t: 'not', k: 5, c: 9, r: 1, f: true }, { t: 'long', c: 5, r: 2, f: true }] }),
+      lv({ hose: 7, goal: 10, balls: 8, mix: [0, 1], goal2: 2, want: 0, want2: 1, tray: ['flip', 'long'], hint: [{ t: 'flip', c: 7, r: 2 }, { t: 'long', c: 4, r: 4, f: true }] }),
+      lv({ hose: 10, goal: 9, balls: 9, mix: [1, 2, 3], goal2: 6, want: 1, want2: 2, tray: [g('gate', 1), g('gate', 2)], hint: [{ t: 'gate', k: 1, c: 9, r: 2, f: true }, { t: 'gate', k: 2, c: 7, r: 3, f: true }] }),
+      lv({ hose: 7, goal: 1, balls: 8, mix: [2, 3], goal2: 11, want: 2, want2: 3, tray: ['flip', 'long', 'long'], hint: [{ t: 'flip', c: 6, r: 2, f: true }, { t: 'long', c: 4, r: 4, f: true }, { t: 'long', c: 8, r: 4 }] }),
+      lv({ hose: 11, goal: 6, balls: 8, mix: [3, 4], goal2: 10, want: 3, want2: 4, fixed: [{ t: 'block', c: 4, r: 5 }], tray: [g('not', 3), 'long'], hint: [{ t: 'not', k: 3, c: 10, r: 1, f: true }, { t: 'long', c: 7, r: 4, f: true }] })
+    ];
+  })(window.BallRun.packs.seaside, (t, k) => ({ t, k }), o => Object.assign({ balls: 8, kinds: [...new Set(o.mix)] }, o));
 })();
 
 (function () {
@@ -280,13 +305,14 @@
     },
     source(ctx, level, now, dripping) { // a curling wave at the top, with shells riding on it
       const x = (level.hose + 0.5) * CELL, { line, poly } = BR.draw;
-      [0, 1, 2].forEach(i => drawImg(ctx, SA.shellImage(i + 2), x - 22 + i * 22, 14, 26, 26));
+      [0, 1, 2].forEach(i => drawImg(ctx, SA.shellImage(level.mix ? level.mix[i % level.mix.length] : i + 2), x - 22 + i * 22, 14, 26, 26));
       poly(ctx, [{ x: x - 44, y: 22 }, { x: x + 44, y: 22 }, { x: x + 36, y: 50 }, { x: x - 36, y: 50 }], '#3aa7d8');
       poly(ctx, [{ x: x - 14, y: 50 }, { x: x + 14, y: 50 }, { x: x + 10, y: 62 }, { x: x - 10, y: 62 }], '#1e88c7');
       line(ctx, x - 36, 28, x + 36, 28, '#fff', 4);
       if (dripping) line(ctx, x - 9, 57, x + 9, 57, '#fff', 4);
     },
-    ball(ctx, b) { drawImg(ctx, SA.shellImage(b.idx), b.position.x, b.position.y, 2 * R + 10, 2 * R + 10, b.angle); },
+    ball(ctx, b) { drawImg(ctx, SA.shellImage(b.kind != null ? b.kind : b.idx), b.position.x, b.position.y, 2 * R + 10, 2 * R + 10, b.angle); },
+    kindPic(ctx, k, x, y, size) { drawImg(ctx, SA.shellImage(k), x, y, size * 1.1, size * 1.1); },
     goal(ctx, st) {
       const { level, fx, won, now, hits } = st, x = (level.goal + 1) * CELL;
       const bob = won ? Math.sin(now / 120) * 4 : 0, jump = fx.chew > 0 ? -Math.sin(fx.chew / 30 * Math.PI) * 6 : 0;

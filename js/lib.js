@@ -31,6 +31,31 @@
         hint: [{ t: 'bucket', c: 5, r: 1 }, { t: 'long', c: 8, r: 4 }] })
     ]
   };
+
+  // Medium and Hard: mixed things come down, and gates (or a flip-flop) sort them. Each level is one of the
+  // checked Zoo and Puppies layouts (some mirrored) with this world's things, and was checked again by running its physics.
+  ((pack, g, lv) => {
+    pack.medium = [
+      lv({ hose: 9, goal: 8, balls: 8, mix: ['#1e5bd6', '#2e9e4f'], want: '#1e5bd6', tray: [g('gate', '#1e5bd6')], hint: [{ t: 'gate', k: '#1e5bd6', c: 8, r: 1, f: true }] }),
+      lv({ hose: 10, goal: 9, balls: 8, mix: ['#2e9e4f', '#8e5bd6'], want: '#2e9e4f', tray: [g('gate', '#2e9e4f')], hint: [{ t: 'gate', k: '#2e9e4f', c: 9, r: 1, f: true }] }),
+      lv({ hose: 1, goal: 5, balls: 8, mix: ['#8e5bd6', '#ff8a3d'], want: '#8e5bd6', tray: [g('gate', '#8e5bd6'), 'long'], hint: [{ t: 'long', c: 0, r: 1 }, { t: 'gate', k: '#8e5bd6', c: 4, r: 2 }] }),
+      lv({ hose: 2, goal: 6, balls: 8, mix: ['#ff8a3d', '#0a8fb0'], want: '#ff8a3d', tray: [g('gate', '#ff8a3d'), 'long'], hint: [{ t: 'long', c: 2, r: 1 }, { t: 'gate', k: '#ff8a3d', c: 6, r: 2 }] }),
+      lv({ hose: 5, goal: 10, balls: 8, mix: ['#0a8fb0', '#e53935'], want: '#0a8fb0', fixed: [{ t: 'block', c: 8, r: 4 }], tray: [g('gate', '#0a8fb0'), 'ramp'], hint: [{ t: 'gate', k: '#0a8fb0', c: 4, r: 2 }, { t: 'ramp', c: 6, r: 5 }] }),
+      lv({ hose: 9, goal: 2, balls: 8, mix: ['#e53935', '#1e5bd6'], want: '#e53935', tray: [g('gate', '#e53935'), 'curve'], hint: [{ t: 'gate', k: '#e53935', c: 9, r: 1, f: true }, { t: 'curve', c: 7, r: 4, f: true }] }),
+      lv({ hose: 3, goal: 10, balls: 8, mix: ['#1e5bd6', '#2e9e4f'], want: '#1e5bd6', tray: [g('gate', '#1e5bd6'), 'spring'], hint: [{ t: 'spring', c: 3, r: 1 }, { t: 'gate', k: '#1e5bd6', c: 5, r: 1 }] }),
+      lv({ hose: 12, goal: 6, balls: 8, mix: ['#2e9e4f', '#8e5bd6'], want: '#2e9e4f', fixed: [{ t: 'block', c: 12, r: 4 }], tray: [g('gate', '#2e9e4f'), 'long'], hint: [{ t: 'long', c: 9, r: 1, f: true }, { t: 'gate', k: '#2e9e4f', c: 7, r: 2, f: true }] })
+    ];
+    pack.hard = [
+      lv({ hose: 4, goal: 4, balls: 8, mix: ['#8e5bd6', '#ff8a3d'], goal2: 8, want: '#8e5bd6', want2: '#ff8a3d', tray: [g('gate', '#8e5bd6')], hint: [{ t: 'gate', k: '#8e5bd6', c: 4, r: 3 }] }),
+      lv({ hose: 10, goal: 6, balls: 8, mix: ['#ff8a3d', '#0a8fb0'], goal2: 3, want: '#ff8a3d', want2: '#0a8fb0', tray: [g('gate', '#ff8a3d'), 'long'], hint: [{ t: 'gate', k: '#ff8a3d', c: 9, r: 3, f: true }, { t: 'long', c: 7, r: 5, f: true }] }),
+      lv({ hose: 8, goal: 7, balls: 9, mix: ['#0a8fb0', '#e53935', '#1e5bd6'], want: '#0a8fb0', tray: [g('gate', '#e53935'), g('gate', '#0a8fb0')], hint: [{ t: 'gate', k: '#0a8fb0', c: 7, r: 1, f: true }] }),
+      lv({ hose: 10, goal: 3, balls: 9, mix: ['#e53935', '#1e5bd6', '#2e9e4f'], want: '#e53935', tray: [g('not', '#e53935'), 'long'], hint: [{ t: 'not', k: '#e53935', c: 9, r: 1, f: true }, { t: 'long', c: 5, r: 2, f: true }] }),
+      lv({ hose: 6, goal: 1, balls: 8, mix: ['#1e5bd6', '#2e9e4f'], goal2: 9, want: '#1e5bd6', want2: '#2e9e4f', tray: ['flip', 'long'], hint: [{ t: 'flip', c: 6, r: 2, f: true }, { t: 'long', c: 3, r: 4, f: true }] }),
+      lv({ hose: 3, goal: 3, balls: 9, mix: ['#2e9e4f', '#8e5bd6', '#ff8a3d'], goal2: 6, want: '#2e9e4f', want2: '#8e5bd6', tray: [g('gate', '#2e9e4f'), g('gate', '#8e5bd6')], hint: [{ t: 'gate', k: '#2e9e4f', c: 3, r: 1 }, { t: 'gate', k: '#8e5bd6', c: 5, r: 2 }] }),
+      lv({ hose: 6, goal: 0, balls: 8, mix: ['#8e5bd6', '#ff8a3d'], goal2: 11, want: '#8e5bd6', want2: '#ff8a3d', tray: ['flip', 'long', 'long'], hint: [{ t: 'flip', c: 5, r: 2, f: true }, { t: 'long', c: 3, r: 4, f: true }, { t: 'long', c: 7, r: 4 }] }),
+      lv({ hose: 2, goal: 6, balls: 8, mix: ['#ff8a3d', '#0a8fb0'], goal2: 2, want: '#ff8a3d', want2: '#0a8fb0', fixed: [{ t: 'block', c: 9, r: 5 }], tray: [g('not', '#ff8a3d'), 'long'], hint: [{ t: 'not', k: '#ff8a3d', c: 2, r: 1 }, { t: 'long', c: 3, r: 3 }] })
+    ];
+  })(window.BallRun.packs.library, (t, k) => ({ t, k }), o => Object.assign({ balls: 8, kinds: [...new Set(o.mix)] }, o));
 })();
 
 (function () {
@@ -266,17 +291,18 @@
     source(ctx, level, now, dripping) { // the returns chute at the top, with books waiting in it
       const x = (level.hose + 0.5) * CELL, { line, poly } = BR.draw;
       runColour = colourOf(level);
-      [0, 1, 2].forEach(i => drawImg(ctx, LA.bookImage(runColour), x - 22 + i * 22, 12, 22, 26));
+      [0, 1, 2].forEach(i => drawImg(ctx, LA.bookImage(level.mix ? level.mix[i % level.mix.length] : runColour), x - 22 + i * 22, 12, 22, 26));
       poly(ctx, [{ x: x - 44, y: 22 }, { x: x + 44, y: 22 }, { x: x + 34, y: 52 }, { x: x - 34, y: 52 }], '#1e5bd6');
       poly(ctx, [{ x: x - 16, y: 52 }, { x: x + 16, y: 52 }, { x: x + 12, y: 64 }, { x: x - 12, y: 64 }], '#14264f');
       line(ctx, x - 30, 36, x + 30, 36, '#fff', 4);
       if (dripping) line(ctx, x - 9, 58, x + 9, 58, '#ffd21f', 4);
     },
-    ball(ctx, b) { drawImg(ctx, LA.bookImage(runColour), b.position.x, b.position.y, 2 * R + 6, 2 * R + 14, b.angle); },
+    ball(ctx, b) { drawImg(ctx, LA.bookImage(b.kind || runColour), b.position.x, b.position.y, 2 * R + 6, 2 * R + 14, b.angle); },
+    kindPic(ctx, k, x, y, size) { drawImg(ctx, LA.bookImage(k), x, y, size * .8, size); },
     goal(ctx, st) {
       const { level, fx, won, now, hits } = st, x = (level.goal + 1) * CELL;
       const bob = won ? Math.sin(now / 120) * 4 : 0, jump = fx.chew > 0 ? -Math.sin(fx.chew / 30 * Math.PI) * 6 : 0;
-      drawImg(ctx, LA.shelfImage(Math.min(hits, 3) * 2, won, colourOf(level)), x, H - 74 + bob + jump, 190, 147);
+      drawImg(ctx, LA.shelfImage(Math.min(hits, 3) * 2, won, level.want || colourOf(level)), x, H - 74 + bob + jump, 190, 147);
     },
     decoy(ctx, st) {
       const { level, fx } = st, x = (level.decoy + 1) * CELL + (fx.shake > 0 ? Math.sin(fx.shake * 1.2) * 6 : 0);

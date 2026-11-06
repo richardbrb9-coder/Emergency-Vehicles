@@ -295,6 +295,7 @@
     poly(ctx, [{ x: x + dx - 22, y: H - 52 }, { x: x + dx + 22, y: H - 52 }, { x: x + dx + 22, y: H - 30 }, { x: x + dx - 22, y: H - 30 }], '#e53935', OL, 3);
   };
   const bedTheme = {
+    logicLines: true,
     board(ctx) { // the puppy room at bedtime: soft lilac wallpaper with little stars
       ctx.fillStyle = '#f3efff'; ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = 'rgba(142,91,214,.06)';

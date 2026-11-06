@@ -271,6 +271,7 @@ window.ZOO_EATS = { monkey: 'banana', penguin: 'fish', giraffe: 'leaves', panda:
     }
   }
   const zooTheme = {
+    logicLines: true, // the zoo has its own lines and bubbles (hungry animals) for logic puzzles
     board: leafy,
     source(ctx, level, now, dripping, next) {
       const x = (level.hose + 0.5) * CELL, { line, poly } = BR.draw;

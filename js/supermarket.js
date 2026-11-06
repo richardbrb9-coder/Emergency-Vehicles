@@ -32,8 +32,34 @@
       fd('onion',  { hose: 5, goal: 11, decoy: 5, tray: ['seesaw', 'long'], hint: [{ t: 'seesaw', c: 4, r: 3, f: true }, { t: 'long', c: 7, r: 4 }] })
     ]
   };
+
+  // Medium and Hard: mixed things come down, and gates (or a flip-flop) sort them. Each level is one of the
+  // checked Zoo and Puppies layouts (some mirrored) with this world's things, and was checked again by running its physics.
+  ((pack, g, lv) => {
+    pack.medium = [
+      lv({ hose: 9, goal: 8, balls: 8, mix: ['lemon', 'tin'], want: 'lemon', tray: [g('gate', 'lemon')], hint: [{ t: 'gate', k: 'lemon', c: 8, r: 1, f: true }], food: 'lemon' }),
+      lv({ hose: 10, goal: 9, balls: 8, mix: ['tin', 'onion'], want: 'tin', tray: [g('gate', 'tin')], hint: [{ t: 'gate', k: 'tin', c: 9, r: 1, f: true }], food: 'tin' }),
+      lv({ hose: 1, goal: 5, balls: 8, mix: ['onion', 'orange'], want: 'onion', tray: [g('gate', 'onion'), 'long'], hint: [{ t: 'long', c: 0, r: 1 }, { t: 'gate', k: 'onion', c: 4, r: 2 }], food: 'onion' }),
+      lv({ hose: 2, goal: 6, balls: 8, mix: ['orange', 'apple'], want: 'orange', tray: [g('gate', 'orange'), 'long'], hint: [{ t: 'long', c: 2, r: 1 }, { t: 'gate', k: 'orange', c: 6, r: 2 }], food: 'orange' }),
+      lv({ hose: 5, goal: 10, balls: 8, mix: ['apple', 'tomato'], want: 'apple', fixed: [{ t: 'block', c: 8, r: 4 }], tray: [g('gate', 'apple'), 'ramp'], hint: [{ t: 'gate', k: 'apple', c: 4, r: 2 }, { t: 'ramp', c: 6, r: 5 }], food: 'apple' }),
+      lv({ hose: 9, goal: 2, balls: 8, mix: ['tomato', 'lemon'], want: 'tomato', tray: [g('gate', 'tomato'), 'curve'], hint: [{ t: 'gate', k: 'tomato', c: 9, r: 1, f: true }, { t: 'curve', c: 7, r: 4, f: true }], food: 'tomato' }),
+      lv({ hose: 3, goal: 10, balls: 8, mix: ['lemon', 'tin'], want: 'lemon', tray: [g('gate', 'lemon'), 'spring'], hint: [{ t: 'spring', c: 3, r: 1 }, { t: 'gate', k: 'lemon', c: 5, r: 1 }], food: 'lemon' }),
+      lv({ hose: 1, goal: 6, balls: 8, mix: ['tin', 'onion'], want: 'tin', fixed: [{ t: 'block', c: 1, r: 4 }], tray: [g('gate', 'tin'), 'long'], hint: [{ t: 'long', c: 1, r: 1 }, { t: 'gate', k: 'tin', c: 5, r: 2 }], food: 'tin' })
+    ];
+    pack.hard = [
+      lv({ hose: 4, goal: 4, balls: 8, mix: ['onion', 'orange'], goal2: 8, want: 'onion', want2: 'orange', tray: [g('gate', 'onion')], hint: [{ t: 'gate', k: 'onion', c: 4, r: 3 }], food: 'onion', g2: { food: 'orange' } }),
+      lv({ hose: 3, goal: 6, balls: 8, mix: ['orange', 'apple'], goal2: 9, want: 'orange', want2: 'apple', tray: [g('gate', 'orange'), 'long'], hint: [{ t: 'gate', k: 'orange', c: 3, r: 3 }, { t: 'long', c: 3, r: 5 }], food: 'orange', g2: { food: 'apple' } }),
+      lv({ hose: 5, goal: 5, balls: 9, mix: ['apple', 'tomato', 'lemon'], want: 'apple', tray: [g('gate', 'tomato'), g('gate', 'apple')], hint: [{ t: 'gate', k: 'apple', c: 5, r: 1 }], food: 'apple' }),
+      lv({ hose: 10, goal: 3, balls: 9, mix: ['tomato', 'lemon', 'tin'], want: 'tomato', tray: [g('not', 'tomato'), 'long'], hint: [{ t: 'not', k: 'tomato', c: 9, r: 1, f: true }, { t: 'long', c: 5, r: 2, f: true }], food: 'tomato' }),
+      lv({ hose: 6, goal: 1, balls: 8, mix: ['lemon', 'tin'], goal2: 9, want: 'lemon', want2: 'tin', tray: ['flip', 'long'], hint: [{ t: 'flip', c: 6, r: 2, f: true }, { t: 'long', c: 3, r: 4, f: true }], food: 'lemon', g2: { food: 'tin' } }),
+      lv({ hose: 3, goal: 3, balls: 9, mix: ['tin', 'onion', 'orange'], goal2: 6, want: 'tin', want2: 'onion', tray: [g('gate', 'tin'), g('gate', 'onion')], hint: [{ t: 'gate', k: 'tin', c: 3, r: 1 }, { t: 'gate', k: 'onion', c: 5, r: 2 }], food: 'tin', g2: { food: 'onion' } }),
+      lv({ hose: 6, goal: 0, balls: 8, mix: ['onion', 'orange'], goal2: 11, want: 'onion', want2: 'orange', tray: ['flip', 'long', 'long'], hint: [{ t: 'flip', c: 5, r: 2, f: true }, { t: 'long', c: 3, r: 4, f: true }, { t: 'long', c: 7, r: 4 }], food: 'onion', g2: { food: 'orange' } }),
+      lv({ hose: 2, goal: 6, balls: 8, mix: ['orange', 'apple'], goal2: 2, want: 'orange', want2: 'apple', fixed: [{ t: 'block', c: 9, r: 5 }], tray: [g('not', 'orange'), 'long'], hint: [{ t: 'not', k: 'orange', c: 2, r: 1 }, { t: 'long', c: 3, r: 3 }], food: 'orange', g2: { food: 'apple' } })
+    ];
+  })(window.BallRun.packs.supermarket, (t, k) => ({ t, k }), o => Object.assign({ balls: 8, kinds: [...new Set(o.mix)] }, o));
+
   // The food each ball is: one kind per puzzle, every kind in turn in the free build.
-  BR.shopFood = (level, idx) => level.food === 'mixed' ? window.SupermarketArt.ROUND_IDS[idx % 6] : level.food;
+  BR.shopFood = (level, idx) => level.mix ? level.mix[idx % level.mix.length] : level.food === 'mixed' ? window.SupermarketArt.ROUND_IDS[idx % 6] : level.food;
 })();
 
 (function () {
@@ -247,13 +273,14 @@
     },
     source(ctx, level, now, dripping) { // a shelf with the food on it
       const x = (level.hose + 0.5) * CELL, { line, poly } = BR.draw;
-      const foods = level.food === 'mixed' ? SMA.ROUND_IDS.slice(0, 3) : [level.food, level.food, level.food];
+      const foods = level.mix ? [0, 1, 2].map(i => level.mix[i % level.mix.length]) : level.food === 'mixed' ? SMA.ROUND_IDS.slice(0, 3) : [level.food, level.food, level.food];
       foods.forEach((f, i) => drawImg(ctx, SMA.foodImage(f), x - 26 + i * 26, 14, 28, 28));
       poly(ctx, [{ x: x - 48, y: 28 }, { x: x + 48, y: 28 }, { x: x + 48, y: 40 }, { x: x - 48, y: 40 }], '#9aa3b5');
       poly(ctx, [{ x: x - 16, y: 40 }, { x: x + 16, y: 40 }, { x: x + 12, y: 58 }, { x: x - 12, y: 58 }], '#2e9e4f');
       if (dripping) line(ctx, x - 10, 52, x + 10, 52, '#fff', 4);
     },
     ball(ctx, b, level) { drawImg(ctx, SMA.foodImage(BR.shopFood(level, b.idx)), b.position.x, b.position.y, 2 * R + 6, 2 * R + 6, b.angle); },
+    kindPic(ctx, k, x, y, size) { drawImg(ctx, SMA.foodImage(k), x, y, size, size); },
     goal(ctx, st) {
       const { level, fx, hits, won, now } = st, x = (level.goal + 1) * CELL;
       const bob = won ? Math.sin(now / 120) * 6 : 0, jump = fx.chew > 0 ? -Math.sin(fx.chew / 30 * Math.PI) * 8 : 0;

@@ -117,8 +117,8 @@
   </g>`;
 
   // An open-top bus, low and wide (the Ticket Run goal), wheels on 0,0, 300 wide, about 110 tall. n: passengers on board.
-  const openBus = (n = 0, happy = false) => `<g>
-    ${Array.from({ length: Math.min(n, 6) }, (_, i) => `<g transform="translate(${-110 + i * 40} ${-98 - (happy ? (i % 2) * 8 : 0)})">${face(i, 16)}</g>`).join('')}
+  const openBus = (n = 0, happy = false, kind = null) => `<g>
+    ${Array.from({ length: Math.min(n, 6) }, (_, i) => `<g transform="translate(${-110 + i * 40} ${-98 - (happy ? (i % 2) * 8 : 0)})">${face(kind != null ? kind : i, 16)}</g>`).join('')}
     <path d="M-150 -92 H150 V-30 H-150 Z" fill="${RED}" ${S}/>
     <path d="M-150 -92 H150" stroke="#fff2cc" stroke-width="8"/>${[0, 1, 2, 3, 4, 5].map(i => `<path d="M${-126 + i * 40} -86 V-92" ${SW(3)}/>`).join('')}
     <path d="M-144 -110 H144" stroke="${OL}" stroke-width="7" stroke-linecap="round"/><path d="M-144 -110 H144" stroke="#ffd21f" stroke-width="3"/>
@@ -290,7 +290,7 @@
     return cache[key];
   };
   const faceImage = i => image(face(i, 46), '-50 -50 100 100');
-  const openBusImage = (n, happy) => image(openBus(n, happy), '-160 -128 320 132');
+  const openBusImage = (n, happy, kind = null) => image(openBus(n, happy, kind), '-160 -128 320 132');
   const puddleImage = splash => image(puddle(splash), '-80 -70 160 74');
 
   window.BusArt = { FOLK, ITEMS, SAFETY, SPOTS, pipAt, pipHead, grandad, grandadHead, dot, dotHead, amin, aminHead, face, bus, openBus, train, carriage, track,
