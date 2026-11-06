@@ -409,8 +409,13 @@ window.BallRun.packs.rescue = {
       ctx.strokeStyle = OL; ctx.lineWidth = 9; ctx.lineJoin = 'round'; ctx.stroke(); ctx.strokeStyle = '#c3cad6'; ctx.lineWidth = 5; ctx.stroke();
       ctx.fillStyle = '#596178'; ctx.beginPath(); ctx.roundRect(x - 36, base - 4, 72, 12, 5); ctx.fill();
       ctx.fillStyle = d.colour; ctx.strokeStyle = OL; ctx.lineWidth = 4; ctx.beginPath(); ctx.roundRect(x - 40, top - 8, 80, 16, 7); ctx.fill(); ctx.stroke();
-      const [ax] = tw(0.78, 0); // a small arrow shows which way it throws
-      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(ax, top - 4); ctx.lineTo(ax + (p.f ? 8 : -8), top - 1); ctx.lineTo(ax + (p.f ? 8 : -8), top - 7); ctx.fill();
+      // A big curved arrow over the spring shows which way it throws (tap the spring to turn it round).
+      const sx = p.f ? -1 : 1, x0 = x - 18 * sx, y0 = top - 12;
+      const arrow = () => { ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(x0 + 6 * sx, y0 - 58, x0 + 46 * sx, y0 - 46); };
+      ctx.lineCap = 'round'; arrow(); ctx.strokeStyle = OL; ctx.lineWidth = 17; ctx.stroke(); arrow(); ctx.strokeStyle = '#ffd21f'; ctx.lineWidth = 9; ctx.stroke();
+      const hx = x0 + 52 * sx, hy = y0 - 44; // arrow head
+      ctx.beginPath(); ctx.moveTo(hx + 8 * sx, hy + 1); ctx.lineTo(hx - 14 * sx, hy - 17); ctx.lineTo(hx - 10 * sx, hy + 18); ctx.closePath();
+      ctx.fillStyle = '#ffd21f'; ctx.fill(); ctx.strokeStyle = OL; ctx.lineWidth = 4; ctx.lineJoin = 'round'; ctx.stroke();
     }
     if (d.kind === 'fan') {
       const [x0, y0] = tw(0.15, 0.25), [x1] = tw(0.65, 0), y1 = (p.r + 1.75) * CELL;
