@@ -17,6 +17,8 @@
     for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); }
     return pts.slice(1).map((p, i) => [pts[i][0], pts[i][1], p[0], p[1]]);
   };
+  // The gate is a ramp with a trapdoor in it; whatever falls through drops down a short chute (the CHUTE walls).
+  const GATE = [[0.08, 0.14, 0.62, 0.32], [1.38, 0.58, 1.92, 0.76]], CHUTE = [[0.62, 0.48, 0.62, 1.9], [1.38, 0.72, 1.38, 1.9]];
   const PIECES = {
     ramp:   { w: 2, h: 1, flip: true, colour: '#f07a1a', segs: [[0.08, 0.22, 1.92, 0.78]] },
     long:   { w: 4, h: 1, flip: true, colour: '#1e5bd6', segs: [[0.08, 0.2, 3.92, 0.8]] },
@@ -27,8 +29,17 @@
     seesaw: { w: 3, h: 1, flip: true, colour: '#ffb300', kind: 'seesaw' },
     bucket: { w: 2, h: 2, flip: true, colour: '#8a5a3c', kind: 'bucket' },
     block:  { w: 1, h: 1, flip: false, colour: '#c95a43', kind: 'block' },
-    shelf:  { w: 2, h: 1, flip: false, colour: '#9aa3b5', segs: [[0.06, 0.5, 1.94, 0.5]] }
+    shelf:  { w: 2, h: 1, flip: false, colour: '#9aa3b5', segs: [[0.06, 0.5, 1.94, 0.5]] },
+    // Logic pieces. Each carries a kind (p.k): which food or colour it is about.
+    // gate: a ramp with a trapdoor in the middle that only things of kind k fall through (down a chute); the rest roll over it.
+    // not:  the opposite trapdoor: everything falls through except kind k.
+    // flip: a flip-flop: a paddle under a little funnel that sends one thing left, then the next thing right.
+    gate:   { w: 2, h: 2, flip: true, colour: '#00a19a', kind: 'gate', segs: GATE, trap: [0.62, 0.32, 1.38, 0.58], chute: CHUTE },
+    not:    { w: 2, h: 2, flip: true, colour: '#e86aa6', kind: 'not', segs: GATE, trap: [0.62, 0.32, 1.38, 0.58], chute: CHUTE },
+    flip:   { w: 2, h: 2, flip: true, colour: '#f2b705', kind: 'flip', segs: [[0.1, 0.06, 0.72, 0.6], [1.9, 0.06, 1.28, 0.6]] }
   };
+  // Collision groups: the board and pieces are group 1, the trapdoors group 2, and each kind of ball has its own bit.
+  const TRAP = 0x0002, kindBit = (level, k) => { const i = (level.kinds || []).indexOf(k); return i < 0 ? 0 : 0x0010 << i; };
   // Cell units of a piece to world units, mirrored when flipped.
   const toWorld = (p, u, v) => [(p.c + (p.f ? PIECES[p.t].w - u : u)) * CELL, (p.r + v) * CELL];
 
@@ -51,6 +62,8 @@
       M.Composite.add(this.world, this.goal);
       // An optional decoy: a second 2-cell target that the balls must miss (in the zoo, an animal that eats something else).
       if (level.decoy != null) M.Composite.add(this.world, M.Bodies.rectangle((level.decoy + 1) * CELL, H - 55, 2 * CELL - 30, 110, { isStatic: true, isSensor: true, label: 'decoy' }));
+      // Logic levels: level.want is the only kind the goal takes; an optional second goal (goal2) takes level.want2.
+      if (level.goal2 != null) M.Composite.add(this.world, M.Bodies.rectangle((level.goal2 + 1) * CELL, H - 55, 2 * CELL - 30, 110, { isStatic: true, isSensor: true, label: 'goal2' }));
       M.Events.on(this.engine, 'collisionStart', e => e.pairs.forEach(pr => this.touch(pr.bodyA, pr.bodyB)));
       (level.fixed || []).forEach(p => this.add(Object.assign({ fixed: true }, p)));
     }
@@ -60,7 +73,7 @@
     // The hose (top row) and the goal and decoy (bottom row) can't be built over.
     reserved() {
       const l = this.level, s = new Set([l.hose + ',0', l.goal + ',' + (ROWS - 1), (l.goal + 1) + ',' + (ROWS - 1)]);
-      if (l.decoy != null) { s.add(l.decoy + ',' + (ROWS - 1)); s.add((l.decoy + 1) + ',' + (ROWS - 1)); }
+      [l.decoy, l.goal2].forEach(g => { if (g != null) { s.add(g + ',' + (ROWS - 1)); s.add((g + 1) + ',' + (ROWS - 1)); } });
       return s;
     }
     blocked() {
@@ -79,6 +92,20 @@
     add(p) {
       const d = PIECES[p.t], bodies = [], dir = p.f ? -1 : 1;
       (d.segs || []).forEach(([a, b, c2, e]) => { const [x1, y1] = toWorld(p, a, b), [x2, y2] = toWorld(p, c2, e); bodies.push(seg(x1, y1, x2, y2)); });
+      if (d.trap) {
+        const bit = kindBit(this.level, p.k), [x1, y1] = toWorld(p, d.trap[0], d.trap[1]), [x2, y2] = toWorld(p, d.trap[2], d.trap[3]);
+        // An Only gate is solid for every kind but its own; a Not gate is solid only for its own kind.
+        const mask = d.kind === 'gate' ? 0xFFFF & ~bit : bit;
+        bodies.push(seg(x1, y1, x2, y2, { collisionFilter: { category: TRAP, mask, group: 0 } }));
+        d.chute.forEach(([a, b, c2, e]) => { const [x1, y1] = toWorld(p, a, b), [x2, y2] = toWorld(p, c2, e); bodies.push(seg(x1, y1, x2, y2)); });
+      }
+      if (d.kind === 'flip') {
+        const [x, y] = toWorld(p, 1, 1.42);
+        const paddle = M.Bodies.rectangle(x, y, CELL * 1.1, TH + 2, { isStatic: true, chamfer: { radius: 6 }, label: 'flip', friction: 0.01, restitution: 0.1 });
+        p.paddle = paddle; p.hinge = { x, y }; p.side = 1; p.pending = 0; p.seen = new Set();
+        M.Body.setAngle(paddle, 0.62 * (p.f ? -1 : 1));
+        bodies.push(paddle);
+      }
       if (d.kind === 'block') bodies.push(M.Bodies.rectangle((p.c + 0.5) * CELL, (p.r + 0.5) * CELL, CELL - 8, CELL - 8, { isStatic: true, chamfer: { radius: 10 }, label: 'part', friction: 0.05 }));
       if (d.kind === 'spring') {
         const [x, y] = toWorld(p, 0.5, 0.62);
@@ -125,14 +152,17 @@
 
     start() {
       this.balls.forEach(b => M.Composite.remove(this.world, b));
-      this.balls = []; this.t = 0; this.hits = 0; this.released = 0; this.running = true; this.won = false;
+      this.balls = []; this.t = 0; this.hits = 0; this.hits2 = 0; this.released = 0; this.running = true; this.won = false; this.spoiled = false; this.missed = 0;
       this.toRelease = this.level.balls || 6;
       this.pieces.forEach(p => this.resetPiece(p));
     }
     resetPiece(p) {
       if (p.plank) { M.Body.setAngle(p.plank, -0.32 * (p.f ? -1 : 1)); M.Body.setAngularVelocity(p.plank, 0); M.Body.setVelocity(p.plank, { x: 0, y: 0 }); M.Body.setPosition(p.plank, p.pivot); }
       if (p.cup && p.angle) { M.Body.rotate(p.cup, -p.angle, p.axle); p.angle = 0; p.state = 'fill'; }
+      if (p.paddle) { p.side = 1; p.pending = 0; p.seen = new Set(); M.Body.setAngle(p.paddle, 0.62 * (p.f ? -1 : 1)); }
     }
+    // The flip-flop paddle swaps sides a moment after each new thing lands on it.
+    flipNow(p) { p.side = -p.side; p.pending = 0; M.Body.setAngle(p.paddle, 0.62 * (p.f ? -1 : 1) * p.side); this.events.push({ type: 'flip' }); }
     // A run is over when every ball has gone.
     get finished() { return this.running && this.released >= this.toRelease && this.balls.length === 0; }
 
@@ -140,12 +170,23 @@
       const ball = a.label === 'ball' ? a : b.label === 'ball' ? b : null;
       if (!ball) return;
       const other = ball === a ? b : a;
-      if (other.label === 'goal' && !ball.gone) {
-        ball.gone = true; this.hits++;
-        this.events.push({ type: 'hit', x: ball.position.x, y: ball.position.y, n: this.hits, idx: ball.idx });
-        if (this.hits === NEED) { this.won = true; this.events.push({ type: 'win' }); }
+      const l = this.level;
+      if ((other.label === 'goal' || other.label === 'goal2') && !ball.gone) {
+        ball.gone = true;
+        const g = other.label === 'goal' ? 1 : 2, want = g === 1 ? l.want : l.want2;
+        if (want && ball.kind !== want) { // the wrong kind: this run can't win, and no more are sent
+          if (!this.won) { this.spoiled = true; this.toRelease = this.released; }
+          this.events.push({ type: 'wrong', g, kind: ball.kind, x: ball.position.x, y: ball.position.y });
+          return;
+        }
+        const n = g === 1 ? ++this.hits : ++this.hits2;
+        this.events.push({ type: 'hit', g, x: ball.position.x, y: ball.position.y, n, idx: ball.idx, kind: ball.kind });
+        if (!this.won && !this.spoiled && this.hits >= NEED && (l.goal2 == null || this.hits2 >= NEED)) { this.won = true; this.events.push({ type: 'win' }); }
+      } else if (other.label === 'flip') {
+        const p = other.piece;
+        if (!p.seen.has(ball.id)) { p.seen.add(ball.id); if (!p.pending) p.pending = this.t + 9; }
       } else if (other.label === 'decoy' && !ball.gone) {
-        ball.gone = true; this.missed = (this.missed || 0) + 1;
+        ball.gone = true; this.missed++;
         this.events.push({ type: 'decoy', x: ball.position.x, y: ball.position.y });
       } else if (other.label === 'spring' && this.t - (ball.sprung || -99) > 10) {
         ball.sprung = this.t;
@@ -154,7 +195,7 @@
         other.piece.boing = 12;
         this.events.push({ type: 'spring', x: ball.position.x, y: ball.position.y });
       } else if (other.label === 'floor') {
-        if (!ball.gone) this.events.push({ type: 'splash', x: ball.position.x, y: H });
+        if (!ball.gone) this.events.push({ type: 'splash', x: ball.position.x, y: H, kind: ball.kind });
         ball.gone = true;
       } else if (other.label === 'part' && Math.hypot(ball.velocity.x, ball.velocity.y) > 4) {
         this.events.push({ type: 'tap', x: ball.position.x, y: ball.position.y });
@@ -166,6 +207,7 @@
       if (this.running && this.released < this.toRelease && this.t % GAP === 1) {
         const ball = M.Bodies.circle((this.level.hose + 0.5) * CELL, 70, R, { restitution: 0.25, friction: 0.005, frictionStatic: 0.02, frictionAir: 0.004, density: 0.002, label: 'ball' });
         ball.born = this.t; ball.idx = this.released; // idx: which ball this is (0 = first), for numbered balls
+        if (this.level.mix) { ball.kind = this.level.mix[ball.idx % this.level.mix.length]; ball.collisionFilter.category = kindBit(this.level, ball.kind) || 0x0001; }
         this.balls.push(ball); M.Composite.add(this.world, ball); this.released++;
         this.events.push({ type: 'release' });
       }
@@ -179,6 +221,7 @@
           if (Math.abs(a) > lim) { M.Body.setAngle(p.plank, Math.sign(a) * lim); M.Body.setAngularVelocity(p.plank, 0); }
         }
         if (p.cup) this.bucket(p);
+        if (p.pending && this.t >= p.pending) this.flipNow(p);
         if (p.boing) p.boing--;
       });
       M.Engine.update(this.engine, 1000 / 120);
@@ -216,11 +259,11 @@
       placed.forEach(p => s.add(Object.assign({}, p)));
       s.start();
       while (!s.finished && !s.won && s.t < maxSteps) s.step();
-      return { hits: s.hits, won: s.won, steps: s.t, decoy: s.missed || 0 };
+      return { hits: s.hits, hits2: s.hits2, won: s.won, steps: s.t, decoy: s.missed, spoiled: s.spoiled };
     }
   }
 
-  window.BallRun = { Sim, PIECES, CELL, COLS, ROWS, W, H, R, NEED, toWorld, packs: {} };
+  window.BallRun = { Sim, PIECES, CELL, COLS, ROWS, W, H, R, NEED, GAP, toWorld, packs: {} };
 })();
 
 // ---------- Rescue Station pack: water drops from the fire hose put out a fire ----------
@@ -284,7 +327,12 @@ window.BallRun.packs.rescue = {
     'ballrun.p.spring': 'A spring! Boing! It bounces the water up into the air.',
     'ballrun.p.fan':    'A fan. Whoosh! It blows the water sideways.',
     'ballrun.p.seesaw': 'A see-saw. When water lands on one end, it tips!',
-    'ballrun.p.bucket': 'A bucket. When it fills up, it tips over!'
+    'ballrun.p.bucket': 'A bucket. When it fills up, it tips over!',
+    // The level tabs on every ball run's picker (Easy, Medium, Hard), shared by all worlds.
+    'brlevel.easy':   'Easy puzzles.',
+    'brlevel.medium': 'Medium puzzles. These are a bit trickier!',
+    'brlevel.hard':   'Hard puzzles! Have a good think.',
+    'brlevel.done':   'You solved every puzzle on this page! Well done!'
   });
 
   const ICON = `<svg viewBox="-60 -60 120 120"><path d="M-50 -30 L0 -6" stroke="${OL}" stroke-width="13" stroke-linecap="round"/><path d="M-50 -30 L0 -6" stroke="#f07a1a" stroke-width="8" stroke-linecap="round"/>
@@ -307,8 +355,26 @@ window.BallRun.packs.rescue = {
   };
   const bolt = (ctx, x, y, fixed) => { ctx.fillStyle = fixed ? '#596178' : '#fff'; ctx.strokeStyle = OL; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x, y, fixed ? 6 : 4.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); };
 
+  // A picture of a kind (a food, a ball colour) inside a white bubble, drawn by the current world's theme.
+  let kindPic = null;
+  function kindBadge(ctx, k, x, y, r, not) {
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = OL; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    if (kindPic) kindPic(ctx, k, x, y, r * 1.5);
+    if (not) { line(ctx, x - r * .7, y - r * .7, x + r * .7, y + r * .7, '#fff', 11); line(ctx, x - r * .7, y - r * .7, x + r * .7, y + r * .7, '#e53935', 7); }
+  }
   function drawPiece(ctx, p, now, k = 1) {
     const d = PIECES[p.t], tw = (u, v) => BR.toWorld(p, u, v);
+    if (d.chute) { // the chute behind the trapdoor, and the trapdoor itself as a dashed strip
+      const [cx0, cy0] = tw(0.62, 0.42), [cx1] = tw(1.38, 0), cy1 = (p.r + 1.9) * CELL;
+      ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillRect(Math.min(cx0, cx1), cy0, Math.abs(cx1 - cx0), cy1 - cy0);
+      d.chute.forEach(([a, b, c, e]) => { const s = [...tw(a, b), ...tw(c, e)]; line(ctx, ...s, OL, 19 * k); line(ctx, ...s, '#9aa3b5', 12 * k); });
+      const t = [...tw(d.trap[0], d.trap[1]), ...tw(d.trap[2], d.trap[3])];
+      ctx.save(); ctx.setLineDash([14, 10]); line(ctx, ...t, OL, 12 * k); line(ctx, ...t, d.colour, 7 * k); ctx.restore();
+      const [ax, ay] = tw(1, 1.35); // a down arrow in the chute
+      ctx.fillStyle = d.colour; ctx.strokeStyle = OL; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(ax - 14, ay - 8); ctx.lineTo(ax + 14, ay - 8); ctx.lineTo(ax, ay + 12); ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
     if (d.segs) {
       const segs = d.segs.map(([a, b, c, e]) => [...tw(a, b), ...tw(c, e)]);
       segs.forEach(s => line(ctx, ...s, OL, (12 + 7) * k));
@@ -316,6 +382,15 @@ window.BallRun.packs.rescue = {
       segs.forEach(s => line(ctx, s[0], s[1] - 2, s[2], s[3] - 2, 'rgba(255,255,255,.35)', 3));
       const f = segs[0], l = segs[segs.length - 1];
       bolt(ctx, f[0], f[1], p.fixed); bolt(ctx, l[2], l[3], p.fixed);
+    }
+    if (d.chute && p.k) { const [bx, by] = tw(1, 0.95); kindBadge(ctx, p.k, bx, by, 24, d.kind === 'not'); }
+    if (d.kind === 'flip') {
+      poly(ctx, p.paddle.vertices, d.colour);
+      bolt(ctx, p.hinge.x, p.hinge.y, false);
+      const y = (p.r + 1.85) * CELL; // little arrows: one this way, one that way
+      [[0.35, -1], [1.65, 1]].forEach(([u, s]) => { const [x] = tw(u, 0), sx = s * (p.f ? -1 : 1);
+        ctx.fillStyle = '#fff'; ctx.strokeStyle = OL; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(x - 12 * sx, y - 9); ctx.lineTo(x + 10 * sx, y); ctx.lineTo(x - 12 * sx, y + 9); ctx.closePath(); ctx.fill(); ctx.stroke(); });
     }
     if (d.kind === 'block') {
       const x = p.c * CELL + 4, y = p.r * CELL + 4, s = CELL - 8;
@@ -369,14 +444,14 @@ window.BallRun.packs.rescue = {
   }
 
   // Pictures of single pieces, for the tray and for ghosts while dragging.
-  const shapeOf = (t, f) => { const s = new Sim({ hose: -5, goal: -5 }); return s.add({ t, c: 0, r: 0, f: !!f }); };
-  function pieceIcon(t) {
+  const shapeOf = (t, f, k) => { const s = new Sim({ hose: -5, goal: -5 }); return s.add({ t, k, c: 0, r: 0, f: !!f }); };
+  function pieceIcon(t, kind) {
     const d = PIECES[t], cv = document.createElement('canvas'), k = 2;
     const pw = d.w * CELL, ph = d.h * CELL, size = Math.max(pw, ph) + 30;
     cv.width = cv.height = 160 * k;
     const ctx = cv.getContext('2d');
     ctx.scale(160 * k / size, 160 * k / size); ctx.translate((size - pw) / 2, (size - ph) / 2);
-    drawPiece(ctx, shapeOf(t), null, 2);
+    drawPiece(ctx, shapeOf(t, false, kind), null, 2);
     return cv;
   }
 
@@ -445,26 +520,46 @@ window.BallRun.packs.rescue = {
     const { screen, pack, theme } = cfg, L = k => cfg.lines + '.' + k;
     A.addGame(screen, cfg.colour, cfg.icon, { world: cfg.world, back: cfg.back });
     const solved = () => (A.progress[screen] = A.progress[screen] || []);
+    // Puzzles come in up to three tiers, all open from the start. Easy puzzles are saved as their index (as before);
+    // Medium and Hard ones as 'm0', 'h0' and so on. A puzzle's screen argument is 1, 2 ... for Easy and 'm1', 'h1' ... for the others.
+    const TIERS = [{ id: 'easy', pre: '', list: pack.puzzles, colour: '#2e9e4f' }, { id: 'medium', pre: 'm', list: pack.medium, colour: '#f07a1a' }, { id: 'hard', pre: 'h', list: pack.hard, colour: '#e53935' }]
+      .filter(t => t.list && t.list.length);
+    const key = (tier, i) => tier.pre ? tier.pre + i : i;
+    const argOf = (tier, i) => tier.pre ? tier.pre + (i + 1) : i + 1;
+    let tab = 0;
 
     // ---------- Mode picker ----------
     function picker() {
       A.ui({ home: true });
-      const done = solved(), next = pack.puzzles.findIndex((_, i) => !done.includes(i));
-      scene().innerHTML = `
-        <div class="br-pick ${cfg.cls || ''}">
-          <button class="br-free" style="background:${cfg.colour}" aria-label="Build your own"><span class="art">${cfg.icon}</span><span class="label">Build</span></button>
-          <div class="br-levels">${pack.puzzles.map((_, i) => `<button class="br-level${done.includes(i) ? ' done' : ''}${i === next ? ' next' : ''}" data-i="${i}" aria-label="Puzzle ${i + 1}">
-            <span>${i + 1}</span>${done.includes(i) ? '<b aria-hidden="true">★</b>' : ''}</button>`).join('')}</div>
-        </div>`;
-      scene().querySelector('.br-free').onclick = () => { Sfx.pop(); A.go(screen, 'free'); };
-      scene().querySelectorAll('.br-level').forEach(b => b.onclick = () => { Sfx.pop(); A.go(screen, +b.dataset.i + 1); });
+      const draw = () => {
+        const tier = TIERS[tab], done = solved(), isDone = i => done.includes(key(tier, i)), next = tier.list.findIndex((_, i) => !isDone(i));
+        const stars = n => '★'.repeat(n);
+        scene().innerHTML = `
+          <div class="br-pick ${cfg.cls || ''}">
+            <button class="br-free" style="background:${cfg.colour}" aria-label="Build your own"><span class="art">${cfg.icon}</span><span class="label">Build</span></button>
+            <div class="br-right">
+              ${TIERS.length > 1 ? `<div class="br-tabs" role="tablist">${TIERS.map((t, j) => `<button class="br-tab${j === tab ? ' on' : ''}" role="tab" aria-selected="${j === tab}" data-j="${j}"
+                style="--tab:${t.colour}" aria-label="${t.id} puzzles"><span class="br-stars">${stars(j + 1)}</span><span class="br-tabname">${t.id[0].toUpperCase() + t.id.slice(1)}</span></button>`).join('')}</div>` : ''}
+              <div class="br-levels">${tier.list.map((_, i) => `<button class="br-level${isDone(i) ? ' done' : ''}${i === next ? ' next' : ''}" data-i="${i}" aria-label="Puzzle ${i + 1}">
+                <span>${i + 1}</span>${isDone(i) ? '<b aria-hidden="true">★</b>' : ''}</button>`).join('')}</div>
+            </div>
+          </div>`;
+        scene().querySelector('.br-free').onclick = () => { Sfx.pop(); A.go(screen, 'free'); };
+        scene().querySelectorAll('.br-level').forEach(b => b.onclick = () => { Sfx.pop(); A.go(screen, argOf(tier, +b.dataset.i)); });
+        scene().querySelectorAll('.br-tab').forEach(b => b.onclick = () => { if (+b.dataset.j === tab) return; Sfx.tap(); tab = +b.dataset.j; draw(); A.say('brlevel.' + TIERS[tab].id); });
+      };
+      draw();
       A.say(L('pick'));
     }
 
     // ---------- Playing ----------
     A.screens[screen] = (arg, alive) => {
       if (!arg) return picker();
-      const free = arg === 'free', index = free ? -1 : arg - 1, level = free ? pack.free : pack.puzzles[index];
+      const free = arg === 'free', m = !free && /^([mh])(\d+)$/.exec(arg);
+      const tier = free ? TIERS[0] : m ? TIERS.find(t => t.pre === m[1]) : TIERS[0];
+      const index = free ? -1 : (m ? +m[2] : +arg) - 1, level = free ? pack.free : tier.list[index];
+      if (!free) tab = TIERS.indexOf(tier);
+      kindPic = theme.kindPic || null;
       A.ui({ home: true });
       scene().innerHTML = `
         <div class="ballrun ${cfg.cls || ''}">
@@ -482,10 +577,11 @@ window.BallRun.packs.rescue = {
       const root = scene().querySelector('.ballrun'), boardEl = root.querySelector('.br-board'), cv = boardEl.querySelector('canvas'), ctx = cv.getContext('2d');
       const trayEl = root.querySelector('.br-tray'), dragEl = root.querySelector('.br-drag'), goBtn = root.querySelector('.br-go');
       const sim = new Sim(level);
-      let scale = 1, hits = 0, fails = 0, hint = null, won = false, said = {};
+      let scale = 1, hits = 0, hits2 = 0, fails = 0, hint = null, won = false, said = {};
       const parts = [];
       const fx = { steam: 0, shake: 0, chew: 0, burst: (x, y, n, colour, up = 1) => { for (let i = 0; i < n; i++) parts.push({ x, y, vx: (Math.random() - .5) * 8, vy: -Math.random() * 7 * up, life: 30, colour }); } };
-      const tray = free ? pack.freeTray.map(t => ({ t, endless: true })) : level.tray.map(t => ({ t, placed: null }));
+      // Tray items are piece names, or { t, k } for a logic piece about one kind (a food, a ball colour).
+      const tray = free ? pack.freeTray.map(t => ({ t, endless: true })) : level.tray.map(t => typeof t === 'string' ? { t, placed: null } : { t: t.t, k: t.k, placed: null });
 
       // Fit the 14 x 8 board into the space, keeping its shape.
       function fit() {
@@ -504,13 +600,15 @@ window.BallRun.packs.rescue = {
         tray.forEach((it, i) => {
           const b = document.createElement('button');
           b.className = 'br-item' + (it.placed ? ' used' : '');
-          b.setAttribute('aria-label', it.t);
-          b.appendChild(pieceIcon(it.t));
-          b.addEventListener('pointerdown', e => { if (!it.placed) startDrag(e, { t: it.t, f: false, tray: i }, null); });
+          b.setAttribute('aria-label', it.k ? it.t + ' ' + it.k : it.t);
+          b.appendChild(pieceIcon(it.t, it.k));
+          b.addEventListener('pointerdown', e => { if (!it.placed) startDrag(e, { t: it.t, k: it.k, f: false, tray: i }, null); });
           trayEl.appendChild(b);
         });
       }
       renderTray();
+      // Pictures of foods and balls are images that may still be loading the first time; draw the tray again once they are in.
+      if (tray.some(it => it.k)) [400, 1500].forEach(ms => A.later(() => { if (alive()) renderTray(); }, ms));
 
       // ----- Dragging pieces -----
       let drag = null;
@@ -519,9 +617,9 @@ window.BallRun.packs.rescue = {
         if (drag) return;
         e.preventDefault();
         Sfx.tap(); A.Hint.clear();
-        drag = { piece, from, x0: e.clientX, y0: e.clientY, moved: false, id: e.pointerId, shape: shapeOf(piece.t, piece.f) };
-        if (!said[piece.t] && !from) { said[piece.t] = true; A.say(L('p.' + piece.t)); }
-        dragEl.innerHTML = ''; dragEl.appendChild(pieceIcon(piece.t));
+        drag = { piece, from, x0: e.clientX, y0: e.clientY, moved: false, id: e.pointerId, shape: shapeOf(piece.t, piece.f, piece.k) };
+        if (!said[piece.t] && !from) { said[piece.t] = true; A.say(theme.pieceLine ? theme.pieceLine(piece) : L('p.' + piece.t)); }
+        dragEl.innerHTML = ''; dragEl.appendChild(pieceIcon(piece.t, piece.k));
         moveDrag(e);
       }
       function snap(e) {
@@ -566,6 +664,7 @@ window.BallRun.packs.rescue = {
         if (p) { sim.remove(p); startDrag(e, p, 'board'); return; }
         if (r >= ROWS - 1 && (c === level.goal || c === level.goal + 1)) { theme.tapGoal(level); return; }
         if (r >= ROWS - 1 && level.decoy != null && (c === level.decoy || c === level.decoy + 1)) { if (theme.tapDecoy) theme.tapDecoy(level); return; }
+        if (r >= ROWS - 1 && level.goal2 != null && (c === level.goal2 || c === level.goal2 + 1)) { if (theme.tapGoal2) theme.tapGoal2(level); return; }
         if (r === 0 && c === level.hose) go();
       });
       root.addEventListener('pointermove', moveDrag);
@@ -576,7 +675,7 @@ window.BallRun.packs.rescue = {
       function go() {
         if (won && !free) return;
         Sfx.whistle(); A.Pip.act('jump'); A.Hint.clear();
-        sim.start(); hits = 0; fx.steam = 0; won = false; refused = false;
+        sim.start(); hits = 0; hits2 = 0; fx.steam = 0; won = false; refused = false;
         A.say(L('go'));
       }
       goBtn.onclick = go;
@@ -596,7 +695,14 @@ window.BallRun.packs.rescue = {
           fx.shake = 40; Sfx.boing();
           if (!refused && theme.refuse) { refused = true; A.say(theme.refuse(level)); }
         }
-        if (ev.type === 'hit') {
+        if (ev.type === 'flip') Sfx.clank(1.4);
+        if (ev.type === 'wrong') { // the wrong kind reached a goal: this run is spoilt
+          if (ev.g === 2) fx.shake2 = 40; else fx.shake = 40;
+          Sfx.boing();
+          if (!refused) { refused = true; A.say(theme.wrong ? theme.wrong(level, ev) : L('again')); }
+        }
+        if (ev.type === 'hit' && ev.g === 2) { hits2 = ev.n; theme.hit(ev, fx, level); if (ev.n <= NEED) A.say(L('n' + ev.n)); }
+        else if (ev.type === 'hit') {
           hits = ev.n; theme.hit(ev, fx, level);
           if (ev.n <= NEED) A.say(theme.hitLine ? theme.hitLine(ev, level) : L('n' + ev.n));
         }
@@ -608,33 +714,36 @@ window.BallRun.packs.rescue = {
         if (!alive()) return;
         A.Pip.mood('cheer'); A.Pip.act('dance');
         if (free) { A.confetti(); Sfx.chime(); A.say(theme.freeLine ? theme.freeLine(level) : L('freeOut')); return; }
-        const first = !solved().includes(index);
-        if (first) { solved().push(index); A.saveProgress(); }
+        const first = !solved().includes(key(tier, index));
+        if (first) { solved().push(key(tier, index)); A.saveProgress(); }
         await A.say(theme.winLine ? theme.winLine(level) : L('out'));
         if (!alive()) return;
-        const last = solved().length === pack.puzzles.length && first;
+        const tierDone = tier.list.every((_, i) => solved().includes(key(tier, i)));
+        const allDone = TIERS.every(t => t.list.every((_, i) => solved().includes(key(t, i))));
         A.gameDone(screen, { buttons: false });
-        if (last) A.later(() => A.say(L('allDone')), 4500);
+        if (first && allDone) A.later(() => A.say(L('allDone')), 4500);
+        else if (first && tierDone && tier.pre) A.later(() => A.say('brlevel.done'), 4500);
+        else if (first && tierDone && TIERS.length === 1) A.later(() => A.say(L('allDone')), 4500);
         const end = document.createElement('div');
         end.className = 'game-end';
         end.innerHTML = `<button class="big-btn" style="background:#8e5bd6" aria-label="All puzzles">${LIST}</button>
-          ${index + 1 < pack.puzzles.length ? `<button class="big-btn" style="background:#2e9e4f" aria-label="Next puzzle">${NEXT}</button>` : ''}`;
+          ${index + 1 < tier.list.length ? `<button class="big-btn" style="background:#2e9e4f" aria-label="Next puzzle">${NEXT}</button>` : ''}`;
         scene().appendChild(end);
         const [l, n] = end.querySelectorAll('button');
         l.onclick = () => { Sfx.tap(); A.go(screen); };
-        if (n) n.onclick = () => { Sfx.tap(); A.go(screen, index + 2); };
+        if (n) n.onclick = () => { Sfx.tap(); A.go(screen, argOf(tier, index + 1)); };
       }
       function missed() {
         sim.running = false;
         if (won) return;
         fails++;
-        if (!free && fails >= 2) showHint(); else A.say(L('again'));
+        if (!free && fails >= 2) showHint(); else if (!sim.spoiled) A.say(L('again'));
       }
       function showHint() {
         const placed = sim.pieces.filter(p => !p.fixed);
-        const want = level.hint.find(h => !placed.some(p => p.t === h.t && p.c === h.c && p.r === h.r && !!p.f === !!h.f));
+        const want = level.hint.find(h => !placed.some(p => p.t === h.t && p.k === h.k && p.c === h.c && p.r === h.r && !!p.f === !!h.f));
         if (!want) { A.say(L('again')); return; }
-        hint = { piece: Object.assign({}, want, { f: !!want.f }), shape: shapeOf(want.t, want.f) };
+        hint = { piece: Object.assign({}, want, { f: !!want.f }), shape: shapeOf(want.t, want.f, want.k) };
         A.say(L('hint'));
       }
 
@@ -647,6 +756,8 @@ window.BallRun.packs.rescue = {
           acc -= 1000 / 60;
           if (fx.shake > 0) fx.shake--;
           if (fx.chew > 0) fx.chew--;
+          if (fx.shake2 > 0) fx.shake2--;
+          if (fx.chew2 > 0) fx.chew2--;
           if (sim.running) {
             sim.step();
             sim.events.splice(0).forEach(handle);
@@ -657,7 +768,7 @@ window.BallRun.packs.rescue = {
         requestAnimationFrame(frame);
       }
       function draw(now) {
-        const st = { level, now, hits: won ? NEED : hits, fx, running: sim.running, won };
+        const st = { level, now, hits: won ? NEED : hits, hits2: won ? NEED : hits2, fx, running: sim.running, won };
         (theme.board || drawBoard)(ctx, now, level);
         if (hint) {
           ctx.save(); ctx.translate(hint.piece.c * CELL, hint.piece.r * CELL); ctx.globalAlpha = .35 + .3 * Math.sin(now / 200);
@@ -668,8 +779,9 @@ window.BallRun.packs.rescue = {
         sim.pieces.forEach(p => drawPiece(ctx, p, now));
         if (level.decoy != null && theme.decoy) theme.decoy(ctx, st);
         theme.goal(ctx, st);
+        if (level.goal2 != null && theme.goal2) theme.goal2(ctx, st);
         sim.balls.forEach(b => theme.ball(ctx, b, level));
-        theme.source(ctx, level, now, sim.running && sim.released < sim.toRelease);
+        theme.source(ctx, level, now, sim.running && sim.released < sim.toRelease, level.mix ? level.mix[sim.released % level.mix.length] : null);
         for (let i = parts.length - 1; i >= 0; i--) {
           const q = parts[i]; q.x += q.vx; q.y += q.vy; q.vy += .5; q.life--;
           if (q.life <= 0) { parts.splice(i, 1); continue; }
@@ -681,7 +793,7 @@ window.BallRun.packs.rescue = {
           ctx.save(); ctx.translate(drag.at.c * CELL, drag.at.r * CELL);
           ctx.fillStyle = drag.ok ? 'rgba(46,158,79,.25)' : 'rgba(229,57,53,.25)';
           ctx.beginPath(); ctx.roundRect(0, 0, d.w * CELL, d.h * CELL, 16); ctx.fill();
-          if (!!drag.shape.f !== !!drag.piece.f) drag.shape = shapeOf(drag.piece.t, drag.piece.f);
+          if (!!drag.shape.f !== !!drag.piece.f) drag.shape = shapeOf(drag.piece.t, drag.piece.f, drag.piece.k);
           ctx.globalAlpha = .75; drawPiece(ctx, drag.shape, now); ctx.restore();
         }
       }
@@ -691,7 +803,7 @@ window.BallRun.packs.rescue = {
       else if (theme.intro) A.say(theme.intro(level, index));
       else A.say(L('puzzle'));
       if (!free) A.Hint.set([trayEl.querySelector('.br-item')], L('puzzle'));
-      A.ballrun = { sim, level, go, tray }; // for testing
+      A.ballrun = { sim, level, go, tray, tier: tier.id, index }; // for testing
     };
   };
 

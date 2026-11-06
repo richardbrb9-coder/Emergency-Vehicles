@@ -8,6 +8,12 @@
   // The Coin Run puzzles (themselves the Gobble Run layouts) in a new order within each group, each checked
   // solvable again by running its physics with the hint pieces in place. decoy: the sleepy cat's basket.
   const b = p => Object.assign({ balls: 6 }, p);
+  // Medium and Hard: mixed ball colours come down, and logic pieces sort them. g(t, k) is a gate (or not gate) for kind k.
+  // want: the only kind the puppy basket takes; goal2/want2: a second goal (the toy box) for another kind. Every puzzle was found
+  // and checked by running its physics: the hint wins, and without the gate (or with a gate of another kind) it doesn't.
+  const g = (t, k) => ({ t, k });
+  const lv = p => Object.assign({ balls: 8, kinds: [...new Set(p.mix)] }, p);
+
   BR.packs.puppies = {
     id: 'puppies',
     free: { hose: 1, goal: 11, balls: 8 },
@@ -29,6 +35,26 @@
       b({ hose: 6, goal: 12, decoy: 5, fixed: [{ t: 'block', c: 6, r: 5 }, { t: 'block', c: 9, r: 6 }], tray: ['bucket', 'long'],
         hint: [{ t: 'bucket', c: 5, r: 1 }, { t: 'long', c: 8, r: 4 }] }),
       b({ hose: 5, goal: 11, decoy: 5, tray: ['seesaw', 'long'], hint: [{ t: 'seesaw', c: 4, r: 3, f: true }, { t: 'long', c: 7, r: 4 }] })
+    ],
+    medium: [
+      lv({ hose: 4, goal: 4, want: 'red', mix: ['red', 'blue'], tray: [g('gate', 'red')], hint: [{ t: 'gate', k: 'red', c: 4, r: 1 }] }),
+      lv({ hose: 9, goal: 8, want: 'blue', mix: ['blue', 'yellow'], tray: [g('gate', 'blue')], hint: [{ t: 'gate', k: 'blue', c: 8, r: 1, f: true }] }),
+      lv({ hose: 1, goal: 5, want: 'green', mix: ['green', 'red'], tray: [g('gate', 'green'), 'long'], hint: [{ t: 'long', c: 0, r: 1 }, { t: 'gate', k: 'green', c: 4, r: 2 }] }),
+      lv({ hose: 12, goal: 7, want: 'yellow', mix: ['yellow', 'green'], tray: [g('gate', 'yellow'), 'long'], hint: [{ t: 'long', c: 9, r: 1, f: true }, { t: 'gate', k: 'yellow', c: 7, r: 2, f: true }] }),
+      lv({ hose: 5, goal: 10, want: 'red', mix: ['red', 'yellow'], fixed: [{ t: 'block', c: 8, r: 4 }], tray: [g('gate', 'red'), 'ramp'], hint: [{ t: 'gate', k: 'red', c: 4, r: 2 }, { t: 'ramp', c: 6, r: 5 }] }),
+      lv({ hose: 10, goal: 3, want: 'blue', mix: ['blue', 'red'], tray: [g('gate', 'blue'), 'curve'], hint: [{ t: 'gate', k: 'blue', c: 10, r: 1, f: true }, { t: 'curve', c: 8, r: 4, f: true }] }),
+      lv({ hose: 3, goal: 10, want: 'red', mix: ['red', 'green'], tray: [g('gate', 'red'), 'spring'], hint: [{ t: 'spring', c: 3, r: 1 }, { t: 'gate', k: 'red', c: 5, r: 1 }] }),
+      lv({ hose: 1, goal: 6, want: 'green', mix: ['green', 'blue'], fixed: [{ t: 'block', c: 1, r: 4 }], tray: [g('gate', 'green'), 'long'], hint: [{ t: 'long', c: 1, r: 1 }, { t: 'gate', k: 'green', c: 5, r: 2 }] })
+    ],
+    hard: [
+      lv({ hose: 9, goal: 8, goal2: 4, want: 'red', want2: 'blue', mix: ['red', 'blue'], tray: [g('gate', 'red')], hint: [{ t: 'gate', k: 'red', c: 8, r: 3, f: true }] }),
+      lv({ hose: 3, goal: 6, goal2: 9, want: 'yellow', want2: 'green', mix: ['yellow', 'green'], tray: [g('gate', 'yellow'), 'long'], hint: [{ t: 'gate', k: 'yellow', c: 3, r: 3 }, { t: 'long', c: 3, r: 5 }] }),
+      lv({ hose: 5, goal: 6, want: 'blue', mix: ['blue', 'red', 'yellow'], balls: 9, tray: [g('gate', 'red'), g('gate', 'blue')], hint: [{ t: 'gate', k: 'blue', c: 4, r: 2 }] }),
+      lv({ hose: 10, goal: 3, want: 'red', mix: ['red', 'green', 'blue'], balls: 9, tray: [g('not', 'red'), 'long'], hint: [{ t: 'not', k: 'red', c: 9, r: 1, f: true }, { t: 'long', c: 5, r: 2, f: true }] }),
+      lv({ hose: 7, goal: 11, goal2: 3, want: 'green', want2: 'yellow', mix: ['green', 'yellow'], tray: ['flip', 'long'], hint: [{ t: 'flip', c: 6, r: 2 }, { t: 'long', c: 7, r: 4 }] }),
+      lv({ hose: 10, goal: 9, goal2: 6, want: 'red', want2: 'blue', mix: ['red', 'blue', 'green'], balls: 9, tray: [g('gate', 'red'), g('gate', 'blue')], hint: [{ t: 'gate', k: 'red', c: 9, r: 2, f: true }, { t: 'gate', k: 'blue', c: 7, r: 3, f: true }] }),
+      lv({ hose: 6, goal: 0, goal2: 11, want: 'blue', want2: 'red', mix: ['blue', 'red'], tray: ['flip', 'long', 'long'], hint: [{ t: 'flip', c: 5, r: 2, f: true }, { t: 'long', c: 3, r: 4, f: true }, { t: 'long', c: 7, r: 4 }] }),
+      lv({ hose: 11, goal: 6, goal2: 10, want: 'yellow', want2: 'red', mix: ['yellow', 'red'], fixed: [{ t: 'block', c: 4, r: 5 }], tray: [g('not', 'yellow'), 'long'], hint: [{ t: 'not', k: 'yellow', c: 10, r: 1, f: true }, { t: 'long', c: 7, r: 4, f: true }] })
     ]
   };
 })();
@@ -112,6 +138,12 @@
     'bedrun.p.fan':    'A fan. Whoosh! It blows the balls sideways.',
     'bedrun.p.seesaw': 'A see-saw. When something lands on one end, it tips!',
     'bedrun.p.bucket': 'A bucket. When it fills up, it tips over!',
+    // Medium and Hard: balls of different colours, and gates that sort them.
+    'bedrun.two':    'Tidy up time! Some balls go to the puppies, and some go back in the toy box. Look at the pictures to see which.',
+    'bedrun.tidied': 'All tidy! The puppies have their balls, and the toy box is full. Night night!',
+    'bedrun.p.gate': 'A colour gate! Only balls of the colour in the picture drop through the trapdoor. The others roll over the top.',
+    'bedrun.p.not':  'A not gate! Every ball drops through the trapdoor, except balls of the colour in the picture.',
+    'bedrun.p.flip': 'A flip-flop! It sends one ball this way, then the next ball that way.',
 
     // Puppy Train
     'puptrain.pick': 'All aboard the Puppy Train! Animal words are made of beats too. Pick a game.',
@@ -238,7 +270,30 @@
   const RUN_ICON = `<svg viewBox="-60 -60 120 120"><path d="M-50 -34 L4 -8" stroke="${OL}" stroke-width="13" stroke-linecap="round"/><path d="M-50 -34 L4 -8" stroke="#f07a1a" stroke-width="8" stroke-linecap="round"/>
     <g transform="translate(-26 -46) scale(.6)">${PA.ball('#e53935', 16)}</g><g transform="translate(12 -16) scale(.6)">${PA.ball('#1e5bd6', 16)}</g>
     <g transform="translate(4 52) scale(.3)">${PA.basket(300, [1, 2, 3].map(i => `<g transform="translate(${-104 + i * 52} -24) scale(.56)">${PA.puppy(i)}</g>`).join(''))}</g></svg>`;
-  const ballColour = b => PA.BALLS[b.idx % PA.BALLS.length];
+  // In Medium and Hard puzzles each ball has a colour (its kind), and the puppies only want one colour.
+  const KIND = { red: PA.BALLS[0], blue: PA.BALLS[1], green: PA.BALLS[2], yellow: PA.BALLS[3], purple: PA.BALLS[4] };
+  ['red', 'blue', 'green', 'yellow'].forEach(c => {
+    L['bedrun.only.' + c] = `Tonight the puppies only want ${c} balls! Build a run so that only ${c} balls reach the puppy basket.`;
+    L['bedrun.wrong.' + c] = `Oh no! The puppies only want ${c} balls. Try again!`;
+    L['bedrun.box.' + c] = `Oops! Only ${c} balls go in the toy box. Try again!`;
+  });
+  const ballColour = b => b.kind ? KIND[b.kind] : PA.BALLS[b.idx % PA.BALLS.length];
+  // A picture of the colour a basket or box wants, in a bubble above it.
+  const wantBubble = (ctx, k, x, y) => {
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = OL; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(x, y, 30, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x - 10, y + 27); ctx.lineTo(x, y + 44); ctx.lineTo(x + 10, y + 27); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.fillRect(x - 12, y + 20, 24, 9);
+    drawImg(ctx, PA.ballImage(KIND[k]), x, y, 42, 42);
+  };
+  // The toy box: the second goal in the tidy-up puzzles.
+  const toyBox = (ctx, x, hits, shake, now) => {
+    const { line, poly } = BR.draw, dx = shake > 0 ? Math.sin(shake * 1.2) * 8 : 0;
+    for (let i = 0; i < Math.min(3, hits); i++) drawImg(ctx, PA.ballImage(PA.BALLS[(i + 1) % 5]), x + dx - 34 + i * 34, H - 98, 40, 40);
+    poly(ctx, [{ x: x + dx - 86, y: H - 92 }, { x: x + dx + 86, y: H - 92 }, { x: x + dx + 76, y: H - 8 }, { x: x + dx - 76, y: H - 8 }], '#ffd21f');
+    line(ctx, x + dx - 70, H - 60, x + dx + 70, H - 60, '#e0a800', 5);
+    poly(ctx, [{ x: x + dx - 22, y: H - 52 }, { x: x + dx + 22, y: H - 52 }, { x: x + dx + 22, y: H - 30 }, { x: x + dx - 22, y: H - 30 }], '#e53935', OL, 3);
+  };
   const bedTheme = {
     board(ctx) { // the puppy room at bedtime: soft lilac wallpaper with little stars
       ctx.fillStyle = '#f3efff'; ctx.fillRect(0, 0, W, H);
@@ -251,9 +306,10 @@
       }
       ctx.fillStyle = '#c98b4e'; ctx.fillRect(0, H - 10, W, 10);
     },
-    source(ctx, level, now, dripping) { // the toy box, with balls peeping out of the top
+    source(ctx, level, now, dripping, next) { // the toy box, with balls peeping out of the top
       const x = (level.hose + 0.5) * CELL, { line, poly } = BR.draw;
-      [0, 1, 2].forEach(i => drawImg(ctx, PA.ballImage(PA.BALLS[i]), x - 22 + i * 22, 14, 26, 26));
+      const peep = level.mix ? [0, 1, 2].map(i => KIND[level.mix[i % level.mix.length]]) : PA.BALLS;
+      [0, 1, 2].forEach(i => drawImg(ctx, PA.ballImage(peep[i]), x - 22 + i * 22, 14, 26, 26));
       poly(ctx, [{ x: x - 40, y: 22 }, { x: x + 40, y: 22 }, { x: x + 34, y: 48 }, { x: x - 34, y: 48 }], '#ffd21f');
       poly(ctx, [{ x: x - 14, y: 48 }, { x: x + 14, y: 48 }, { x: x + 10, y: 60 }, { x: x - 10, y: 60 }], '#e53935');
       if (dripping) line(ctx, x - 9, 55, x + 9, 55, '#fff', 4);
@@ -262,21 +318,31 @@
     goal(ctx, st) {
       const { level, fx, won, now, hits } = st, x = (level.goal + 1) * CELL;
       const bob = won ? Math.sin(now / 120) * 5 : 0, jump = fx.chew > 0 ? -Math.sin(fx.chew / 30 * Math.PI) * 8 : 0;
-      drawImg(ctx, PA.basketImage(hits > 0 || won, won), x, H - 52 + bob + jump, 240, 78);
+      const sx = fx.shake > 0 && level.want ? Math.sin(fx.shake * 1.2) * 8 : 0;
+      drawImg(ctx, PA.basketImage(hits > 0 || won, won), x + sx, H - 52 + bob + jump, 240, 78);
+      if (level.want) wantBubble(ctx, level.want, x, H - 150 + bob);
     },
+    goal2(ctx, st) {
+      const { level, fx, hits2, now } = st, x = (level.goal2 + 1) * CELL;
+      toyBox(ctx, x, hits2, fx.shake2, now);
+      wantBubble(ctx, level.want2, x, H - 160);
+    },
+    kindPic(ctx, k, x, y, size) { drawImg(ctx, PA.ballImage(KIND[k]), x, y, size * .8, size * .8); },
     decoy(ctx, st) {
       const { level, fx } = st, x = (level.decoy + 1) * CELL + (fx.shake > 0 ? Math.sin(fx.shake * 1.2) * 8 : 0);
       drawImg(ctx, PA.catImage(fx.shake > 0), x, H - 58, 160, 114);
     },
     splash: '#ffd21f',
     release() { Sfx.pop(); },
-    hit(ev, fx) { Sfx.yip(); fx.chew = 30; fx.burst(ev.x, ev.y, 8, '#ff6f9c', 1.2); },
+    hit(ev, fx) { if (ev.g === 2) { Sfx.pop(); fx.burst(ev.x, ev.y, 8, '#ffd21f', 1.2); return; } Sfx.yip(); fx.chew = 30; fx.burst(ev.x, ev.y, 8, '#ff6f9c', 1.2); },
     win(fx) { fx.chew = 0; },
     tapGoal() { Sfx.yip(); },
     tapDecoy() { Sfx.meow(); },
+    tapGoal2() { Sfx.pop(); },
     refuse: () => 'bedrun.no',
-    intro: () => 'bedrun.want',
-    winLine: () => 'bedrun.won.' + Math.floor(Math.random() * 3)
+    wrong: (level, ev) => ev.g === 2 ? 'bedrun.box.' + level.want2 : 'bedrun.wrong.' + level.want,
+    intro: level => level.goal2 != null ? 'bedrun.two' : level.want ? 'bedrun.only.' + level.want : 'bedrun.want',
+    winLine: level => level.goal2 != null ? 'bedrun.tidied' : 'bedrun.won.' + Math.floor(Math.random() * 3)
   };
   BR.mount(Object.assign({ screen: 'bedtimerun', lines: 'bedrun', colour: '#8e5bd6', icon: RUN_ICON, pack: BR.packs.puppies, theme: bedTheme, cls: 'pup-run' }, COMMON));
 
