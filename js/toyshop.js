@@ -32,8 +32,34 @@
         hint: [{ t: 'bucket', c: 5, r: 1 }, { t: 'long', c: 8, r: 4 }] })
     ]
   };
+
+  // Medium and Hard: mixed things come down, and gates (or a flip-flop) sort them. Each level is one of the
+  // checked Zoo and Puppies layouts (some mirrored) with this world's things, and was checked again by running its physics.
+  ((pack, g, lv) => {
+    pack.medium = [
+      lv({ hose: 3, goal: 3, balls: 8, mix: [1, 2], want: 1, tray: [g('gate', 1)], hint: [{ t: 'gate', k: 1, c: 3, r: 1 }], coin: 1 }),
+      lv({ hose: 9, goal: 8, balls: 8, mix: [2, 5], want: 2, tray: [g('gate', 2)], hint: [{ t: 'gate', k: 2, c: 8, r: 1, f: true }], coin: 2 }),
+      lv({ hose: 11, goal: 6, balls: 8, mix: [5, 10], want: 5, tray: [g('gate', 5), 'long'], hint: [{ t: 'long', c: 9, r: 1, f: true }, { t: 'gate', k: 5, c: 7, r: 2, f: true }], coin: 5 }),
+      lv({ hose: 1, goal: 5, balls: 8, mix: [10, 1], want: 10, tray: [g('gate', 10), 'long'], hint: [{ t: 'long', c: 1, r: 1 }, { t: 'gate', k: 10, c: 5, r: 2 }], coin: 10 }),
+      lv({ hose: 4, goal: 9, balls: 8, mix: [1, 2], want: 1, fixed: [{ t: 'block', c: 7, r: 4 }], tray: [g('gate', 1), 'ramp'], hint: [{ t: 'gate', k: 1, c: 4, r: 1 }, { t: 'ramp', c: 5, r: 3 }], coin: 1 }),
+      lv({ hose: 10, goal: 3, balls: 8, mix: [2, 5], want: 2, tray: [g('gate', 2), 'curve'], hint: [{ t: 'gate', k: 2, c: 10, r: 1, f: true }, { t: 'curve', c: 8, r: 4, f: true }], coin: 2 }),
+      lv({ hose: 11, goal: 3, balls: 8, mix: [5, 10], want: 5, tray: [g('gate', 5), 'spring'], hint: [{ t: 'spring', c: 11, r: 1, f: true }, { t: 'gate', k: 5, c: 8, r: 1, f: true }], coin: 5 }),
+      lv({ hose: 12, goal: 6, balls: 8, mix: [10, 1], want: 10, fixed: [{ t: 'block', c: 12, r: 4 }], tray: [g('gate', 10), 'long'], hint: [{ t: 'long', c: 9, r: 1, f: true }, { t: 'gate', k: 10, c: 7, r: 2, f: true }], coin: 10 })
+    ];
+    pack.hard = [
+      lv({ hose: 5, goal: 4, balls: 8, mix: [1, 2], goal2: 8, want: 1, want2: 2, tray: [g('gate', 1)], hint: [{ t: 'gate', k: 1, c: 5, r: 3 }], coin: 1, g2: { coin: 2 } }),
+      lv({ hose: 10, goal: 6, balls: 8, mix: [2, 5], goal2: 3, want: 2, want2: 5, tray: [g('gate', 2), 'long'], hint: [{ t: 'gate', k: 2, c: 9, r: 3, f: true }, { t: 'long', c: 7, r: 5, f: true }], coin: 2, g2: { coin: 5 } }),
+      lv({ hose: 8, goal: 7, balls: 9, mix: [5, 10, 1], want: 5, tray: [g('gate', 10), g('gate', 5)], hint: [{ t: 'gate', k: 5, c: 7, r: 1, f: true }], coin: 5 }),
+      lv({ hose: 3, goal: 9, balls: 9, mix: [10, 1, 2], want: 10, tray: [g('not', 10), 'long'], hint: [{ t: 'not', k: 10, c: 3, r: 1 }, { t: 'long', c: 5, r: 2 }], coin: 10 }),
+      lv({ hose: 6, goal: 2, balls: 8, mix: [1, 2], goal2: 10, want: 1, want2: 2, tray: ['flip', 'long'], hint: [{ t: 'flip', c: 5, r: 2, f: true }, { t: 'long', c: 6, r: 4 }], coin: 1, g2: { coin: 2 } }),
+      lv({ hose: 10, goal: 9, balls: 9, mix: [2, 5, 10], goal2: 6, want: 2, want2: 5, tray: [g('gate', 2), g('gate', 5)], hint: [{ t: 'gate', k: 2, c: 9, r: 2, f: true }, { t: 'gate', k: 5, c: 7, r: 3, f: true }], coin: 2, g2: { coin: 5 } }),
+      lv({ hose: 6, goal: 11, balls: 8, mix: [5, 10], goal2: 1, want: 5, want2: 10, tray: ['flip', 'long', 'long'], hint: [{ t: 'flip', c: 6, r: 2 }, { t: 'long', c: 6, r: 4 }, { t: 'long', c: 2, r: 4, f: true }], coin: 5, g2: { coin: 10 } }),
+      lv({ hose: 11, goal: 6, balls: 8, mix: [10, 1], goal2: 10, want: 10, want2: 1, fixed: [{ t: 'block', c: 4, r: 5 }], tray: [g('not', 10), 'long'], hint: [{ t: 'not', k: 10, c: 10, r: 1, f: true }, { t: 'long', c: 7, r: 4, f: true }], coin: 10, g2: { coin: 1 } })
+    ];
+  })(window.BallRun.packs.shop, (t, k) => ({ t, k }), o => Object.assign({ balls: 8, kinds: [...new Set(o.mix)] }, o));
+
   // The coin each ball is: one kind per puzzle, every kind in turn in the free build.
-  BR.shopCoin = (level, idx) => level.coin === 'mixed' ? [1, 2, 5, 10, 20, 100][idx % 6] : level.coin;
+  BR.shopCoin = (level, idx) => level.mix ? level.mix[idx % level.mix.length] : level.coin === 'mixed' ? [1, 2, 5, 10, 20, 100][idx % 6] : level.coin;
 })();
 
 (function () {
@@ -238,13 +264,14 @@
     },
     source(ctx, level, now, dripping) { // Pip's purse, tipping coins out
       const x = (level.hose + 0.5) * CELL, { line, poly } = BR.draw;
-      const coins = level.coin === 'mixed' ? [10, 2, 100] : [level.coin, level.coin, level.coin];
+      const coins = level.mix ? [0, 1, 2].map(i => level.mix[i % level.mix.length]) : level.coin === 'mixed' ? [10, 2, 100] : [level.coin, level.coin, level.coin];
       coins.forEach((v, i) => drawImg(ctx, TA.coinImage(v), x - 24 + i * 24, 12, 26, 26));
       poly(ctx, [{ x: x - 40, y: 22 }, { x: x + 40, y: 22 }, { x: x + 34, y: 46 }, { x: x - 34, y: 46 }], '#ff6f9c');
       poly(ctx, [{ x: x - 14, y: 46 }, { x: x + 14, y: 46 }, { x: x + 10, y: 60 }, { x: x - 10, y: 60 }], '#ffd21f');
       if (dripping) line(ctx, x - 9, 54, x + 9, 54, '#fff', 4);
     },
     ball(ctx, b, level) { drawImg(ctx, TA.coinImage(BR.shopCoin(level, b.idx)), b.position.x, b.position.y, 2 * R + 6, 2 * R + 6, b.angle); },
+    kindPic(ctx, k, x, y, size) { drawImg(ctx, TA.coinImage(k), x, y, size, size); },
     goal(ctx, st) {
       const { level, fx, won, now } = st, x = (level.goal + 1) * CELL;
       const bob = won ? Math.sin(now / 120) * 6 : 0, jump = fx.chew > 0 ? -Math.sin(fx.chew / 30 * Math.PI) * 10 : 0;
@@ -256,7 +283,7 @@
     },
     splash: '#ffd21f',
     release() { Sfx.plink(1.6); },
-    hit(ev, fx, level) { Sfx.plink(1 + ev.n * .25); fx.chew = 30; fx.burst(ev.x, ev.y, 8, '#ffd21f', 1.2); banked.push(BR.shopCoin(level, ev.idx)); },
+    hit(ev, fx, level) { Sfx.plink(1 + ev.n * .25); fx.chew = 30; fx.burst(ev.x, ev.y, 8, '#ffd21f', 1.2); if (ev.g !== 2) banked.push(BR.shopCoin(level, ev.idx)); },
     hitLine: (ev, level) => level.coin === 'mixed' ? 'coinrun.n' + ev.n : 'money.' + level.coin * ev.n,
     win(fx) { fx.chew = 0; },
     tapGoal() { Sfx.squeak(); },

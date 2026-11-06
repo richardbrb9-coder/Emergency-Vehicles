@@ -31,6 +31,31 @@
         hint: [{ t: 'bucket', c: 5, r: 1 }, { t: 'long', c: 8, r: 4 }] })
     ]
   };
+
+  // Medium and Hard: mixed things come down, and gates (or a flip-flop) sort them. Each level is one of the
+  // checked Zoo and Puppies layouts (some mirrored) with this world's things, and was checked again by running its physics.
+  ((pack, g, lv) => {
+    pack.medium = [
+      lv({ hose: 3, goal: 3, balls: 8, mix: ['tooth', 'ammonite'], want: 'tooth', tray: [g('gate', 'tooth')], hint: [{ t: 'gate', k: 'tooth', c: 3, r: 1 }] }),
+      lv({ hose: 9, goal: 8, balls: 8, mix: ['ammonite', 'trilobite'], want: 'ammonite', tray: [g('gate', 'ammonite')], hint: [{ t: 'gate', k: 'ammonite', c: 8, r: 1, f: true }] }),
+      lv({ hose: 11, goal: 6, balls: 8, mix: ['trilobite', 'tooth'], want: 'trilobite', tray: [g('gate', 'trilobite'), 'long'], hint: [{ t: 'long', c: 9, r: 1, f: true }, { t: 'gate', k: 'trilobite', c: 7, r: 2, f: true }] }),
+      lv({ hose: 1, goal: 5, balls: 8, mix: ['tooth', 'ammonite'], want: 'tooth', tray: [g('gate', 'tooth'), 'long'], hint: [{ t: 'long', c: 1, r: 1 }, { t: 'gate', k: 'tooth', c: 5, r: 2 }] }),
+      lv({ hose: 4, goal: 9, balls: 8, mix: ['ammonite', 'trilobite'], want: 'ammonite', fixed: [{ t: 'block', c: 7, r: 4 }], tray: [g('gate', 'ammonite'), 'ramp'], hint: [{ t: 'gate', k: 'ammonite', c: 4, r: 1 }, { t: 'ramp', c: 5, r: 3 }] }),
+      lv({ hose: 10, goal: 3, balls: 8, mix: ['trilobite', 'tooth'], want: 'trilobite', tray: [g('gate', 'trilobite'), 'curve'], hint: [{ t: 'gate', k: 'trilobite', c: 10, r: 1, f: true }, { t: 'curve', c: 8, r: 4, f: true }] }),
+      lv({ hose: 11, goal: 3, balls: 8, mix: ['tooth', 'ammonite'], want: 'tooth', tray: [g('gate', 'tooth'), 'spring'], hint: [{ t: 'spring', c: 11, r: 1, f: true }, { t: 'gate', k: 'tooth', c: 8, r: 1, f: true }] }),
+      lv({ hose: 12, goal: 6, balls: 8, mix: ['ammonite', 'trilobite'], want: 'ammonite', fixed: [{ t: 'block', c: 12, r: 4 }], tray: [g('gate', 'ammonite'), 'long'], hint: [{ t: 'gate', k: 'ammonite', c: 11, r: 1, f: true }, { t: 'long', c: 10, r: 5, f: true }] })
+    ];
+    pack.hard = [
+      lv({ hose: 5, goal: 4, balls: 8, mix: ['trilobite', 'tooth'], goal2: 8, want: 'trilobite', want2: 'tooth', tray: [g('gate', 'trilobite')], hint: [{ t: 'gate', k: 'trilobite', c: 5, r: 3 }] }),
+      lv({ hose: 2, goal: 4, balls: 8, mix: ['tooth', 'ammonite'], goal2: 9, want: 'tooth', want2: 'ammonite', tray: [g('gate', 'tooth'), 'long'], hint: [{ t: 'gate', k: 'tooth', c: 1, r: 2 }, { t: 'long', c: 5, r: 5 }] }),
+      lv({ hose: 5, goal: 6, balls: 9, mix: ['ammonite', 'trilobite', 'tooth'], want: 'ammonite', tray: [g('gate', 'trilobite'), g('gate', 'ammonite')], hint: [{ t: 'gate', k: 'ammonite', c: 4, r: 2 }] }),
+      lv({ hose: 3, goal: 9, balls: 9, mix: ['trilobite', 'tooth', 'ammonite'], want: 'trilobite', tray: [g('not', 'trilobite'), 'long'], hint: [{ t: 'not', k: 'trilobite', c: 3, r: 1 }, { t: 'long', c: 5, r: 2 }] }),
+      lv({ hose: 6, goal: 2, balls: 8, mix: ['tooth', 'ammonite'], goal2: 10, want: 'tooth', want2: 'ammonite', tray: ['flip', 'long'], hint: [{ t: 'flip', c: 5, r: 2, f: true }, { t: 'long', c: 6, r: 4 }] }),
+      lv({ hose: 10, goal: 9, balls: 9, mix: ['ammonite', 'trilobite', 'tooth'], goal2: 6, want: 'ammonite', want2: 'trilobite', tray: [g('gate', 'ammonite'), g('gate', 'trilobite')], hint: [{ t: 'gate', k: 'ammonite', c: 9, r: 2, f: true }, { t: 'gate', k: 'trilobite', c: 7, r: 3, f: true }] }),
+      lv({ hose: 6, goal: 11, balls: 8, mix: ['trilobite', 'tooth'], goal2: 1, want: 'trilobite', want2: 'tooth', tray: ['flip', 'long', 'long'], hint: [{ t: 'flip', c: 6, r: 2 }, { t: 'long', c: 6, r: 4 }, { t: 'long', c: 2, r: 4, f: true }] }),
+      lv({ hose: 11, goal: 6, balls: 8, mix: ['tooth', 'ammonite'], goal2: 10, want: 'tooth', want2: 'ammonite', fixed: [{ t: 'block', c: 4, r: 5 }], tray: [g('not', 'tooth'), 'long'], hint: [{ t: 'not', k: 'tooth', c: 10, r: 1, f: true }, { t: 'long', c: 7, r: 4, f: true }] })
+    ];
+  })(window.BallRun.packs.museum, (t, k) => ({ t, k }), o => Object.assign({ balls: 8, kinds: [...new Set(o.mix)] }, o));
 })();
 
 (function () {
@@ -223,6 +248,9 @@
   const RUN_ICON = `<svg viewBox="-60 -60 120 120"><path d="M-50 -34 L4 -8" stroke="${OL}" stroke-width="13" stroke-linecap="round"/><path d="M-50 -34 L4 -8" stroke="#ffd21f" stroke-width="8" stroke-linecap="round"/>
     <g transform="translate(-28 -46) scale(.5)">${MA.ammonite()}</g><g transform="translate(10 -20) scale(.5)">${MA.ammonite('#c9a878')}</g>
     <g transform="translate(0 58) scale(.5)">${MA.tray(2)}</g></svg>`;
+  // Medium and Hard Fossil Run puzzles mix three kinds of fossil: ammonites, trilobites and teeth.
+  const FOSSIL_ART = { ammonite: () => MA.ammonite(), trilobite: () => MA.trilobite, tooth: () => `<g transform="scale(1.1)">${MA.tooth}</g>` }, fossilImgs = {};
+  const fossilKind = k => fossilImgs[k] || (fossilImgs[k] = MA.image(FOSSIL_ART[k](), '-40 -40 80 80'));
   const runTheme = {
     board(ctx) { // a dig site: sandy rock layers, darker towards the bottom
       ctx.fillStyle = '#f6ead0'; ctx.fillRect(0, 0, W, H);
@@ -235,17 +263,21 @@
     },
     source(ctx, level, now, dripping) { // a rock ledge at the top, with fossils waiting on it
       const x = (level.hose + 0.5) * CELL, { line, poly } = BR.draw;
-      [0, 1, 2].forEach(i => drawImg(ctx, MA.fossilImage(i), x - 22 + i * 22, 14, 26, 26));
+      [0, 1, 2].forEach(i => drawImg(ctx, level.mix ? fossilKind(level.mix[i % level.mix.length]) : MA.fossilImage(i), x - 22 + i * 22, 14, 26, 26));
       poly(ctx, [{ x: x - 48, y: 24 }, { x: x + 48, y: 24 }, { x: x + 34, y: 54 }, { x: x - 34, y: 54 }], '#a8946e');
       poly(ctx, [{ x: x - 14, y: 54 }, { x: x + 14, y: 54 }, { x: x + 10, y: 64 }, { x: x - 10, y: 64 }], '#7a6a4e');
       line(ctx, x - 34, 34, x + 34, 34, '#cbb994', 4);
       if (dripping) line(ctx, x - 9, 58, x + 9, 58, '#ffd21f', 4);
     },
-    ball(ctx, b) { drawImg(ctx, MA.fossilImage(b.idx), b.position.x, b.position.y, 2 * R + 8, 2 * R + 8, b.angle); },
+    ball(ctx, b) { drawImg(ctx, b.kind ? fossilKind(b.kind) : MA.fossilImage(b.idx), b.position.x, b.position.y, 2 * R + 8, 2 * R + 8, b.angle); },
+    kindPic(ctx, k, x, y, size) { drawImg(ctx, fossilKind(k), x, y, size, size); },
     goal(ctx, st) {
       const { level, fx, won, now, hits } = st, x = (level.goal + 1) * CELL;
       const bob = won ? Math.sin(now / 120) * 4 : 0, jump = fx.chew > 0 ? -Math.sin(fx.chew / 30 * Math.PI) * 6 : 0;
-      drawImg(ctx, MA.trayImage(Math.min(hits, 3), won), x, H - 52 + bob + jump, 200, 104);
+      if (!level.want) { drawImg(ctx, MA.trayImage(Math.min(hits, 3), won), x, H - 52 + bob + jump, 200, 104); return; }
+      // Sorting puzzles: the tray fills with the fossil it is asking for
+      drawImg(ctx, MA.trayImage(0, won), x, H - 52 + bob + jump, 200, 104);
+      for (let i = 0; i < Math.min(hits, 3); i++) drawImg(ctx, fossilKind(level.want), x - 60 + i * 30, H - 62 + bob + jump - (won && i % 2 ? 6 : 0), 30, 30);
     },
     decoy(ctx, st) {
       const { level, fx } = st, x = (level.decoy + 1) * CELL + (fx.shake > 0 ? Math.sin(fx.shake * 1.2) * 6 : 0);

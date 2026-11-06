@@ -31,8 +31,34 @@
         hint: [{ t: 'bucket', c: 5, r: 1 }, { t: 'long', c: 8, r: 4 }] })
     ]
   };
+
+  // Medium and Hard: mixed things come down, and gates (or a flip-flop) sort them. Each level is one of the
+  // checked Zoo and Puppies layouts (some mirrored) with this world's things, and was checked again by running its physics.
+  ((pack, g, lv) => {
+    pack.medium = [
+      lv({ hose: 10, goal: 9, balls: 8, mix: ['green', 'blue'], want: 'green', tray: [g('gate', 'green')], hint: [{ t: 'gate', k: 'green', c: 9, r: 1, f: true }], colour: 'green' }),
+      lv({ hose: 4, goal: 4, balls: 8, mix: ['blue', 'orange'], want: 'blue', tray: [g('gate', 'blue')], hint: [{ t: 'gate', k: 'blue', c: 4, r: 1 }], colour: 'blue' }),
+      lv({ hose: 2, goal: 6, balls: 8, mix: ['orange', 'purple'], want: 'orange', tray: [g('gate', 'orange'), 'long'], hint: [{ t: 'long', c: 1, r: 1 }, { t: 'gate', k: 'orange', c: 5, r: 2 }], colour: 'orange' }),
+      lv({ hose: 12, goal: 7, balls: 8, mix: ['purple', 'red'], want: 'purple', tray: [g('gate', 'purple'), 'long'], hint: [{ t: 'long', c: 9, r: 1, f: true }, { t: 'gate', k: 'purple', c: 7, r: 2, f: true }], colour: 'purple' }),
+      lv({ hose: 4, goal: 9, balls: 8, mix: ['red', 'yellow'], want: 'red', fixed: [{ t: 'block', c: 7, r: 4 }], tray: [g('gate', 'red'), 'ramp'], hint: [{ t: 'gate', k: 'red', c: 4, r: 1 }, { t: 'ramp', c: 5, r: 3 }], colour: 'red' }),
+      lv({ hose: 10, goal: 3, balls: 8, mix: ['yellow', 'green'], want: 'yellow', tray: [g('gate', 'yellow'), 'curve'], hint: [{ t: 'gate', k: 'yellow', c: 10, r: 1, f: true }, { t: 'curve', c: 8, r: 4, f: true }], colour: 'yellow' }),
+      lv({ hose: 2, goal: 9, balls: 8, mix: ['green', 'blue'], want: 'green', tray: [g('gate', 'green'), 'spring'], hint: [{ t: 'spring', c: 2, r: 1 }, { t: 'gate', k: 'green', c: 4, r: 1 }], colour: 'green' }),
+      lv({ hose: 12, goal: 6, balls: 8, mix: ['blue', 'orange'], want: 'blue', fixed: [{ t: 'block', c: 12, r: 4 }], tray: [g('gate', 'blue'), 'long'], hint: [{ t: 'gate', k: 'blue', c: 11, r: 1, f: true }, { t: 'long', c: 10, r: 5, f: true }], colour: 'blue' })
+    ];
+    pack.hard = [
+      lv({ hose: 8, goal: 8, balls: 8, mix: ['orange', 'purple'], goal2: 4, want: 'orange', want2: 'purple', tray: [g('gate', 'orange')], hint: [{ t: 'gate', k: 'orange', c: 7, r: 3, f: true }], colour: 'orange', g2: { colour: 'purple' } }),
+      lv({ hose: 2, goal: 4, balls: 8, mix: ['purple', 'red'], goal2: 9, want: 'purple', want2: 'red', tray: [g('gate', 'purple'), 'long'], hint: [{ t: 'gate', k: 'purple', c: 1, r: 2 }, { t: 'long', c: 5, r: 5 }], colour: 'purple', g2: { colour: 'red' } }),
+      lv({ hose: 5, goal: 6, balls: 9, mix: ['red', 'yellow', 'green'], want: 'red', tray: [g('gate', 'yellow'), g('gate', 'red')], hint: [{ t: 'gate', k: 'red', c: 4, r: 2 }], colour: 'red' }),
+      lv({ hose: 10, goal: 3, balls: 9, mix: ['yellow', 'green', 'blue'], want: 'yellow', tray: [g('not', 'yellow'), 'long'], hint: [{ t: 'not', k: 'yellow', c: 9, r: 1, f: true }, { t: 'long', c: 5, r: 2, f: true }], colour: 'yellow' }),
+      lv({ hose: 7, goal: 10, balls: 8, mix: ['green', 'blue'], goal2: 2, want: 'green', want2: 'blue', tray: ['flip', 'long'], hint: [{ t: 'flip', c: 7, r: 2 }, { t: 'long', c: 4, r: 4, f: true }], colour: 'green', g2: { colour: 'blue' } }),
+      lv({ hose: 10, goal: 9, balls: 9, mix: ['blue', 'orange', 'purple'], goal2: 6, want: 'blue', want2: 'orange', tray: [g('gate', 'blue'), g('gate', 'orange')], hint: [{ t: 'gate', k: 'blue', c: 9, r: 2, f: true }, { t: 'gate', k: 'orange', c: 7, r: 3, f: true }], colour: 'blue', g2: { colour: 'orange' } }),
+      lv({ hose: 7, goal: 1, balls: 8, mix: ['orange', 'purple'], goal2: 11, want: 'orange', want2: 'purple', tray: ['flip', 'long', 'long'], hint: [{ t: 'flip', c: 6, r: 2, f: true }, { t: 'long', c: 4, r: 4, f: true }, { t: 'long', c: 8, r: 4 }], colour: 'orange', g2: { colour: 'purple' } }),
+      lv({ hose: 11, goal: 6, balls: 8, mix: ['purple', 'red'], goal2: 10, want: 'purple', want2: 'red', fixed: [{ t: 'block', c: 4, r: 5 }], tray: [g('not', 'purple'), 'long'], hint: [{ t: 'not', k: 'purple', c: 10, r: 1, f: true }, { t: 'long', c: 7, r: 4, f: true }], colour: 'purple', g2: { colour: 'red' } })
+    ];
+  })(window.BallRun.packs.school, (t, k) => ({ t, k }), o => Object.assign({ balls: 8, kinds: [...new Set(o.mix)] }, o));
+
   // The colour of each crayon: one colour per puzzle, every colour in turn in the free build.
-  BR.crayonColour = (level, idx) => level.colour === 'rainbow' ? window.SchoolArt.RAINBOW[idx % 6] : level.colour;
+  BR.crayonColour = (level, idx) => level.mix ? level.mix[idx % level.mix.length] : level.colour === 'rainbow' ? window.SchoolArt.RAINBOW[idx % 6] : level.colour;
 })();
 
 (function () {
@@ -227,7 +253,7 @@
     },
     source(ctx, level, now, dripping) { // a crayon box
       const x = (level.hose + 0.5) * CELL, { line, poly } = BR.draw;
-      const tips = level.colour === 'rainbow' ? SA.RAINBOW.slice(0, 4) : [level.colour, level.colour, level.colour, level.colour];
+      const tips = level.mix ? [0, 1, 2, 3].map(i => level.mix[i % level.mix.length]) : level.colour === 'rainbow' ? SA.RAINBOW.slice(0, 4) : [level.colour, level.colour, level.colour, level.colour];
       tips.forEach((c, i) => poly(ctx, [{ x: x - 35 + i * 20, y: 20 }, { x: x - 21 + i * 20, y: 20 }, { x: x - 28 + i * 20, y: 2 }], COL[c], OL, 3));
       poly(ctx, [{ x: x - 44, y: 14 }, { x: x + 44, y: 14 }, { x: x + 40, y: 48 }, { x: x - 40, y: 48 }], '#ffd21f');
       poly(ctx, [{ x: x - 30, y: 22 }, { x: x + 30, y: 22 }, { x: x + 28, y: 40 }, { x: x - 28, y: 40 }], '#2e9e4f', OL, 3);
@@ -235,6 +261,7 @@
       if (dripping) line(ctx, x - 12, 54, x + 12, 54, '#fff', 4);
     },
     ball(ctx, b, level) { drawImg(ctx, SA.crayonImage(BR.crayonColour(level, b.idx)), b.position.x, b.position.y, 50, 18, b.angle); },
+    kindPic(ctx, k, x, y, size) { drawImg(ctx, SA.crayonImage(k), x, y, size * 1.1, size * .4, -0.5); },
     goal(ctx, st) {
       const { level, fx, hits, won, now } = st, x = (level.goal + 1) * CELL;
       const bob = won ? Math.sin(now / 120) * 6 : 0, jump = fx.chew > 0 ? -Math.sin(fx.chew / 30 * Math.PI) * 10 : 0;
