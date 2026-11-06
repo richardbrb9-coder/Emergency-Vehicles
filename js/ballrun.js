@@ -536,7 +536,7 @@ window.BallRun.packs.rescue = {
         drag.ok = drag.at && sim.fits(Object.assign({}, drag.piece, drag.at));
         const rr = root.getBoundingClientRect();
         dragEl.hidden = !!drag.at || !drag.moved && !!drag.from;
-        dragEl.style.left = (e.clientX - rr.left) + 'px'; dragEl.style.top = (e.clientY - rr.top) + 'px';
+        dragEl.style.transform = `translate(${e.clientX - rr.left}px, ${e.clientY - rr.top}px) translate(-50%, -50%)`;
       }
       function endDrag(e) {
         if (!drag || e.pointerId !== drag.id) return;

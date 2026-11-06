@@ -50,7 +50,8 @@
       let start = null, moved = false;
       tool.addEventListener('pointerdown', e => {
         if (tool.classList.contains('placed')) return;
-        start = { x: e.clientX, y: e.clientY }; moved = false;
+        const r = tool.getBoundingClientRect();
+        start = { x: e.clientX, y: e.clientY, mx: r.left + r.width / 2, my: r.top + r.height / 2 }; moved = false;
         tool.setPointerCapture(e.pointerId);
         tool.classList.add('dragging');
         Sfx.tap();
@@ -73,7 +74,13 @@
           tool.style.visibility = 'hidden';
           const over = document.elementFromPoint(e.clientX, e.clientY);
           tool.style.visibility = '';
-          const slot = over && over.closest('.slot:not(.done)');
+          // Under the finger, or failing that the vehicle nearest the middle of the tool (if it's close).
+          let slot = over && over.closest('.slot:not(.done)');
+          if (!slot) {
+            const x = start.mx + e.clientX - start.x, y = start.my + e.clientY - start.y;
+            let bestD = 40;
+            root.querySelectorAll('.slot:not(.done)').forEach(s => { const b = s.getBoundingClientRect(); const d = Math.hypot(Math.max(b.left - x, 0, x - b.right), Math.max(b.top - y, 0, y - b.bottom)); if (d < bestD) { slot = s; bestD = d; } });
+          }
           tryMatch(tool, slot);
         } else {
           // A tap selects the tool; then tap a vehicle.
