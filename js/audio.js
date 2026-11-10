@@ -221,6 +221,46 @@
     speechSynthesis.onvoiceschanged = pickVoice;
   }
 
+  // ---------- Recorded clips through Web Audio ----------
+  // Decoded clips are kept (the most recent 80) so a repeated line starts instantly.
+  const buffers = new Map();
+  function getBuffer(file) {
+    if (buffers.has(file)) { const b = buffers.get(file); buffers.delete(file); buffers.set(file, b); return b; }
+    const c = ac(); if (!c || !window.fetch) return Promise.resolve(null);
+    const p = fetch(file).then(r => r.ok ? r.arrayBuffer() : Promise.reject())
+      .then(data => new Promise((ok, bad) => { const q = c.decodeAudioData(data, ok, bad); if (q && q.then) q.then(ok, bad); }))
+      .then(buf => ({ buf, from: speechStart(buf) }))
+      .catch(() => { buffers.delete(file); return null; });
+    buffers.set(file, p);
+    if (buffers.size > 80) buffers.delete(buffers.keys().next().value);
+    return p;
+  }
+  // Where the speech begins: some clips open with up to a second of silence (a third of a second is typical), which we skip.
+  function speechStart(buf) {
+    const d = buf.getChannelData(0), limit = Math.min(d.length, buf.sampleRate * 1.2);
+    for (let i = 0; i < limit; i++) if (Math.abs(d[i]) > 0.008) return Math.max(0, i / buf.sampleRate - 0.04);
+    return 0;
+  }
+  let source = null;
+  // Resolves true if the clip is playing through Web Audio, false to use the <audio> player instead.
+  function playBuffer(file, my, wordCount, startFallback, done) {
+    const c = ac(); if (!c) return Promise.resolve(false);
+    // If the sound engine is still locked (no tap yet), the <audio> player is no worse.
+    const ready = c.state === 'running' ? Promise.resolve(true)
+      : Promise.race([c.resume().then(() => c.state === 'running', () => false), new Promise(r => setTimeout(() => r(false), 250))]);
+    return Promise.all([getBuffer(file), ready]).then(([b, running]) => {
+      if (my !== token) return true; // another line has started; this one is dropped, as before
+      if (!b || !running) return false;
+      const src = source = c.createBufferSource();
+      src.buffer = b.buf;
+      src.connect(c.destination);
+      src.onended = () => { if (source === src) source = null; done(); };
+      src.start(0, b.from);
+      startFallback(((b.buf.duration - b.from) * 1000) / wordCount);
+      return true;
+    });
+  }
+
   let token = 0, clip = null;
   const Voice = {
     // The clip id for a line's exact words: "x." and a hash of the text (FNV-1a). tools/make-voice.mjs uses this too.
@@ -242,11 +282,13 @@
         // Estimated word timing, used when the voice doesn't report word boundaries.
         const startFallback = (msPerWord) => {
           let i = 0;
-          fallback = setInterval(() => {
+          const tick = () => {
             if (gotBoundary || my !== token) return clearInterval(fallback);
             onWord && onWord(Math.min(i++, words.length - 1));
             if (i >= words.length) clearInterval(fallback);
-          }, msPerWord);
+          };
+          fallback = setInterval(tick, msPerWord);
+          tick(); // light up the first word as the voice starts, not one word later
         };
         // A line with its own id plays that clip. Any other line (one with a name or number filled in) plays the clip
         // recorded for its exact words, so every line is in the same recorded voice.
@@ -258,10 +300,16 @@
           return;
         }
         if (file) {
-          const c = clip = new Audio(file); // keep our own reference: clip is cleared if another line starts first
-          clip.onloadedmetadata = () => startFallback((c.duration * 1000) / words.length);
-          clip.onended = done; clip.onerror = done;
-          clip.play().catch(done);
+          // Web Audio starts almost at once; the plain <audio> player can take a moment on Android tablets,
+          // which left the voice trailing behind the words on screen. The <audio> player is the backup.
+          const viaElement = () => {
+            if (my !== token) return resolve();
+            const c = clip = new Audio(file); // keep our own reference: clip is cleared if another line starts first
+            c.onplaying = () => { if (my === token && !fallback) startFallback((c.duration * 1000) / words.length); };
+            c.onended = done; c.onerror = done;
+            c.play().catch(done);
+          };
+          playBuffer(file, my, words.length, startFallback, done).then(ok => { if (!ok) viaElement(); });
           return;
         }
         if (!('speechSynthesis' in window)) { startFallback(330); setTimeout(done, words.length * 330); return; }
@@ -288,6 +336,7 @@
       token++;
       if ('speechSynthesis' in window) speechSynthesis.cancel();
       if (clip) { clip.pause(); clip = null; }
+      if (source) { const s = source; source = null; try { s.onended = null; s.stop(); } catch (e) {} }
     }
   };
 
